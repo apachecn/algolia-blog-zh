@@ -1,0 +1,232 @@
+<html>
+<head>
+<title>When allocators are hoarding your precious memory | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">当分配器囤积你宝贵的记忆时</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/when-allocators-are-hoarding-your-precious-memory/#0001-01-01">https://www.algolia.com/blog/engineering/when-allocators-are-hoarding-your-precious-memory/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">虽然切换到最新的流行框架或语言已经成为工程界的老生常谈，但有时升级是有保证和必要的。对于我们致力于维护核心引擎功能的搜索工程团队来说，这包括升级操作系统版本以获得最新的内核或库功能，以便快速适应我们最新的代码发布。我们总是急切地等待着操作系统的升级，并且已经推动了很长一段时间。</p>
+<p class="translated">当您处理遍布全球70个数据中心的数百台服务器时，在生产环境中升级操作系统可能是一件大事。对于我们的生产服务器，我们目前使用的是<a href="https://ubuntu.com/"> Ubuntu </a> 16.04(四年多前发布的)，我们的基础团队(管理所有生产服务器，并确保我们始终有一个超过我们的<a href="https://www.algolia.com/policies/sla/"> SLA </a>的运行服务)在过去几个月里一直在准备升级到最近的20.04长期版本。</p>
+<h2 class="translated"><a id="but-upgrading-is-tough" class="anchor" href="#but-upgrading-is-tough" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>但是升级是艰难的</h2>
+<p class="translated">当你改变许多组件的版本时，你需要准备好不愉快的惊喜:内核及其相关驱动程序、操作系统的C库、各种库，但也可能是操作系统附带的许多策略、政策、默认配置设置。</p>
+<p class="translated">升级时我们遇到的一个令人不快的意外是整体内存消耗。一张图表(承蒙<a href="https://www.wavefront.com/">波前</a>度量)比其他任何东西都好，下面我让你猜猜“绿色”服务器是什么时候升级到更高的操作系统版本的:</p>
+<p class="translated"><a href="https://blog-api.algolia.com/wp-content/uploads/2021/01/image1-1.png"><img loading="lazy" class="aligncenter size-full wp-image-11263" src="../Images/a75d09ed8240f8c09136bd2f410f1a2f.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/01/image1-1.png 1827w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image1-1-320x87.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image1-1-768x208.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image1-1-720x195.png 720w" sizes="(max-width: 1827px) 100vw, 1827px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/01/image1-1.png"/>T2】</a></p>
+<p class="translated">如果您设法发现了内存消耗的轻微增加，是的，我们从10到30 GB的内存消耗(平均12)转移到30到120 GB的内存消耗(平均100以上)。公平地说，消耗甚至会更高，但我们在这台特定的机器上只有128GB(绰绰有余，通常用作大页面缓存)，内存消耗的下降是当消耗我们宝贵内存的进程要么被我们强制重新加载，要么被愤怒的内核强制屠杀(这有点麻烦，因为它在这里和那里触发了许多警报)时发生的事件。</p>
+<p class="translated">总而言之，我们有一个问题。作为一家创业公司，我们被期望满足10x工程师的刻板印象，但这可能不是我们谈论的10x。</p>
+<h2 class="translated"><a id="investigating-excessive-memory-hoarding" class="anchor" href="#investigating-excessive-memory-hoarding" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>调查过度的记忆囤积</h2>
+<p class="translated">讽刺的是，我们没有忘记:我们推动系统升级，现在我们要为服务器占用这么多内存负责。嗯，只有一件事要做:我们需要了解为什么升级会有如此巨大的影响。</p>
+<h3 class="translated"><a id="the-leak" class="anchor" href="#the-leak" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>泄密</h3>
+<p class="translated">我想到的第一个想法是怀疑某种内存泄漏。但是有一个问题:只有最近的Linux版本才有。会不会是以前系统上没有满足的条件触发的内存泄漏？</p>
+<p class="translated">为了验证这一假设，我们通常利用来自Brendan Gregg的极其强大的Linux <a href="https://www.brendangregg.com/perf.html">性能分析器</a>。每个对性能感兴趣的开发者都应该知道这个工具，我们强烈推荐观看<a href="https://www.youtube.com/watch?v=nhxq6jLGc_w">大师亲自做的一些演示</a>。</p>
+<p class="translated">一种典型的方法是连接正在运行的守护进程，并不时地寻找未释放的内存(10分钟后):</p>
+<pre class=""><code>sudo memleak-bpfcc -a --older 600000 --top 10 -p 2095371 120</code></pre>
+<p class="translated">不幸的是，我们没有看到任何泄漏——即使在此期间该进程吃掉了我们宝贵的RAM。</p>
+<p class="translated">所以这不是泄露，而是我们失去了记忆。下一个逻辑疑点是底层内存分配器。</p>
+<h3 class="translated"><a id="the-greedy-allocator" class="anchor" href="#the-greedy-allocator" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>贪婪的分配器</h3>
+<p class="translated">好吧，你可能会感到困惑，因为我们这里有几个分配器。作为一名开发人员，您可能听说过<code> malloc</code>，它通常位于C库(glibc)中。我们的进程使用的是默认的glibc分配器，它可以被看作是任何大小的内存分配的零售商。但是glibc本身不能分配内存，只有内核可以。内核是批发商，只卖大批量。所以分配器通常会从内核中获得大块的内存，并按需分配。当释放内存时，它会合并空闲区域，并且通常会通过调用内核来释放大块内存。</p>
+<p class="translated">但是配置者可以改变他们的策略。您可能有几个零售商，以适应在一个流程中运行的多个线程。并且每个零售商可以决定保留一些释放的大内存块供以后重用。零售商可能会变得贪婪，可能会拒绝释放他们的库存。</p>
+<p class="translated">为了验证这个新的假设，我们决定直接使用glibc分配器，调用它非常特殊的“垃圾收集器”:</p>
+<pre><code>MALLOC_TRIM(3)             Linux Programmer's Manual            MALLOC_TRIM(3)&#13;
+&#13;
+NAME&#13;
+       malloc_trim - release free memory from the top of the heap&#13;
+&#13;
+SYNOPSIS&#13;
+       #include &lt;malloc.h&gt;&#13;
+       &#13;
+       int malloc_trim(size_t pad);&#13;
+&#13;
+DESCRIPTION&#13;
+       The  malloc_trim()  function attempts to release free memory at the top&#13;
+       of the heap (by calling sbrk(2) with a suitable argument).&#13;
+       The pad argument specifies the amount of free space to leave  untrimmed&#13;
+       at the top of the heap.  If this argument is 0, only the minimum amount&#13;
+       of memory is maintained at the top of  the  heap  (i.e.,  one  page  or&#13;
+       less).   A nonzero argument can be used to maintain some trailing space&#13;
+       at the top of the heap in order to allow future allocations to be  made&#13;
+       without having to extend the heap with sbrk(2).&#13;
+&#13;
+RETURN VALUE &#13;
+       The  malloc_trim()  function  returns 1 if memory was actually released&#13;
+</code></pre>
+<p class="translated">一个简单而笨拙的解决方案是用调试器(gdb -p pid)连接到进程，并手动调用malloc_trim(0)。结果不言自明:</p>
+<p class="translated"><a href="https://blog-api.algolia.com/wp-content/uploads/2021/01/image5-2.png"> <img loading="lazy" class="aligncenter size-full wp-image-11283" src="../Images/77f7845fa226a9a265e30cd8e3d198ad.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/01/image5-2.png 1610w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image5-2-320x68.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image5-2-768x164.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image5-2-720x154.png 720w" sizes="(max-width: 1610px) 100vw, 1610px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/01/image5-2.png"/> </a></p>
+<p class="translated">橙色是升级后的服务器内存消耗，另外两条曲线是以前的操作系统版本。09:06左右的突然下跌是对<code> malloc_trim function</code>的叫牌。</p>
+<p class="translated">为了解决这个问题，我们还使用了另一个非常有用的特定于glibc的函数，转储分配器的一些状态:</p>
+<pre><code>MALLOC_INFO(3)             Linux Programmer's Manual            MALLOC_INFO(3)&#13;
+&#13;
+NAME&#13;
+       malloc_info - export malloc state to a stream&#13;
+&#13;
+SYNOPSIS&#13;
+       #include &#13;
+&#13;
+       int malloc_info(int options, FILE *stream);&#13;
+&#13;
+DESCRIPTION&#13;
+       The  malloc_info()  function  exports  an XML string that describes the&#13;
+       current state of the memory-allocation implementation  in  the  caller.&#13;
+       The  string  is printed on the file stream stream.  The exported string&#13;
+       includes information about all arenas (see malloc(3)).&#13;
+       As currently implemented, options must be zero.&#13;
+&#13;
+RETURN VALUE&#13;
+       On success, malloc_info() returns 0; on  error,  it  returns  -1,  with&#13;
+       errno set to indicate the cause.</code></pre>
+<p class="translated"><span>是的，这里再次附上并直接使用gdb: </span></p>
+<pre><code>(gdb) p fopen("/tmp/debug.xml", "wb")&#13;
+$1 = (_IO_FILE *) 0x55ad8b5544c0&#13;
+(gdb) p malloc_info(0, $1)&#13;
+$2 = 0&#13;
+(gdb) p fclose($1)&#13;
+$3 = 0&#13;
+(gdb)&#13;
+</code></pre>
+<p class="translated">XML转储确实提供了有趣的信息。有将近一百个堆(“经销商”)，其中一些显示了令人烦恼的统计数据:</p>
+<pre><code><span>&lt;heap </span><span>nr</span><span>="87"&gt;</span>&#13;
+<span>  &lt;sizes&gt;</span>&#13;
+<span>    ... ( skipped not so interesting part )</span>&#13;
+<span>    </span><span>&lt;size </span><span>from</span><span>="542081" </span><span>to</span><span>="67108801" </span><span>total</span><span>="15462549676" </span><span>count</span><span>="444"/&gt;</span>&#13;
+<span>    </span><span>&lt;unsorted </span><span>from</span><span>="113" </span><span>to</span><span>="113" </span><span>total</span><span>="113" </span><span>count</span><span>="1"/&gt;</span>&#13;
+<span>  &lt;/sizes&gt;</span>&#13;
+<span>  &lt;total </span><span>type</span><span>="fast" </span><span>count</span><span>="0" </span><span>size</span><span>="0"/&gt;</span>&#13;
+<span>  &lt;total </span><span>type</span><span>="rest" </span><span>count</span><span>="901" </span><span>size</span><span>="15518065028"/&gt;</span>&#13;
+<span>  &lt;system </span><span>type</span><span>="current" </span><span>size</span><span>="15828295680"/&gt;</span>&#13;
+<span>  &lt;system </span><span>type</span><span>="max" </span><span>size</span><span>="16474275840"/&gt;</span>&#13;
+<span>  &lt;aspace </span><span>type</span><span>="total" </span><span>size</span><span>="15828295680"/&gt;</span>&#13;
+<span>  &lt;aspace </span><span>type</span><span>="mprotect" </span><span>size</span><span>="15828295680"/&gt;</span>&#13;
+<span>  &lt;aspace </span><span>type</span><span>="subheaps" </span><span>size</span><span>="241"/&gt;</span>&#13;
+<span>&lt;/heap&gt;</span>&#13;
+</code></pre>
+<p class="translated">在浏览了glibc的源代码之后,“rest”部分似乎是自由块:</p>
+<pre><code>fprintf (fp,&#13;
+"&lt;total type=\"fast\" count=\"%zu\" size=\"%zu\"/&gt;\n"&#13;
+"&lt;total type=\"rest\" count=\"%zu\" size=\"%zu\"/&gt;\n"&#13;
+"&lt;total type=\"mmap\" count=\"%d\" size=\"%zu\"/&gt;\n"&#13;
+"&lt;system type=\"current\" size=\"%zu\"/&gt;\n"&#13;
+"&lt;system type=\"max\" size=\"%zu\"/&gt;\n"&#13;
+"&lt;aspace type=\"total\" size=\"%zu\"/&gt;\n"&#13;
+"&lt;aspace type=\"mprotect\" size=\"%zu\"/&gt;\n"&#13;
+"&lt;/malloc&gt;\n",&#13;
+total_nfastblocks, total_fastavail, total_nblocks, total_avail,&#13;
+mp_.n_mmaps, mp_.mmapped_mem,&#13;
+total_system, total_max_system,&#13;
+total_aspace, total_aspace_mprotect);&#13;
+</code></pre>
+<p class="translated">并且占用了901个块，超过15GB的内存。总体统计数据与我们看到的一致:</p>
+<pre><code>&lt;total type="fast" count="551" size="35024"/&gt;&#13;
+&lt;total type="rest" count="511290" size="137157559274"/&gt;&#13;
+&lt;total type="mmap" count="12" size="963153920"/&gt;&#13;
+&lt;system type="current" size="139098812416"/&gt;&#13;
+&lt;system type="max" size="197709660160"/&gt;&#13;
+&lt;aspace type="total" size="139098812416"/&gt;&#13;
+&lt;aspace type="mprotect" size="140098441216"/&gt;&#13;
+</code></pre>
+<p class="translated">是的，这是137GB未被系统回收的空闲内存。说说贪心吧！</p>
+<h2 class="translated"><a id="tuning-the-internals-with-glibc" class="anchor" href="#tuning-the-internals-with-glibc" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>用glibc调优内部</h2>
+<p class="translated">在这个阶段，我们<a href="https://sourceware.org/pipermail/libc-help/2020-September/005457.html">联系了</a>glibc邮件列表来提出这个问题，如果这被证实是glibc分配器的问题，我们将很乐意提供任何信息(在撰写本文时，我们还没有了解到任何新的情况)。</p>
+<p class="translated">与此同时，我们尝试使用<code> GLIBC_TUNABLES</code>特性(通常是<code>glibc.malloc.trim_threshold</code>和<code> glibc.malloc.mmap_threshold</code>)来调整内部组件，但没有成功。我们还试图禁用最新的特性，比如线程缓存(<code>glibc.malloc.tcache_count=0</code>)，但显然每线程分配缓存是针对小块(最多几百字节)的。</p>
+<p class="translated">从这里，我们设想了几个前进的选择。</p>
+<h3 class="translated"><a id="the-temporary-fix-%e2%80%93-the-garbage-collector" class="anchor" href="#the-temporary-fix-%e2%80%93-the-garbage-collector" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>【临时】修复-垃圾收集器</h3>
+<p class="translated">定期调用<code> malloc_trim </code>是一种相当肮脏的临时手段，但看起来相当有效，每次运行有时需要几秒到5分钟:</p>
+<pre><code>{&#13;
+  "periodMs": 300000,&#13;
+  "elapsedMs": 1973,&#13;
+  "message": "Purged memory successfully",&#13;
+  "rss.before": 57545375744,&#13;
+  "rss.after": 20190265344,&#13;
+  "rss.diff": -37355110400&#13;
+}&#13;
+</code></pre>
+<p class="translated">值得注意的是，GC时间似乎与累积的空闲空间成线性关系。将时间段除以10还会将回收的内存和花费在GC中的时间除以相同的因子:</p>
+<pre><code>{&#13;
+  "periodMs": 30000,&#13;
+  "elapsedMs": 193,&#13;
+  "message": "Purged memory successfully",&#13;
+  "rss.before": 19379798016,&#13;
+  "rss.after": 15618609152,&#13;
+  "rss.diff": -3761188864,&#13;
+}</code></pre>
+<p class="translated">调用GC对这个图的影响相当明显:<br/> <a href="https://blog-api.algolia.com/wp-content/uploads/2021/01/image6-4.png"> <img loading="lazy" class="aligncenter size-full wp-image-11296" src="../Images/20d325f28c5156b367a8bcebf96fb96c.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/01/image6-4.png 1827w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image6-4-320x90.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image6-4-768x215.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image6-4-720x201.png 720w" sizes="(max-width: 1827px) 100vw, 1827px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/01/image6-4.png"/> </a></p>
+<p class="translated">绿色表示新的glibc，蓝色表示以前的版本。橙色曲线是带有常规GC的forcer glibc。</p>
+<p class="translated">嵌入新glibc的服务器缓慢漂移，占用越来越多的空间(这里几乎是60GB)。</p>
+<p class="translated">下午4:00，GC在新的(绿色)glibc代码中启动，您会看到内存消耗统计数据很低。</p>
+<p class="translated">下面的绿色曲线展示了将GC周期从5分钟更改为30秒的影响:</p>
+<p class="translated"><a href="https://blog-api.algolia.com/wp-content/uploads/2021/01/image3-3.png"> <img loading="lazy" class="aligncenter size-full wp-image-11294" src="../Images/6cc58975ed44b9a64dceee106965adba.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/01/image3-3.png 1499w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image3-3-320x79.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image3-3-768x191.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image3-3-720x179.png 720w" sizes="(max-width: 1499px) 100vw, 1499px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/01/image3-3.png"/> </a></p>
+<p class="translated">最后，我们还成功测试了free的一个覆盖，它在释放一定量的内存时触发trim操作:</p>
+<pre><code>#include &#13;
+#include &#13;
+&#13;
+#if (!__has_feature(address_sanitizer))&#13;
+&#13;
+static std::atomic freeSize = 0;&#13;
+static std::size_t freeSizeThreshold = 1_Gi;&#13;
+&#13;
+extern "C"&#13;
+{&#13;
+    // Glibc "free" function&#13;
+    extern void __libc_free(void* ptr);&#13;
+&#13;
+    void free(void* ptr)&#13;
+    {&#13;
+        // If feature is enabled&#13;
+        if (freeSizeThreshold != 0) {&#13;
+            // Free block size&#13;
+            const size_t size = malloc_usable_size(ptr);&#13;
+&#13;
+            // Increment freeSize and get the result&#13;
+            const size_t totalSize = freeSize += size;&#13;
+&#13;
+            // Trigger compact&#13;
+            if (totalSize &gt;= freeSizeThreshold) {&#13;
+                // Reset now before trim.&#13;
+                freeSize = 0;&#13;
+                &#13;
+                // Trim&#13;
+                malloc_trim(0);&#13;
+            }&#13;
+        }&#13;
+&#13;
+        // Free pointer&#13;
+        __libc_free(ptr);&#13;
+    }&#13;
+};&#13;
+#endif&#13;
+</code></pre>
+<p class="translated">所有这些测试都是在几个集群上执行的，以确认不同的工作负载。</p>
+<p class="translated">GC的成本是多少？我们在CPU使用率方面没有看到任何负面影响(特别是系统CPU使用率)，而且，看一下<code> malloc_trim implementation</code>，似乎每个区域都被单独锁定并逐一清理，而不是有一个“大锁”模型:</p>
+<pre><code>int&#13;
+__malloc_trim (size_t s)&#13;
+{&#13;
+  int result = 0;&#13;
+&#13;
+  if (__malloc_initialized &lt; 0) ptmalloc_init (); mstate ar_ptr = &amp;main_arena; do { __libc_lock_lock (ar_ptr-&gt;mutex);&#13;
+      result |= mtrim (ar_ptr, s);&#13;
+      __libc_lock_unlock (ar_ptr-&gt;mutex);&#13;
+&#13;
+      ar_ptr = ar_ptr-&gt;next;&#13;
+    }&#13;
+  while (ar_ptr != &amp;main_arena);&#13;
+&#13;
+  return result;&#13;
+}</code></pre>
+<h3 class="translated"><a id="dedicated-allocator" class="anchor" href="#dedicated-allocator" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>专用分配器</h3>
+<p class="translated">使用不同的分配器(可能包括<a href="https://jemalloc.net/"> jemalloc </a>或<a href="https://github.com/google/tcmalloc"> tcmalloc </a>)是另一种有趣的可能性。但是转移到一个完全不同的分配器代码有一些缺点。首先，它需要长时间的验证，在半生产和生产阶段。差异可能与我们通常拥有的非常具体的分配模式有关(我可以保证，我们有时真的会有奇怪的分配模式)。因为我们使用的是不太常见的C++库(来自llvm的<code>libc++</code>),将这种不太常见的情况与更不常见的分配器混合在一起可能会在生产中产生全新的模式。而所谓的<em>新</em>，意味着可能存在其他人之前没有发现的bug。</p>
+<h3 class="translated"><a id="investigating-the-bug" class="anchor" href="#investigating-the-bug" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>调查bug</h3>
+<p class="translated">潜在的缺陷一点也不明显。</p>
+<h4 class="translated">竞技场泄漏</h4>
+<p class="translated">2013年填补的一个错误，<a href="https://sourceware.org/bugzilla/show_bug.cgi?id=15321"> malloc/free无法在main_arena不连续时将内存归还给内核</a>，看起来有点像我们正在经历的问题，但这在我们的系统中并不是什么新问题，尽管在glibc 2.23中有<code> malloc_trim</code>回收内存，但我们当前问题的数量级完全是前所未有的。然而，这个错误仍然悬而未决，可能只影响到角落的情况。</p>
+<h4 class="translated">竞技场数量</h4>
+<p class="translated">竞技场的增加可能是另一种可能性。在相同的硬件和环境下，我们从2.23中的57个竞技场增长到2.31中的96个竞技场。虽然这是一个显著的增长，但这一数量级太大，不足以成为触发因素。Alex Reece在他的博客上建议glibc 中的<a href="https://codearcana.com/posts/2016/07/11/arena-leak-in-glibc.html">竞技场“泄漏”,通过<code> glibc.malloc.arena_max</code>可调参数将竞技场的数量减少到内核的数量。当您的进程没有比内核更多的线程时(在我们的例子中是这样)，这完全有意义，并且在理论上可以减轻浪费内存的问题。不幸的是，实际情况并非如此:将竞技场的数量从96个减少到12个仍然存在同样的问题:</a></p>
+<p class="translated"><a href="https://blog-api.algolia.com/wp-content/uploads/2021/01/image4-2.png"> <img loading="lazy" class="aligncenter size-full wp-image-11287" src="../Images/88ce3ade7e04059061dd5d78c20786f1.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/01/image4-2.png 1827w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image4-2-320x89.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image4-2-768x214.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image4-2-720x201.png 720w" sizes="(max-width: 1827px) 100vw, 1827px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/01/image4-2.png"/> </a></p>
+<p class="translated">甚至还原到1(也就是主<code> sbrk() </code>竞技场)，其实:</p>
+<p class="translated"><a href="https://blog-api.algolia.com/wp-content/uploads/2021/01/image2-3.png"> <img loading="lazy" class="aligncenter size-full wp-image-11292" src="../Images/a16808342c32ab6a018a3a8283b74fc1.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/01/image2-3.png 1827w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image2-3-320x89.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image2-3-768x214.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image2-3-720x201.png 720w" sizes="(max-width: 1827px) 100vw, 1827px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/01/image2-3.png"/> </a></p>
+<h4 class="translated">竞技场门槛</h4>
+<p class="translated">有趣的是，每个增长的竞技场过一会儿就停止增长，达到进程历史中分配的最大内存。自由但未发布的块可能很大(高达千兆字节)，这相当令人惊讶，因为这些块应该由mmap提供服务。</p>
+<h4 class="translated">待续</h4>
+<p class="translated">我们将继续尝试不同的场景，最好有一天能重现一个平凡的案例，帮助修复根本原因。与此同时，我们有一个变通方法(一种GC线程),它远非完美，但将允许我们继续前进。</p>
+<h2 class="translated"><a id="the-takeaway" class="anchor" href="#the-takeaway" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>外卖</h2>
+<p class="translated">升级操作系统和库具有潜在的影响，但这些影响常常被忽视。限制风险可以包括在一段时间内一个接一个地升级不同的组件(例如将内核或链接库升级到最新的组件)，每次升级的时间足够长，以检测回归(内存或CPU使用、行为变化、不稳定性……)。更有规律地升级也是有帮助的另一点(一次升级两个系统版本可能不是最安全的选择)。最后，执行滚动升级并仔细查看收集的指标集应该是健康的生产部署过程的一部分。我们当然已经学到了这些经验，并将在今后的流程中加以应用。</p>
+</div></div>    
+</body>
+</html>

@@ -1,0 +1,148 @@
+<html>
+<head>
+<title>How to build a JavaScript API client as a SaaS product | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">如何建立一个JavaScript API客户端作为SaaS产品</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/how-to-build-a-javascript-api-client-as-a-saas-product/#0001-01-01">https://www.algolia.com/blog/engineering/how-to-build-a-javascript-api-client-as-a-saas-product/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated"><span>一个基于产品的JavaScript API客户端应该能够在</span><span/><span>浏览器中运行，直接前端DOM访问，以及在</span> <span>节点环境</span> <span>中运行，访问后端服务器和服务。</span></p>
+<p class="translated"><span>此外，基于产品的API客户端应该提供对其所服务的应用程序的所有特性的详尽且简单的访问。并且它应该与每个新特性保持同步。</span></p>
+<p class="translated"><span>最后，API客户端应该通过添加以下功能为应用程序增加额外的价值:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>重试逻辑，避开网络或任何其他瞬时故障或超时</span></li>
+<li aria-level="1" class="translated"><span>速率限制和节流策略，以降低服务器负载和使用成本</span></li>
+<li aria-level="1" class="translated"><span>批处理，API执行一组动作来完成一个普通任务</span></li>
+<li aria-level="1" class="translated"><span>和其他<em>助手</em>功能</span></li>
+<li aria-level="1" class="translated">底层Rest API的友好视图</li>
+</ul>
+<h2 class="translated"><a id="what-is-a-product-based-api-client" class="anchor" href="#what-is-a-product-based-api-client" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>什么是<i>基于产品的</i> API客户端？</span></h2>
+<p class="translated"><span>一个API(应用编程接口)不仅仅是一个包装器；这是一个独立的轻量级应用程序，使开发人员能够与全功能软件平台进行交互。</span></p>
+<p class="translated"><span> A </span> <i> <span>基于产品的</span> </i> <span> API是一个公司作为产品销售的API。谷歌卖谷歌地图API，Stripe卖金融API，我们卖搜索API。</span></p>
+<p class="translated"><span>基于产品的API </span> <i> <span>客户端</span> </i> <span>是一种API，有不同的编程语言、框架和JavaScript风格。我们的客户端位于不同的REST API端点之上。</span></p>
+<p class="translated"><span>通过以开发者自己的语言提供API客户端，他们获得了以下好处:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>更快地实施应用程序的基本和高级功能</span></li>
+<li aria-level="1" class="translated"><span>更简单地集成到他们自己的代码库中</span></li>
+<li aria-level="1" class="translated"><span>已经为他们编写了大量代码，包括重试、节流和批处理</span></li>
+</ul>
+<p class="translated">最好的API设计也试图限制实例化、使用或参数化API方法所需的样板代码的数量。</p>
+<p class="translated"><span>我们还可以举出一些基于产品的API客户端的其他定义特征:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>小码尺寸</span></li>
+<li aria-level="1" class="translated"><span>低依赖性或无依赖性</span></li>
+<li aria-level="1" class="translated"><span>智能参数灵活定制</span></li>
+<li aria-level="1" class="translated"><span>在请求和响应的命名和使用上的直观DX(相对于<span data-action="click-&gt;dropdown#toggle show.dropdown-&gt;editor#highlightActiveTerm hide.dropdown-&gt;editor#clearActiveTerm" data-dropdown-target-param="#dropdown_term_228320433" data-dropdown-placement-param="top">Rest</span><span data-action="click-&gt;dropdown#toggle show.dropdown-&gt;editor#highlightActiveTerm hide.dropdown-&gt;editor#clearActiveTerm" data-dropdown-target-param="#dropdown_term_228320432" data-dropdown-placement-param="top"><span data-action="click-&gt;dropdown#toggle show.dropdown-&gt;editor#highlightActiveTerm hide.dropdown-&gt;editor#clearActiveTerm" data-dropdown-target-param="#dropdown_term_228320433" data-dropdown-placement-param="top">API</span></span>)</span>的改进)</li>
+<li aria-level="1" class="translated">完整的API文档和教程</li>
+<li aria-level="1" class="translated"><span>不间断版本控制</span></li>
+<li aria-level="1" class="translated">使用API密钥或令牌进行身份验证</li>
+<li aria-level="1" class="translated">用JSON实现简单通用的数据交换</li>
+<li aria-level="1" class="translated"><span>跟上底层编程语言和技术的变化和最佳实践</span></li>
+</ul>
+<h2 class="translated"><a id="how-to-improve-an-api-product-from-version-to-version" class="anchor" href="#how-to-improve-an-api-product-from-version-to-version" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>如何对一个API产品进行版本间的改进</span></h2>
+<p class="translated"><span>首先说一下流程:我们有超过10，000个客户在使用我们的API客户端。有了这种用法，我们就可以根据客户支持单、聊天和日志中的使用统计数据来微调我们的API。</span></p>
+<p class="translated"><span>然而，事实的更大来源是我们自己的工程师。我们的API不仅仅被我们的客户使用。我们的仪表板使用我们的JavaScript、PHP、Ruby和其他API客户端；我们有实现API客户端的内部用例；我们面向客户的技术支持团队使用我们的API客户端创建演示、原型和解决方案。通过所有的API测试和内部使用，我们直接了解了API客户的痛点和积极方面。</span></p>
+<p class="translated"><span>有了这些反馈，每个版本都包括:</span></p>
+<ul>
+<li aria-level="1" class="translated"><b>重构</b> <span>接口和背后的代码(不中断)以跟上底层技术不断变化的标准和演进。例如，我们最新版本的JavaScript客户端支持ES6和TypeScript。</span></li>
+<li aria-level="1" class="translated"><b>改进DX </b> <span>面向各种开发人员——有经验的、初学者、领域专家。</span></li>
+<li aria-level="1" class="translated"><b>瞄准更多用例</b> <span>。新的或现有的方法来更好地解决某些用例，有时甚至采用行业术语。</span></li>
+<li aria-level="1" class="translated"><b>生成跨所有API语言的通用接口</b> <span>。许多客户在不同的语言之间切换。拥有一个通用的界面对此有所帮助。使用<span data-action="click-&gt;dropdown#toggle show.dropdown-&gt;editor#highlightActiveTerm hide.dropdown-&gt;editor#clearActiveTerm" data-dropdown-target-param="#dropdown_term_228320436" data-dropdown-placement-param="top"> JSON </span>也有帮助。</span></li>
+</ul>
+<h2 class="translated"><a id="some-upgrades-we%e2%80%99ve-made-to-our-javascript-api-client" class="anchor" href="#some-upgrades-we%e2%80%99ve-made-to-our-javascript-api-client" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>我们对JavaScript API客户端进行了一些升级</span></h2>
+<p class="translated">对于像我们这样的SaaS公司来说，JavaScript API客户端至关重要，因为它能够直接从我们的云服务器请求服务，而不需要客户通过他们自己的后端服务器。其中，客户端API请求改善了新API的响应时间，并简化了前端的前端代码。由于这些好处，<a href="https://www.algolia.com/doc/api-client/getting-started/install/javascript/?client=javascript">我们的JavaScript API </a>是我们使用最多的客户端。</p>
+<p class="translated"><span>考虑到这一点，JavaScript APIs必须管理客户端应用程序开发的挑战，以及JavaScript语言的特殊性及其风格，如React、Vue和Angular。</span></p>
+<p class="translated">这是我们最近做的一些改进</p>
+<h3 class="translated"><a id="support-for-both-require-and-import-and-default-and-lite-versions" class="anchor" href="#support-for-both-require-and-import-and-default-and-lite-versions" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>同时支持require和import，以及default和lite版本</span></h3>
+<pre class="lang:javascript decode:true">// For the default version&#13;
+const algoliasearch = require('algoliasearch');&#13;
+ &#13;
+// For the default version&#13;
+import algoliasearch from 'algoliasearch';&#13;
+ &#13;
+// For the search only version&#13;
+import algoliasearch from 'algoliasearch/lite';&#13;
+</pre>
+<h3 class="translated"><a id="parameterized-instantiation" class="anchor" href="#parameterized-instantiation" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>参数化实例化</span></h3>
+<p class="translated"><span>我们从一个简单的实例化开始——客户端应用程序id和API键:</span></p>
+<pre class="lang:javascript decode:true">const algoliasearch = algoliasearch('YourApplicationID', 'YourAdminAPIKey');&#13;
+</pre>
+<p class="translated"><span>然后我们添加了第三个参数，允许开发者定制一些额外的特性:</span></p>
+<pre class="lang:javascript decode:true">const algoliasearch = algoliasearch(&#13;
+   'YourApplicationID',&#13;
+   'YourSearchOnlyAPIKey',&#13;
+{&#13;
+   timeouts: {&#13;
+       connect: 1,&#13;
+       read: 2,&#13;
+       write: 30,&#13;
+   },&#13;
+   requester: createBrowserXhrRequester(),&#13;
+   logger: createConsoleLogger(LogLevelEnum.Error),&#13;
+   responsesCache: createInMemoryCache(),&#13;
+   requestsCache: createInMemoryCache({ serializable: false }),&#13;
+   hostsCache: createFallbackableCache({&#13;
+       caches: [&#13;
+           createBrowserLocalStorageCache({ key: `${version}-${appId}` }),&#13;
+           createInMemoryCache(),&#13;
+       ],&#13;
+   }),&#13;
+});&#13;
+</pre>
+<p class="translated"><span>可以看到，第三个参数允许开发者定义:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>唯一超时</span></li>
+<li aria-level="1" class="translated"><span>请求者的行为</span></li>
+<li aria-level="1" class="translated"><span>定制节点请求或浏览器环境</span></li>
+<li aria-level="1" class="translated"><span>日志回调</span><ul>
+<li aria-level="2" class="translated"><span>日志记录使我们能够跟踪客户端的生命周期，记录并分析API活动。</span></li>
+<li aria-level="2" class="translated">记录API活动有助于我们改进API在未来版本中的使用。它还使我们能够通过从成本中去除某些常见用途来降低定价。</li>
+<li aria-level="2" class="translated">此外，通过允许开发人员向我们发送他们自己的日志记录方法，我们可以存储他们认为重要的信息，从而提高我们自己日志的质量。</li>
+</ul>
+</li>
+<li aria-level="1" class="translated"><span>响应缓存</span><ul>
+<li aria-level="2" class="translated">例如，开发人员可以管理他们自己的节流。</li>
+<li aria-level="2" class="translated">他们也可以禁用我们的响应缓存。</li>
+<li aria-level="2" class="translated">他们可以管理本地存储，即使在浏览器刷新后也能保持搜索状态。</li>
+</ul>
+</li>
+<li aria-level="1" class="translated"><span>请求缓存</span><ul>
+<li aria-level="2" class="translated"><span>允许承诺共享，例如。</span></li>
+</ul>
+</li>
+</ul>
+<h3 class="translated"><a id="reduced-size-of-the-javascript" class="anchor" href="#reduced-size-of-the-javascript" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>缩小了JavaScript的大小</span></h3>
+<p class="translated"><span>使客户端树可摇动:</span></p>
+<pre class="lang:javascript decode:true">// Tree shakable ( 1 kb, dead code elimination )&#13;
+// list the methods you use and don’t include the code of any other method  &#13;
+const client = createSearchClient({&#13;
+   // ..&#13;
+   methods: { search }&#13;
+}); &#13;
+</pre>
+<h3 class="translated"><a id="customized-requests%c2%a0" class="anchor" href="#customized-requests%c2%a0" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>定制请求</span></h3>
+<p class="translated"><span>专家有时需要一个非固执己见的、开放的请求来处理意想不到的用例。例如，开发人员可以传递读/写请求来覆盖API中没有的内容:</span></p>
+<pre class="lang:javascript decode:true">client.transporter.read ({&#13;
+   path: '',&#13;
+   verb: 'GET'&#13;
+});&#13;
+</pre>
+<p class="translated">关于日志记录的注意事项:当我们记录这些定制的请求时，我们可以利用这些信息在将来创建新的方法。</p>
+<h3 class="translated"><a id="reducing-dependencies-to-zero" class="anchor" href="#reducing-dependencies-to-zero" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>将依赖性减少到零</span></h3>
+<p class="translated">只要遵循JavaScript标准并使用Typescript，就可以实现零依赖。</p>
+<h3 class="translated"><a id="batching-common-multi-tasked-operations" class="anchor" href="#batching-common-multi-tasked-operations" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>配料常见，多任务操作</span></h3>
+<p class="translated">代替单一的<code>Save()</code>方法，我们增加了更多健壮的方法，如<code>replaceAllObjects()</code>、<code>reindex()</code>、<code>copyIndex()</code>。这有助于确保此类数据敏感方法的最佳实践。此外，我们已经编写了管理重试和零停机逻辑的所有代码。</p>
+<h3 class="translated"><a id="typescript-support" class="anchor" href="#typescript-support" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>打字支持</span></h3>
+<p class="translated"><img loading="lazy" class="alignnone wp-image-14497" src="../Images/d37145b2f509dd554ac38c9d32778a6c.png" alt="javascript typescript" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/04/typescript-320x114.jpg 320w, https://blog-api.algolia.com/wp-content/uploads/2022/04/typescript-720x257.jpg 720w, https://blog-api.algolia.com/wp-content/uploads/2022/04/typescript-768x274.jpg 768w, https://blog-api.algolia.com/wp-content/uploads/2022/04/typescript.jpg 1114w" sizes="(max-width: 574px) 100vw, 574px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/04/typescript-320x114.jpg"/></p>
+<h2 class="translated"><a id="managing-the-release-schedule" class="anchor" href="#managing-the-release-schedule" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>管理发布日程</span></h2>
+<p class="translated"><span>最后但同样重要的是，基于产品的API客户端必须遵循测试和发布实践的最佳策略。我们将把测试留给另一个博客，但这里是我们发布周期使用的总体策略:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>为内部用例、应用和演示发布测试版</span></li>
+<li aria-level="1" class="translated"><span>与文档团队合作，标准化并记录DX </span></li>
+<li aria-level="1" class="translated"><span>帮助升级依赖我们API客户端的产品</span></li>
+<li aria-level="1" class="translated"><span>向少数客户发布最终测试版</span></li>
+<li aria-level="1" class="translated"><span>发布稳定版，同时发布更新文档</span></li>
+<li aria-level="1" class="translated"><span>通过支持电话、博客帖子和社交媒体促进和鼓励移民</span></li>
+</ul>
+</div></div>    
+</body>
+</html>

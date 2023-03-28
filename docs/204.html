@@ -1,0 +1,245 @@
+<html>
+<head>
+<title>Centralize state and data handling with React Hooks, create reusable components | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">使用React挂钩集中状态和数据处理，创建可重用组件</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/centralizing-state-and-data-handling-with-react-hooks-on-the-road-to-reusable-components/#0001-01-01">https://www.algolia.com/blog/engineering/centralizing-state-and-data-handling-with-react-hooks-on-the-road-to-reusable-components/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">应用程序开发通常是被动的。我们看到了需求，我们会尽快提供解决方案。在这个快速的软件周期中，我们收集需求，并在需求出现时立即实现它们。我说的不是又快又脏。我指的是使用最好的<a href="https://en.wikipedia.org/wiki/Rapid_application_development"> RAD </a>实践——快速应用程序开发。</p>
+<p class="translated">RAD循环如下:你实现伟大的核心特性(<a href="https://en.wikipedia.org/wiki/Minimum_viable_product"> MVP风格</a>)，依靠多年的经验来创建可维护的代码。但是随着时间的推移，会发生一些事情:需求发生变化，编写了更多的代码，代码库开始违背您直觉上优秀但可能不完全健壮的架构。所以你开始重构。此外，您会发现技术在变化，提供了新的方法来使您的代码更简单、更清晰、更强大。</p>
+<p class="translated"><strong>进入游戏规则</strong> <a href="https://reactjs.org/docs/hooks-intro.html"> <strong>反应钩子</strong> </a>。而且，一个快速增长的业务需要你用大量的新特性重写你的应用程序。</p>
+<p class="translated"><em>重写</em>——从头开始。生活提供了第二次机会。</p>
+<h2 class="translated"><a id="how-react-hooks-saved-our-administration-application" class="anchor" href="#how-react-hooks-saved-our-administration-application" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a>React Hooks如何保存我们的管理应用</h2>
+<p class="translated">应用程序开发也可以是主动(被动)的。我们的管理应用程序是数据密集型的。以前，许多独立的(和竞争的)组件独立地管理它们的数据——连接、格式化、显示、更新等等..</p>
+<h3 class="translated"><a id="the-requirements-of-an-admin-application" class="anchor" href="#the-requirements-of-an-admin-application" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>一个Admin应用程序的要求</h3>
+<p class="translated">管理应用程序是集中数据处理的理想选择。管理员需要按原样查看数据，因此屏幕视图通常与底层数据的结构相匹配。因此，虽然我们面向客户端的仪表板为业务用户提供了功能视图，但管理员需要以一致和直观的方式查看用户或客户端订阅信息。</p>
+<p class="translated">我们需要的是一个更具可扩展性的解决方案。由于我们从多个来源提取数据——所有这些都可以通过一个具有多个端点的API来访问——我们希望集中数据处理的常见方面。这不仅给我们带来了直接的好处(更好的测试、缓存、同步、标准输入)，还促进和简化了未来的数据集成。</p>
+<h3 class="translated"><a id="a-customized-hook" class="anchor" href="#a-customized-hook" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>定制挂钩</h3>
+<p class="translated">我们实现了一个名为<code>useData</code>的定制React钩子，它管理并因此集中了所有数据检索API调用、数据交换、类型检查、缓存和其他此类基于数据的功能。单单缓存就极大地提高了面向用户的速度。</p>
+<p class="translated">同样重要的是，速度和集中化使我们的前端开发人员能够在界面的不同部分重用他们的组件和UI元素。这种可重用性创建了功能丰富、用户友好的UI/UX，前端开发人员无需在每个组件中维护唯一的状态信息。最后，在幕后，数据可重用性使得驱动前端功能的模型一致。</p>
+<p class="translated">我们将在以后的文章中讨论React钩子的前端好处；这篇文章是关于我们如何用一个可靠的和可伸缩的数据处理层来服务前端。</p>
+<h3 class="translated"><a id="how-our-usedata-hook-centralized-the-process" class="anchor" href="#how-our-usedata-hook-centralized-the-process" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>我们的<code>useData</code>钩子如何集中这个过程</h3>
+<p class="translated">我们使用不同的数据源，有些比其他的更复杂，但是都遵循相同的JsonAPI规范。此外，他们都有相同的需求，即:</p>
+<ul>
+<li class="translated">检索数据</li>
+<li class="translated">反序列化并格式化它</li>
+<li class="translated">验证其格式</li>
+<li class="translated">执行错误处理(数据质量、网络)</li>
+<li class="translated">与应用刷新和其他数据/工作流同步</li>
+<li class="translated">缓存数据并保持其最新</li>
+</ul>
+<p class="translated">说够了，下面是我们的<code>useData</code>钩子代码:</p>
+<pre class="lang:js decode:true ">import { useCallback } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
+import { ZodObject, infer as Infer } from 'zod';
+import { useApi } from 'hooks';
+import { metaBuilder, MetaInstance } from 'models';
+
+interface Options {
+  forceCallApi?: boolean;
+  preventGetData?: boolean;
+}
+
+interface ApiData&lt;T&gt; {
+  data?: T;
+  meta?: MetaInstance;
+}
+
+export interface DataResult&lt;Output&gt; {
+  data?: Output;
+  meta: any;
+  loading: boolean;
+  errors: Error[];
+  refresh: () =&gt; Promise&lt;void&gt;;
+}
+
+export const useData = &lt;Model extends ZodObject&lt;any&gt;, ModelType = Infer&lt;Model&gt;, Output extends ModelType = ModelType&gt;(
+  builder: (data: ModelType) =&gt; Output,
+  url: string,
+  { forceCallApi = false, preventGetData = false }: Options = {}
+): DataResult&lt;Output&gt; =&gt; {
+  const queryClient = useQueryClient();
+
+  const { getData } = useApi(url);
+
+  const getDataFromApi = useCallback(async (): Promise&lt;ApiData&lt;Output&gt;&gt; =&gt; {
+    // here we get the data (and meta) using getData, and handle errors and various states
+    return { data: builder(apiData), meta: metaBuilder(apiMeta) }
+  }, [getData, builder, queryClient, url, forceCallApi]);
+
+  const { data: getDataResult, isLoading, error } = useQuery&lt;ApiData&lt;Output&gt;, Error&gt;(
+    [url, forceCallApi],
+    getDataFromApi,
+    { enabled: !preventGetData, cacheTime: forceCallApi ? 0 : Infinity }
+  );
+
+  const refresh = useCallback(async () =&gt; {
+    await queryClient.refetchQueries([url, forceCallApi], {
+      exact: true,
+    });
+  }, [queryClient, url, forceCallApi]);
+
+  return {
+    data: getDataResult?.data,
+    meta: getDataResult?.meta,
+    loading: isLoading,
+    errors: ([error]).filter((error) =&gt; error !== null) as Error[],
+    refresh,
+  };
+};
+</pre>
+<p class="translated">正如您所看到的，这个钩子接受三个参数，当这些参数组合在一起时，我们可以获得以下所有功能:</p>
+<ul>
+<li class="translated">一个“构建器”功能，用于转换和增强供我们的组件使用的数据</li>
+<li class="translated">检索数据的API端点的URL</li>
+<li class="translated">可选参数。例如，在调用API之前忽略缓存或等待一些其他数据准备好</li>
+</ul>
+<p class="translated">结果是我们的组件不再需要管理所有这些。我们已经抽象和封装了复杂性。</p>
+<p class="translated"><code>useData</code>钩子返回一些我们可以在组件中使用的值:</p>
+<ul>
+<li class="translated">一些状态:加载和错误(如果有)</li>
+<li class="translated">数据(如果有)</li>
+<li class="translated">元信息(如果有，例如分页信息)</li>
+<li class="translated">刷新函数(通过再次调用API来刷新数据)</li>
+</ul>
+<h2 class="translated"><a id="building-the-data" class="anchor" href="#building-the-data" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>建筑数据</h2>
+<p class="translated">让我们更深入地看看这段代码做什么以及我们如何使用它。</p>
+<h3 class="translated"><a id="schema-validation-with-zod" class="anchor" href="#schema-validation-with-zod" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>用Zod进行模式验证</h3>
+<p class="translated">得到数据是一回事。确保数据的结构或类型正确是另一个问题。复杂的数据类型需要像<a href="https://github.com/jquense/yup"> yup </a>或<a href="https://github.com/colinhacks/zod"> zod </a>这样的验证工具，它们强制执行有效和干净的方法，并提供工具和错误处理基于错误类型的运行时错误。我们的前端依赖于强类型数据集，因此验证阶段对我们来说至关重要。</p>
+<p class="translated">我们用<a href="https://github.com/colinhacks/zod"> zod </a>。Zod用于建立数据模型。例如，我们应用程序的模型可能是这样的:</p>
+<pre class="lang:js decode:true ">
+import { object, string, number } from 'zod';
+
+const Application = object({
+  applicationId: string(),
+  name: string(),
+  ownerEmail: string(),
+  planVersion: number(),
+  planName: string(),
+});
+</pre>
+<p class="translated">然后，为了构建我们的构建器函数，我们在zod模型上使用内部构建的通用助手。这个助手有两个参数:</p>
+<ul>
+<li class="translated">我们的数据模型(上面例子中的应用)</li>
+<li class="translated">用于丰富该模型的转换函数。</li>
+</ul>
+<p class="translated">在我们的例子中，变压器看起来像这样:</p>
+<pre class="lang:js decode:true ">
+import { infer as Infer } from 'zod';
+
+const transformer = (application: Infer&lt;typeof Application&gt;) =&gt; ({
+  ...application,
+  get plan() {
+    return `${application.planName} v${application.planVersion}`;
+  },
+});
+</pre>
+<p class="translated">丰富的另一个例子是如果一个模型有一个日期:我们通常希望它公开一个javascript日期而不是字符串日期。</p>
+<p class="translated">我们有两个版本的助手函数(一个用于对象，一个用于数组)。下面是第一个:</p>
+<pre class="lang:js decode:true ">
+import type { ZodType, TypeOf, infer as Infer } from 'zod';
+import { SentryClient } from 'utils/sentry';
+
+export const buildObjectModel = &lt;
+  Model extends ZodType&lt;any&gt;,
+  ModelType = Infer&lt;Model&gt;,
+  Output extends ModelType = ModelType
+&gt;(
+  model: Model,
+  transformer: (data: TypeOf&lt;Model&gt;) =&gt; Output
+): ((data: ModelType) =&gt; Output) =&gt; {
+  return (data: ModelType) =&gt; {
+    const validation = model.safeParse(data);
+    if (!validation.success) {
+      SentryClient.sendError(validation.error, { extra: { data } });
+      console.error('zod error:', validation.error, 'data object is:', data);
+      return transformer(data);
+    }
+    return transformer(validation.data);
+  };
+};
+</pre>
+<p class="translated">zod的类型化输出非常干净，看起来像我们自己编写的typescript类型，另外zod使用我们的模型解析JSON。为了安全起见，我们使用zod的<code>safeParse</code>方法，该方法允许我们在解析步骤出错的情况下“按原样”发送回JSON。我们的错误跟踪工具<a href="https://sentry.io/welcome/"> Sentry </a>也会收到一个错误。</p>
+<p class="translated">在我们的例子中，我们的构建函数看起来像这样:</p>
+<pre class="lang:js decode:true ">
+export const applicationBuilder = buildObjectModel(Application, transformer);
+// and for the record, here is how to get the type output by this builder:
+export type ApplicationModel = ReturnType&lt;typeof applicationBuilder&gt;;
+// which looks like this in your code editor:
+// type ApplicationModel = {
+//   plan: string;
+//   applicationId: string;
+//   name: string;
+//   ownerEmail: string;
+//   planVersion: number;
+//   planName: string;
+// }
+</pre>
+<h3 class="translated"><a id="calling-the-api" class="anchor" href="#calling-the-api" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>调用API</h3>
+<p class="translated">在内部，我们使用另一个定制钩子<code>useApi</code>(不到200行代码)来处理GET/POST/PATCH/DELETE。在这个钩子中，我们使用<a href="https://github.com/axios/axios"> axios </a>调用后端API并执行所有典型的<a href="https://en.wikipedia.org/wiki/Create,_read,_update_and_delete"> CRUD </a>功能。例如，在读取端，Axios将我们收到的数据进行反序列化，然后将它从JSON API规范转换为更经典的JSON，并从snake_case转换为camelCase。它还处理我们收到的任何元信息。</p>
+<p class="translated">此外，从流程的角度来看，它管理请求取消和调用API时的错误。</p>
+<h3 class="translated"><a id="caching-the-data" class="anchor" href="#caching-the-data" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>缓存数据</h3>
+<p class="translated">至此，我们可以总结一下:<code>useApi</code>钩子获取数据，然后通过构建器进行验证和丰富；并且使用<a href="https://github.com/tannerlinsley/react-query">反应查询</a>缓存结果数据。</p>
+<p class="translated">我们实现了react-query来缓存前端的数据，使用API端点URL作为缓存键。React-query使用上面提到的<code>useApi</code>钩子来获取、同步、更新和缓存远程数据，允许我们用非常小的代码库利用所有这些功能。</p>
+<p class="translated">在此基础上，我们要做的就是实现react-query的提供者。为此，我们构建了一个小的react组件:</p>
+<pre class="lang:js decode:true ">
+import { FC } from 'react';
+import { QueryClient, QueryClientProvider, QueryClientProviderProps } from 'react-query';
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      refetchInterval: false,
+      refetchIntervalInBackground: false,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      retry: false,
+    },
+  },
+});
+
+type IProps = Omit&lt;QueryClientProviderProps, 'client'&gt; &amp; {
+  client?: QueryClient;
+};
+
+export const GlobalContextProvider: FC&lt;IProps&gt; = ({
+  children,
+  client = queryClient,
+  ...props
+}) =&gt; (
+  &lt;QueryClientProvider {...props} client={client}&gt;
+    {children}
+  &lt;/QueryClientProvider&gt;
+);
+</pre>
+<p class="translated">最重要的是，它管理我们的缓存。我们有许多组件需要相同的数据，所以我们希望避免不必要的网络流量来检索相同的信息。性能始终是关键。限制执行不必要的网络调用的潜在错误也是如此。现在，有了缓存，如果一个组件请求数据，我们的缓存将存储该数据并将其提供给请求相同信息的其他组件。在后台，React-query当然会确保缓存中的数据保持最新。</p>
+<p class="translated">总而言之，这里有一个使用这个<code>useData</code>钩子和我们上面定义的应用程序模型构建的组件的例子:</p>
+<pre class="lang:js decode:true ">
+import { FC } from 'react';
+
+interface ApplicationProps {
+  applicationId: string;
+}
+
+export const ApplicationCard: FC&lt;ApplicationProps&gt; = ({ applicationId }) =&gt; {
+  const { loading, data: application, errors } = useData(applicationBuilder, `/applications/${applicationId}`);
+
+  return loading ? (
+    &lt;div&gt;loading...&lt;/div&gt;
+  ) : errors.length &gt; 0 ? (
+    &lt;div&gt;{errors.map(error =&gt; (&lt;div&gt;{error}&lt;/div&gt;))}&lt;/div&gt;
+  ) : (
+    &lt;div&gt;
+      &lt;div&gt;{application.applicationId}&lt;/div&gt;
+      &lt;div&gt;{application.ownerEmail}&lt;/div&gt;
+      &lt;div&gt;{application.name}&lt;/div&gt;
+      &lt;div&gt;{application.plan}&lt;/div&gt;
+    &lt;/div&gt;
+  );
+};
+</pre>
+<p class="translated">如你所见，我们的<code>useData</code>钩子让我们标准化加载和错误状态，鼓励我们编写处理这些状态的<strong>可重用组件</strong>。例如，我们有可重用的<code>StateCard</code>和<code>StateContainer</code>组件。有了现在容易获得的数据，我们就可以着手集成那些可重用的组件，并专注于构建一个出色的前端体验——干净、功能全面、可扩展。</p>
+</div></div>    
+</body>
+</html>

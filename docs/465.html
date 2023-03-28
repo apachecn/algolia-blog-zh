@@ -1,0 +1,106 @@
+<html>
+<head>
+<title>Redesigning Our Docs – Part 4 – Building a Scalable CSS Architecture - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">重新设计我们的文档——第4部分——构建可扩展的CSS架构——Algolia博客</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/redesigning-our-docs-part-4-building-a-scalable-css-architecture/#0001-01-01">https://www.algolia.com/blog/engineering/redesigning-our-docs-part-4-building-a-scalable-css-architecture/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><blockquote><p class="translated"><em>这是由七部分组成的<a href="https://www.algolia.com/blog/engineering/redesigning-our-docs-part-1-why/" target="_blank" rel="noopener noreferrer">系列博客</a>的第四篇文章，描述了我们对文档架构和内容的最新变更。我们在这里关注CSS架构和改进我们处理资产的方式。</em></p></blockquote>
+<p class="translated">当在一个文档网站上工作时，很容易只关注内容，而把其他的放在一边。对于Algolia docs来说尤其如此:多年来，它经历了一些戏剧性的变化。随着每一个新特性、API客户端和产品的出现，网站必须快速扩展和转型以满足新的需求。</p>
+<p class="translated">跟上Algolia的发展也意味着经历许多重新设计，通常是由许多不同的人进行的。它促成了<b>前端代码库变得越来越难以维护</b>。因此，当我们决定在2018年底重新设计网站时，我们认为这是一个认真审视我们CSS状态的好时机。在不破坏其他东西的情况下改变一些东西变得越来越困难。一个简单的变化可能会变成一个小时的保持副本更新和应对媒体询问。我们不再受控制，每一次编辑都像是在一堆创可贴上加了一个创可贴。</p>
+<p class="translated">因此，我们决定，我们的文档重新设计是一个绝佳的机会，让我们把石板擦干净，重新开始。毕竟，我们得到了一个全新的设计，所以重写我们的整个CSS代码库是有意义的，并且<b>定义一个明确而健壮的方法，可以跟上我们未来几年的发展</b>。</p>
+<h2 class="translated"><a id="pinpointing-pain-points" class="anchor" href="#pinpointing-pain-points" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>针对痛点</strong></h2>
+<p class="translated">众所周知，CSS很难扩展。它提供了强有力的工具，但是犯了错误是不容易原谅的。全球范围和特殊性是很好的例子:当有目的地掌握和使用时，它可以创造奇迹。当被动使用时，问题开始堆积，很难选择不去解决。</p>
+<p class="translated">在我们的CSS中，我们曾经有很多反应特异性。我们没有用它来控制，而是用它来解决问题。</p>
+<pre>main.content-container p:not(.report-link):not(.edit-link):not(.copy-link) {
+  margin-top: 17px;
+}
+
+main.content-container td p:not(.report-link):not(.edit-link):not(.copy-link):first-child {
+  margin-top: 0;
+}</pre>
+<p class="translated">上面的代码片段是一个典型的例子，说明了由于希望在全球范围内应用规则，然后寻找例外而引发的特殊性之争。这种具有许多后代的过度限定规则的问题是，它不仅脆弱且难以手动维护，而且在性能方面也会变得更加昂贵，因为浏览器需要更长的时间来匹配。</p>
+<p class="translated">编写反应式CSS的另一个潜在问题是你的代码库在不断增长。随着您添加看起来与现有组件略有不同的新组件，或者不断修补问题以修复早期的错误决策，资产变得越来越沉重。</p>
+<p class="translated">当我们审计我们的CSS时，结论是无可争议的；我们问题的原因是我们<b>没有可见的CSS架构</b>。确切地说，我们混合使用了几种CSS方法。这些年来，连续的贡献者已经散布了一些全球应用的风格，一些面向组件的CSS (OOCSS)，一些实用优先的CSS，以及大量的黑客攻击和覆盖。尽管所有的贡献者都有最好的意图，但不幸的是，没有明确的指导方针和指定的前端所有者，他们的贡献很快导致了混乱的CSS，重复和未使用的类，难以跟踪的副作用，以及每次我们添加新东西时都会增长的代码库。</p>
+<p class="translated">是时候建立一个合适的架构，执行惯例，并且<b>开始把CSS作为一等公民对待了</b>。</p>
+<h2 class="translated"><a id="a-composable-approach" class="anchor" href="#a-composable-approach" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>一种可组合的方法</strong></h2>
+<p class="translated">在评估了几种流行的方法(包括纯的、类似Bootstrap的OOCSS、BEM等)之后。)，我们决定使用<strong>实用优先的CSS </strong>，这是一种通过使用原子类来鼓励组合的方法，并允许您在必要时抽象成组件。我们将它集成在一个松散版本的<a href="https://www.xfive.co/blog/itcss-scalable-maintainable-css-architecture/" target="_blank" rel="noopener noreferrer"> ITCSS </a>架构中。</p>
+<p class="translated">在诱惑实用至上的事物中，我们喜欢它与品牌指导方针的完美结合。“实用优先”旨在直接映射到风格规则上，而不是让您在没有任何框架的情况下徒手编写规则集。</p>
+<h3 class="translated"><a id="a-strong-foundation" class="anchor" href="#a-strong-foundation" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>基础雄厚</strong></h3>
+<p class="translated">我们没有手动维护原子样式的原始样式表，而是决定使用<a href="https://github.com/tailwindcss/tailwindcss" target="_blank" rel="noopener noreferrer"> Tailwind CSS </a>，这是一个实用程序优先的框架，它从JavaScript清单文件生成CSS类。Tailwind有<a href="https://tailwindcss.com/" target="_blank" rel="noopener noreferrer">很棒的文档</a>，一个<a href="https://discordapp.com/invite/7NF8GNe" target="_blank" rel="noopener noreferrer">活跃的社区</a>，并且是压缩友好的(稍后会详细介绍)。</p>
+<p class="translated">计算CSS而不是手动维护它的一个优点是<b>它在设计系统中创造奇迹</b>。我们可以充分利用JavaScript的能力，根据预先确定的规则逻辑地生成样式。这种方法比手动维护规则集更易于管理，也更省时。需要更多的间距工具？不需要一个一个手动编写。只需增加计数器。</p>
+<pre>const spacingUnit = 8
+const variations = 120
+const generatedSizes = {}
+
+for (let i = 1; i &lt;= variations; i++) {
+  const size = i * spacingUnit
+  generatedSizes[size] = `${size}px`
+}</pre>
+<p class="translated">我们还获得了一个配置文件，可以在项目间共享。这非常有用，因为文档范围包括几个独立的项目(如<a href="https://www.algolia.com/doc/onboarding/" target="_blank" rel="noopener noreferrer">交互式教程</a>或<a href="https://www.algolia.com/doc/guides/building-search-ui/widgets/showcase/js/" target="_blank" rel="noopener noreferrer">小部件展示</a>)。使用JavaScript配置文件比使用一堆分散的CSS文件更容易重用规则和挑选我们需要的内容。</p>
+<h3 class="translated"><a id="controlled-file-size" class="anchor" href="#controlled-file-size" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>受控文件大小</b></h3>
+<p class="translated">在线文档应该可以快速加载。在构建某个东西时，开发人员经常来回查阅文档以获取少量信息。那个参数叫什么来着？以及这个方法的返回类型？这些是他们需要快速回答的问题，而不需要走出他们的领域。</p>
+<p class="translated">浏览在线文档应该是一种无缝的体验。在Algolia，我们已经为速度建立了文档(静态生成的页面，基于Algolia的搜索),但有一个领域我们迄今为止忽略了:资产规模。</p>
+<h4 class="translated"><strong>稳定规模</strong></h4>
+<p class="translated">实用优先是保持你的CSS稳定小的好方法。因为我们只是重用原子类，而不是创建新的规则，<b>我们不引入可能增加资产的新CSS代码</b>。即使我们引入不同布局和新组件的页面，只要它遵循我们现有的UI系统，CSS就不会增长。</p>
+<h4 class="translated"><strong>更小的浏览器内存占用</strong></h4>
+<p class="translated">实用优先的另一个好处是<b>浏览器不需要做太多的工作来解析样式</b>。实用程序优先的CSS强制只使用类(标签名不匹配)并保持低特异性(大多数时候，实用程序类是一个级别的深度)。它减少了(如果不是消除的话)样式覆盖，这减少了为给定DOM元素确定最终样式的开销。</p>
+<h4 class="translated"><strong>自动清洗</strong></h4>
+<p class="translated">在我们的例子中，我们使用TailwindCSS来生成原子类。这些是基于我们的品牌颜色，我们选择的网格大小，我们需要的变化数量等。您可以猜到，这可以生成许多类，其中大部分是我们不需要的。</p>
+<p class="translated">出于这个原因，我们已经设置了<a href="https://www.purgecss.com/" target="_blank" rel="noopener noreferrer"> Purgecss </a>来自动删除任何我们在生产中不需要的类。这个工具允许我们在开发模式下访问可用类的完整目录，但是从产品构建中过滤掉所有不需要的部分。</p>
+<h4 class="translated"><b>HTML膨胀怎么办？</b></h4>
+<p class="translated">保持CSS小很好，但是HTML呢？我们不就是把臃肿从CSS转移到HTML文件吗？这是我在提倡实用至上的CSS时经常听到的主要担忧。</p>
+<p class="translated">重要的是要记住CSS和HTML是不同的。像Gzip和Brotli这样的压缩算法很好地处理了重复的类名，因为它们本身是基于专门设计来压缩重复字符串的算法。无论您使用几个还是多个类，HTML文档的最终文件大小都没有什么区别。</p>
+<h2 class="translated"><a id="content-friendly-css" class="anchor" href="#content-friendly-css" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>内容友好的CSS </strong></h2>
+<p class="translated">原子类很棒，但是用户生成的内容呢？我们不能要求我们的技术作者，也不能要求其他团队的贡献者在他们写的内容中加入实用类。它既不用户友好，也不可维护，而且在代码审查期间还会严重损害内容的可读性。</p>
+<p class="translated">对于这个特定的用例，我们需要在不产生新问题的情况下放弃实用优先，也不允许脱离我们已经部署好的系统。</p>
+<h3 class="translated"><a id="preventing-style-leaks" class="anchor" href="#preventing-style-leaks" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>防止作风泄密</strong></h3>
+<p class="translated">技术作家和内容贡献者在Markdown中写作，然后编译成普通的HTML。因此，我们需要有直接应用于HTML标签的样式，<b>，而不会泄露到网站的其他区域。</b></p>
+<p class="translated">由于CSS适用于全球，我们确定规则范围的唯一方法是使用特殊性作为命名所有CSS规则内容的方法。在我们的Haml模板中，我们在Markdown文件输出周围的容器中添加了一个特定的CSS类，并在CSS中使用该类来包含规则集，否则这些规则集将会应用得非常广泛。</p>
+<p class="translated">下面是降价内容文件的样子:</p>
+<pre>## Some title
+
+Some content</pre>
+<p class="translated">以及我们如何在Haml布局中渲染它:</p>
+<pre>.content
+  = yield</pre>
+<p class="translated">这些编译成以下HTML代码:</p>
+<pre>&lt;div class="content"&gt;
+  &lt;h2&gt;Some title&lt;/h2&gt;
+  &lt;p&gt;Some content&lt;/p&gt;
+&lt;/div&gt;</pre>
+<p class="translated">然后，我们可以安全地设计内容的样式(这里是Sass):</p>
+<pre>.content {
+  h2, h3, h4, h5, h6 {
+    // ...
+  }
+}</pre>
+<p class="translated">这种技术效果很好，但是有一个缺点。由于它依赖于特殊性，每个规则集的得分都高于任何一级深度实用程序类。在上面的例子中，一个生成的规则集<code>.content h2</code>的特异性得分为<code>0,0,1,1</code>，而一个实用程序类<code>.margin-0</code>的得分为<code>0,0,1,0</code>。如果我们想用一个实用程序类来覆盖一个特定的<code>h2</code>元素的边界，特殊性会妨碍我们。</p>
+<p class="translated">Tailwind通过允许你创建所有的工具类<a href="https://tailwindcss.com/docs/configuration/#important" target="_blank" rel="noopener noreferrer">，让你避开这个问题！重要</a>。然而，请记住，这是一个激进的选择，您需要以最大的谨慎来操作。</p>
+<p class="translated">将来，我们可能会研究这部分的<a href="https://github.com/css-modules/css-modules" target="_blank" rel="noopener noreferrer"> CSS模块</a>，这样我们就可以直接命名类名，而不依赖于特殊性。走这条路将涉及到在Haml/ERB的环境下使其与Markdown一起工作，以及使他们与TailwindCSS一起玩得很好。</p>
+<h3 class="translated"><a id="single-source-of-truth" class="anchor" href="#single-source-of-truth" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>单一来源的真理</strong></h3>
+<p class="translated">当手动编写作用域CSS规则时，很容易偏离实用程序类强加的框架，并复制代码。幸运的是，这正是最好的顺风特性派上用场的地方。</p>
+<p class="translated">Tailwind提供了一个<code>@apply</code>指令，与Sass中的<code>@extend</code>、mixins或占位符相反，它将CSS声明从引用类复制到一个新的规则集中。如果你熟悉<a href="https://lesscss.org/" target="_blank" rel="noopener noreferrer"> Less </a> , <code>@apply</code>的工作方式类似于Less mixins:它使用你可以直接应用的实际类，并将它们所有的声明复制到一个目标规则集中。</p>
+<p class="translated">参加以下课程:</p>
+<pre>.text-nebula-blue {
+  color: #5468ff;
+}</pre>
+<p class="translated">我们使用<code>@apply</code>来重用它，而不是将其内容复制到新的规则集中:</p>
+<pre>.content {
+  a {
+    @apply text-nebula-blue;
+  }
+}</pre>
+<p class="translated">这编译成:</p>
+<pre>.content a {
+  color: #5468ff;
+}</pre>
+<p class="translated">每当我们需要编写自定义CSS时，我们通过<code>@apply</code>重用实用程序类，而不是编写新的规则。它迫使我们不要脱离我们的设计系统，以不一致和奇异的风格结束。</p>
+<h2 class="translated"><a id="utility-first-second-to-none" class="anchor" href="#utility-first-second-to-none" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>效用——第一，首屈一指</strong></h2>
+<p class="translated">在Algolia文档中，我们在实用优先方面取得了巨大的成功，将我们的CSS从超过125 KB(并且持续增长)减少到不到50 KB (9 KB GZipped，7kb Brotli compression)，这表示大小减少了60%!从用户的角度来看，这是以极低的开销实现闪电般快速加载的保证。</p>
+<p class="translated">从项目的角度来看，我们新的CSS方法让我们在设计事物的方式上更加一致。它还让我们保持自己的风格与Algolia品牌指南和UI规则保持一致，这些规则是我们的<a href="https://www.algolia.com/blog/ux/redesigning-our-docs-part-3-the-ux-ui-phase/" target="_blank" rel="noopener noreferrer">产品设计师</a>为我们制定的。</p>
+<p class="translated">在Algolia，我们认为文档本身是一种成熟的产品，而不仅仅是我们的API、客户端和库的副产品。出于这个原因，我们努力确保我们不会忽视网站的任何方面。这个新的CSS架构符合我们的目标:<b>持续改进开发者体验(DX) </b>和<b>构建可扩展的、可持续的系统</b>。</p>
+<p class="translated">新的CSS架构并不是我们文档前端发生的唯一事情。我们的下一篇文章将深入探讨我们为记录即时搜索而构建的新的<a href="https://www.algolia.com/doc/guides/building-search-ui/widgets/showcase/js/" target="_blank" rel="noopener noreferrer">交互展示平台</a>的制作。</p>
+</div></div>    
+</body>
+</html>

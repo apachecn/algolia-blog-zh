@@ -1,0 +1,97 @@
+<html>
+<head>
+<title>Gymshark’s journey to MACH: The practical case for search and navigation - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">Gymshark的马赫之旅:搜索和导航的实际案例</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/customers/gymsharks-journey-to-mach-the-practical-case-for-search-and-navigation/#0001-01-01">https://www.algolia.com/blog/customers/gymsharks-journey-to-mach-the-practical-case-for-search-and-navigation/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">Gymshark成立于2012年，是英国发展最快的健身时尚品牌，通过15家在线商店在国际上销售服装和配饰。Gymshark在2020年突破了5亿美元的收入大关，有6400万在线购物者，他们访问了超过10亿个页面。</p>
+<p class="translated"><span>负责整个商业堆栈的Gymshark产品经理Ben Pusey与我们分享了该公司的</span> <a href="https://resources.algolia.com/webinars/webinar-gymshark-field-retail"> <span>数字化转型之旅</span> </a> <span>到</span> <a href="https://machalliance.org/" target="_blank" rel="noopener"> <span> MACH架构</span> </a> <span>以及它如何推动了令人难以置信的增长。</span></p>
+<h2 class="translated"><a id="rethinking-the-technology" class="anchor" href="#rethinking-the-technology" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>反思技术</span></h2>
+<p class="translated">这一切都始于2015年的黑色星期五。Gymshark在一个自托管的Magento商店上运行，该商店在负载下出现故障。在这一事件中，Gymshark损失了金钱，损害了它的声誉。管理层被迫带着批判性的理念彻底重新思考技术:“我们意识到我们的技术是我们业务成功的核心驱动力，”Ben说。“我们需要重新关注技术，以便与业务一起成长。”</p>
+<p class="translated">考虑到这一点，他们选择采用四个核心原则来创建他们未来的技术堆栈: <b/></p>
+<ul>
+<li aria-level="1" class="translated"><b>微服务、</b> <span>使工程团队开发、部署和维护平台应用的各个部分变得简单</span></li>
+</ul>
+<ul>
+<li aria-level="1" class="translated"><b> API优先</b> <span>这样他们就可以轻松地将新技术与堆栈集成，无论是当时还是将来</span></li>
+</ul>
+<ul>
+<li aria-level="1" class="translated"><b>基于云的</b> <span>因此他们可以利用动态扩展的工作负载并支持200倍平均流量的峰值</span></li>
+</ul>
+<ul>
+<li aria-level="1" class="translated"><b>无头</b> <span>这样他们就可以在体验的特定部分使用任何他们想要的技术，并在任何频道上提供体验</span></li>
+</ul>
+<p class="translated"><span>由</span><a href="https://machalliance.org/"><span>MACH Alliance</span></a><span>推广，这四个原则是围绕创建模块化、可扩展和灵活的产品而设计的，这些产品可以适应不断变化的业务优先级。</span></p>
+<p class="translated"><span> Gymshark选择了一个由可组合元素组成的MACH堆栈</span> <b/></p>
+<ul>
+<li aria-level="1" class="translated"><b> Shopify </b> <span>为基础；由于其API优先的方法，它具有极强的模块化和可扩展性</span></li>
+</ul>
+<ul>
+<li aria-level="1" class="translated"><b> Algolia </b> <span>用于搜索和收藏页面</span></li>
+</ul>
+<ul>
+<li aria-level="1" class="translated"><b>内容丰富的</b> <span>用于内容管理</span></li>
+</ul>
+<ul>
+<li aria-level="1" class="translated"><b>反应</b> <span>为前端应用</span></li>
+</ul>
+<ul>
+<li aria-level="1" class="translated"><b> AWS Lambda </b> <span>和其他AWS服务</span> <span>作为粘合剂将技术结合在一起</span></li>
+</ul>
+<p class="translated">搜索是Gymshark用最佳技术取代的Shopify基金会的第一个组成部分。</p>
+<h2 class="translated"><a id="starting-the-headless-journey-with-search-and-navigation" class="anchor" href="#starting-the-headless-journey-with-search-and-navigation" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>用搜索和导航开始无头之旅</span></h2>
+<p class="translated"><span>在Algolia之前，</span> <span> Gymshark在搜索和导航体验方面遇到了各种限制:</span> <b/></p>
+<ul>
+<li aria-level="1" class="translated"><b>糟糕的搜索结果:</b> <span>最畅销的商品出现在搜索结果页面的底部</span></li>
+</ul>
+<ul>
+<li aria-level="1" class="translated"><b>相关性低，</b> <span>导致搜索转化率差</span></li>
+</ul>
+<ul>
+<li aria-level="1" class="translated"><b>缺货商品</b> <span>出现在搜索结果</span>的顶部</li>
+</ul>
+<ul>
+<li aria-level="1" class="translated"><b>没有个性化</b> <span>的购物体验</span></li>
+</ul>
+<ul>
+<li aria-level="1" class="translated"><b>手工销售</b> <span>是</span> <span>导致销售团队的工作流程密集且不可扩展</span></li>
+</ul>
+<ul>
+<li aria-level="1" class="translated"><b>没有本地化，</b> <span>对于英国以外的购物者来说，这意味着下载速度很慢</span></li>
+</ul>
+<p class="translated"><span>搜索和导航显然是购物体验的组成部分，可以迅速带来可观的额外收入，因此Gymshark决定寻找一个能够反映其四个核心原则的解决方案。我们很荣幸Gymshark选择了Algolia，也很自豪能在短短几个月内帮助Ben和他的团队建立新的搜索和导航体验。</span></p>
+<h2 class="translated"><a id="driving-iteration-with-an-eye-toward-increased-revenue" class="anchor" href="#driving-iteration-with-an-eye-toward-increased-revenue" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>着眼于增加收入推动迭代</span></h2>
+<p class="translated"><span>Ben和他的团队喜欢他们的无头搜索和导航解决方案的一个因素是，它从第一天起就提供了结果，同时允许他们通过根据他们的特定需求、受众和目录定制用户体验来释放增量收入。</span></p>
+<h3 class="translated"><a id="site-search" class="anchor" href="#site-search" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>网站搜索</b></h3>
+<p class="translated">Gymshark第一个需要优化的领域是搜索体验。首要任务是 <b>提高相关性。</b> <span>该团队将产品可用性和其他业务数据添加到排名逻辑中，并提高了他们最常用的搜索关键词之一“camo”的平均点击位置和点击率</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-11861" src="../Images/fb78a012b4fcc72165407323302ba1ce.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/05/image2-717x400.png 717w, https://blog-api.algolia.com/wp-content/uploads/2021/05/image2-320x178.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/05/image2-768x429.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/05/image2-360x200.png 360w, https://blog-api.algolia.com/wp-content/uploads/2021/05/image2.png 948w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/05/image2-717x400.png"/></p>
+<p class="translated"><span> Gymshark还利用Algolia的</span> <b>人工智能生成的同义词</b> <span>向客户展示与其搜索词相关的产品。例如，美国顾客搜索“运动裤”(相对于英国版本的“慢跑者”)，没有得到任何结果。Algolia AI检测到了这个小故障，并建议使用同义词。</span></p>
+<p class="translated"><span>最后，他们使用内置的</span> <b>机器学习自动化商品销售</b> <span>来调整每个搜索查询的结果顺序，并提升最高性能的产品。通过这样做，他们一年创造了</span> <b> 2M的额外销售额。</b></p>
+<h3 class="translated"><a id="collection-pages" class="anchor" href="#collection-pages" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>收藏页面</b></h3>
+<p class="translated">收藏页面也是Gymshark从Shopify模板转移到React应用的首批网站元素之一。由Algolia交付和管理的内容推动了这种转移。 <span>理由是本和他的团队喜欢搜索功能，并希望将它们应用到导航体验中。他们希望销售团队能够在系列页面上利用Algolia的</span> <a href="https://www.algolia.com/products/search-and-discovery/visual-merchandising-curation/"> <span>视觉销售工具</span> </a> <span>来定义精确的销售规则，同时依靠Algolia AI和更广泛的业务规则(使用Gymshark的业务数据)来自动销售整个商店的商品。</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-11862" src="../Images/e5caa82fbfdfe683186f8e628ef37c46.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/05/image3-720x369.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/05/image3-320x164.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/05/image3-768x394.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/05/image3-1536x788.png 1536w, https://blog-api.algolia.com/wp-content/uploads/2021/05/image3.png 1999w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/05/image3-720x369.png"/></p>
+<p class="translated"><span>例如，通过对库存中最大尺寸的商品进行优先排序，隐藏脱销商品，并使用优先级评分对收藏页面上的商品进行排名，Gymshark每年产生了</span><b>450万英镑的额外销售额。</b></p>
+<p class="translated"><span>这一策略也为销售团队带来了巨大的收益。使用前一种解决方案，他们需要手动对产品重新排序，并即时隐藏脱销商品，这很麻烦(在黑色星期五等大型活动期间也不可能)。今天，一切都是自动化的。</span></p>
+<h3 class="translated"><a id="personalization" class="anchor" href="#personalization" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>个性化</b></h3>
+<p class="translated">Gymshark还使用Algolia来个性化整个网站的购物体验，从搜索和收藏页面开始，扩展到主页，然后包括出站电子邮件和产品推荐，以及计划中的移动应用程序。</p>
+<h3 class="translated"><a id="iterating-to-success" class="anchor" href="#iterating-to-success" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>迭代成功</b></h3>
+<p class="translated">在一年的时间里，Ben和他的团队能够将所有这些优化带到Gymshark的在线体验中。他们遵循一个包含多次迭代的精益流程，目标是在每个阶段交付业务价值，并测量改进，以便重新确定路线图的优先级。</p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-11860" src="../Images/896023caaaf8cb5b2510c44043e7f449.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/05/image1-720x400.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/05/image1-320x178.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/05/image1-768x427.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/05/image1-360x200.png 360w, https://blog-api.algolia.com/wp-content/uploads/2021/05/image1.png 936w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/05/image1-720x400.png"/></p>
+<h2 class="translated"><a id="when-headless-commerce-accelerates-growth" class="anchor" href="#when-headless-commerce-accelerates-growth" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>当无头商业加速增长的时候</span></h2>
+<p class="translated"><span>通过使用无头搜索和导航解决方案，Gymshark在多次迭代过程中增加了可观的收入，每次迭代都优化了购物体验，并将其与竞争对手的购物体验区分开来。一个重要的方面是，即使在大流量和交易高峰期间，如黑色星期五，也能够保持搜索和导航，而不会给他们的工程团队带来任何负担。</span></p>
+<p class="translated"><span> Gymshark强大的搜索和导航方法带来了:</span> <b/></p>
+<ul>
+<li aria-level="1" class="translated"><b/>2000万美元的年增量收入</li>
+</ul>
+<ul>
+<li aria-level="1" class="translated"><span>搜索转化率从6.2%增加到10%(并且还在攀升)</span></li>
+</ul>
+<ul>
+<li aria-level="1" class="translated"><span>搜索用户收入同比增长4倍</span></li>
+</ul>
+<p class="translated">但是Gymshark并没有止步于这些数字。对于搜索和导航，它的下一步是测试KPI驱动的商品销售算法，将机器学习重新排序应用于收藏页面，测试新的个性化策略，并实现产品推荐，同时推出一款受益于所有这些功能的移动应用。对于堆栈的其余部分，Gymshark正在准备实施一个新的产品信息管理系统。</p>
+<p class="translated"><span>了解更多关于阿哥利亚是</span> <a href="https://machalliance.org/" target="_blank" rel="noopener"> <span>马赫联盟</span> </a> <span>的骄傲成员。要了解更多关于阿洛利亚的无头方法，</span> <a href="https://www.algolia.com/industries-and-solutions/headless-commerce/"> <span>迎面翻到本页</span> </a> <span>。</span></p>
+</div></div>    
+</body>
+</html>

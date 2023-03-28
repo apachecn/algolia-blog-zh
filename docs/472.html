@@ -1,0 +1,112 @@
+<html>
+<head>
+<title>The Challenging Migration from Heroku to Google Kubernetes Engine | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">从Heroku到Google Kubernetes引擎的挑战性迁移</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/challenging-migration-heroku-google-kubernetes-engine/#0001-01-01">https://www.algolia.com/blog/engineering/challenging-migration-heroku-google-kubernetes-engine/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">对于一个仅由开发人员组成的团队来说，Heroku的简单性使我们很容易将原型投入生产。然而，随着我们产品的成熟和客户期望的增长，我们需要对我们的基础设施有更强的健壮性和细粒度的控制。我们知道Kubernetes是我们的正确选择。然而，迁移并不是一项简单的任务。</p>
+<p class="translated">这是背景故事。大约一年前，我们决定为Algolia开发一个网络爬虫原型。如你所知，Algolia的用户通过使用Algolia的搜索API，将他们的数据上传到一个可搜索的索引，从而使他们的内容可被搜索。一些潜在客户问我们是否可以通过抓取他们网站的内容，自动填充他们的搜索索引。对此，我们很快在Node.js中搭建了一个网络爬虫原型，并部署到Heroku上。</p>
+<p class="translated">我们没有失望:添加数据库服务器或RabbitMQ之类的服务只需点击一下鼠标。我们所要做的就是<code>git push</code>部署新版本，然后我们的原型就投入生产了。</p>
+<p class="translated">几个月后，我们的网络爬虫在Algolia的客户中流行起来，许多其他人也开始表达对它的需求。</p>
+<p class="translated">然而，爬虫需要很多组件——一些在后台运行，另一些按需运行；此外，一些客户需要定制组件。随着产品变得越来越复杂，我们向基础设施同事寻求帮助。</p>
+<p class="translated">这种复杂性的一个很好的例子是IP白名单。我们的一个客户希望我们从一个固定的IP地址开始爬行，这样他们就可以将该IP列入白名单进行高速爬行，而不会受到他们的负载平衡器的限制。只有两个工程师在开发爬虫，所以我们让其他同事用固定的IP地址建立一个HTTP代理。然而，随着客户数量的增长，越来越多的人开始提出同样的要求，我们的基础架构团队告诉我们，是时候让我们自己来解决这个问题了。</p>
+<p class="translated">因此，我们决定迁移到一个云平台，该平台将对我们的基础设施提供更多的控制，并最终允许我们以编程方式设置和拆除代理。这就是我们如何决定是时候<strong>从Heroku迁移到谷歌Kubernetes引擎(GKE) </strong>了。作为第一步，我们希望让我们的爬虫在GKE集群上工作，尽可能少地修改代码。只有这样，我们才能使它在生产中更加健壮和可维护。</p>
+<p class="translated">这远不像我们最初想的那样简单。</p>
+<p class="translated">在本文中，我们描述了我们的爬虫的架构，并解释了我们如何让它在GKE上运行，分享了我们在迁移时解决的三个挑战。然后，我们总结了迁移带来的一些经验教训和好处。</p>
+<h2 class="translated"><a id="setting-things-up" class="anchor" href="#setting-things-up" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>设置事物</h2>
+<p class="translated">在我们深入兔子洞之前，让我们对网络爬虫做一个概述——它的架构，底层服务，以及我们如何让它在本地和生产中工作。</p>
+<p class="translated"><img loading="lazy" class="aligncenter wp-image-8139 size-large" src="../Images/53599fc489c6ea13c5f62637f434b9ab.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2019/02/2019-01_Migrating-Heroku-GKE_Diagram-1-537x400.png 537w, https://blog-api.algolia.com/wp-content/uploads/2019/02/2019-01_Migrating-Heroku-GKE_Diagram-1-239x178.png 239w, https://blog-api.algolia.com/wp-content/uploads/2019/02/2019-01_Migrating-Heroku-GKE_Diagram-1-768x572.png 768w, https://blog-api.algolia.com/wp-content/uploads/2019/02/2019-01_Migrating-Heroku-GKE_Diagram-1.png 1852w" sizes="(max-width: 537px) 100vw, 537px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2019/02/2019-01_Migrating-Heroku-GKE_Diagram-1-537x400.png"/></p>
+<p class="translated">爬虫本身是一组三个组件:</p>
+<ul>
+<li class="translated">工人负责获取网页，从其HTML内容中提取信息，并将这些信息存储到Algolia索引中；</li>
+<li class="translated">管理器负责将待爬行的URL、与每个客户相关联的规则和约束(例如，速率限制)以及他们可能已经请求的任何配置更新分派给工作器；</li>
+<li class="translated">web服务器负责处理寻址到爬虫的API请求(例如，从Algolia仪表板)并服务于其自己的管理和监视仪表板。</li>
+</ul>
+<p class="translated">这些组件位于几个服务之上:</p>
+<ul>
+<li class="translated">RabbitMQ队列，保存要爬网的URL列表；</li>
+<li class="translated">一个PostgreSQL数据库，保存爬虫的状态，如客户配置、URL列表和外部数据，以提高搜索记录的相关性；</li>
+<li class="translated">一个Redis存储，保存我们仪表板的用户会话；</li>
+<li class="translated">Tika服务器，作为代理从PDF文件和其他类型的非HTML文档中提取内容；</li>
+<li class="translated">和一个Rendertron服务器，它充当代理，从需要执行JavaScript代码以在DOM中呈现内容的单页面应用程序中提取内容。</li>
+</ul>
+<p class="translated">为了在开发爬虫时本地运行所有这些组件和服务，我们设置了一个<code>docker-compose</code>文件，为它们指定Docker映像和参数。在Heroku上，我们为每个服务激活了附加组件，并编写了一个<code>Procfile</code>来指定应该执行什么命令来启动每个组件。然后，通过简单地执行<code>git push heroku master</code>，我们确保了组件的最新版本会自动上传并在我们的<a href="https://www.heroku.com/dynos" target="_blank" rel="noopener"> Heroku dynos </a>中启动。轻而易举。</p>
+<p class="translated"><img loading="lazy" class="aligncenter wp-image-8141 size-full" src="../Images/f40f86022b0e155c5d497be86bad9f1d.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2019/02/Heroku-Dynos.png 1999w, https://blog-api.algolia.com/wp-content/uploads/2019/02/Heroku-Dynos-320x174.png 320w, https://blog-api.algolia.com/wp-content/uploads/2019/02/Heroku-Dynos-768x419.png 768w, https://blog-api.algolia.com/wp-content/uploads/2019/02/Heroku-Dynos-720x393.png 720w" sizes="(max-width: 1999px) 100vw, 1999px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2019/02/Heroku-Dynos.png"/></p>
+<p class="translated">Kubernetes是一个可以根据开发者定义的<a href="https://kubernetes.io/docs/concepts/services-networking/service/" target="_blank" rel="noopener">服务</a>和<a href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/" target="_blank" rel="noopener">部署</a>来分派<a href="https://kubernetes.io/docs/concepts/workloads/pods/pod/" target="_blank" rel="noopener"> pods </a>的系统。我们的第一个目标是让我们的组件和服务以与我们现有的<code>docker-compose.yaml</code>文件相同的方式运行。我们只需要将文件转换成Kubernetes格式，并找到正确的命令来启动它们。</p>
+<p class="translated">在花了几个小时试图用kompose做这件事之后，没有太大的成功，我们决定寻求帮助。一位同事以三种方式帮助了我们:在GKE上建立一个集群，为我们提供了用于部署和服务的Kubernetes定义文件的示例，并建议我们使用由Google管理的服务(即PubSub和CloudSQL)，而不是将我们自己的RabbitMQ和PostgreSQL docker容器作为pods运行。这都是很好的建议，但是太快了。为了更好地理解Kubernetes的工作方式，并对它更有信心，我们决定一次解决一个问题:首先，通过镜像我们的<code>docker-compose</code>定义，让我们的服务在容器中运行，只有到那时，才考虑用谷歌管理的服务来取代它们。</p>
+<p class="translated">因此，我们开始为每个服务编写Kubernetes定义文件。</p>
+<h2 class="translated"><a id="implementation-let%e2%80%99s-first-get-kubernetes-to-run" class="anchor" href="#implementation-let%e2%80%99s-first-get-kubernetes-to-run" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>实现——让我们先让Kubernetes运行起来</h2>
+<p class="translated">我们这样定义它们:</p>
+
+<p class="translated">总结一下:</p>
+<ul>
+<li class="translated">部署是对可以部署、在给定数量的实例上运行和停止的软件的描述；</li>
+<li class="translated">服务是可以处理来自系统其他部分的请求的部署。</li>
+</ul>
+<p class="translated">例如，要在Kubernetes上运行RabbitMQ，我们需要:</p>
+<ul>
+<li class="translated">通过指定运行RabbitMQ服务器的Docker映像来定义部署；</li>
+<li class="translated">并定义一个公开两个端口的服务:一个用于AMQP查询，一个可选端口用于管理UI。</li>
+</ul>
+<p class="translated">除了需要被定义为服务的web服务器之外，我们以与部署相同的方式定义了我们的爬虫组件。因为这些组件不是DockerHub上的公共Docker映像，所以我们还必须编写一个Docker文件来从我们的源代码生成一个映像，将该映像上传到我们的Google Registry，然后从我们的三个部署中引用它的标识符。为此，我们必须学习如何使用gcloud和kubectl命令行界面(CLI)工具。</p>
+<p class="translated">在YAML文件中定义了我们的部署和服务之后，我们需要它们相互连接。例如，我们的三个爬虫组件期望环境变量包含它需要连接的所有服务的URL。在Heroku中，我们有一个所有dynos共享的全局环境变量列表。我们可以从Heroku仪表板或通过他们的CLI编辑它们。也就是说，我们的大多数插件(例如托管PostgreSQL数据库)会自动设置环境变量来提供对其数据的直接访问，因此我们不需要做太多工作。</p>
+<p class="translated">在Kubernetes世界中，环境变量是在部署级别设置的。这意味着每个部署文件都应该包含必要的环境变量的值。此外，考虑到Kubernetes可以随时动态终止和重启不同节点(例如，集群的物理机器)上的部署，它们的IP地址和端口可以改变。因此，我们不能为组件的环境变量提供硬编码的值。</p>
+<p class="translated">幸运的是，我们了解到Kubernetes为所有服务动态生成集群范围的环境变量，格式为<code>&lt;SERVICE-NAME&gt;_SERVICE_HOST</code>和<code>&lt;SERVICE-NAME&gt;_SERVICE_PORT</code>。我们还发现，通过使用以下YAML语法，可以将环境变量的值注入到其他变量中:</p>
+
+<p class="translated">像密码这样的机密环境变量需要不同的过程。为此，我们使用了Kubernetes <a href="https://kubernetes.io/docs/concepts/configuration/secret/" target="_blank" rel="noopener">秘密</a>。</p>
+<p class="translated">秘密是可以保存机密值的Kubernetes实体。建议将它们用于存储密码、证书和任何其他类型的私人信息:这些值永远不会以纯文本形式添加到YAML文件中，访问它们需要特殊权限。</p>
+<p class="translated">要存储为环境变量，还必须在需要的部署的YAML文件中声明机密。然而，它们的结构与环境变量不同:我们需要挂载一个<a href="https://kubernetes.io/docs/concepts/storage/volumes/" target="_blank" rel="noopener">卷</a>来加载秘密，然后将它们的值作为环境变量导入。</p>
+
+<p class="translated">我们后来了解到，使用ConfigMaps可以在几个部署之间共享环境变量。这些是Kubernetes实体，可以保存几个命名值，并作为环境变量导入到部署中。</p>
+<p class="translated">使用<a href="https://cloud.google.com/kubernetes-engine/docs/concepts/configmap" target="_blank" rel="noopener"> ConfigMaps </a>阻止了我们复制配置，但是我们找不到任何方法来包含秘密，或者任何其他实体，这将在配置映射中包装其他环境变量的值(例如，使用<code>$()</code>语法，如上所示)。因此，我们最终将ConfigMaps用于不变的配置值，将Secrets用于密码和密钥，将inline环境变量定义用于依赖于其他环境变量的环境变量。<br/>此外，由于我们希望我们的YAML文件在不同的域名上提供两个不同的集群(例如，生产和暂存)，我们最终使用<a href="https://www.gnu.org/software/sed/manual/sed.html" target="_blank" rel="noopener"> sed </a>将其中一些转换为模板并编写一个脚本，将它们转换为最终的YAML文件。我们非常确定有一个更标准的方法来实现这一点，但考虑到我们能够在这一迁移上花费的时间，这种方法对我们来说是一个很好的妥协。</p>
+<p class="translated">那时，我们已经编写了10个YAML文件和5个bash脚本来定义我们的组件和服务。我们终于准备好供应我们的GKE集群，并看到他们运行。上传我们的YAML文件并让它们在我们的集群上运行的命令是:<code>kubectl apply -f .</code>。</p>
+<p class="translated">为了举例说明我们编写的脚本，下面列出了在部署可能包含数据库迁移的更新后，我们为重启所有组件而运行的命令:</p>
+
+<p class="translated">没那么快。一位同事警告我们，为了使我们的仪表板可以从互联网上访问，我们必须定义一个<a href="https://kubernetes.io/docs/concepts/services-networking/ingress/" target="_blank" rel="noopener">入口</a>资源来将我们的“web”服务连接到Google的HTTP负载平衡器。</p>
+<p class="translated">他举了一个例子，结果是这样的:</p>
+
+<p class="translated">几分钟后，我们的仪表盘终于启动了！</p>
+<p class="translated">遗憾的是，在允许HTTPS访问该端点之前，我们无法使用单点登录系统登录。让我们深入研究一下。</p>
+<h2 class="translated"><a id="wire-an-ssl-certificate" class="anchor" href="#wire-an-ssl-certificate" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>有线SSL证书</h2>
+<p class="translated">在Heroku世界中，启用HTTPS/SSL是小菜一碟。你所要做的就是点击一个按钮。</p>
+<p class="translated"><img loading="lazy" class="aligncenter wp-image-8143 size-large" src="../Images/07d0ca3abf8fe12db446954c2dbf9f5d.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2019/02/SSLcertificate-720x139.png 720w, https://blog-api.algolia.com/wp-content/uploads/2019/02/SSLcertificate-320x62.png 320w, https://blog-api.algolia.com/wp-content/uploads/2019/02/SSLcertificate-768x148.png 768w, https://blog-api.algolia.com/wp-content/uploads/2019/02/SSLcertificate.png 812w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2019/02/SSLcertificate-720x139.png"/></p>
+<p class="translated">Heroku会使用Let's Encrypt自动生成一个免费的SSL证书，回复ACME挑战，并每3个月自动重复该过程以在我们不知情的情况下更新证书。刚刚成功了。</p>
+<p class="translated">我们希望Google也能提供一个简单的方法来在我们的GKE集群上设置它。再想想！GKE的文档明确指出，虽然可以通过kubectl或Google Cloud Console将SSL证书与Google的负载平衡器关联起来，但它们没有提供生成证书的方法。</p>
+<p class="translated">我们使用Google来寻找解决方案，我们发现有几个项目承诺为您的GKE集群生成和更新一个SSL证书，并且会自动将它关联到我们的负载平衡器。不幸的是，它们都包含了免责声明，如“不要在生产中使用”或“我们目前不提供关于API稳定性的强有力的保证”。因此，我们决定，在Google提供一种可靠的方法来自动完成这项工作之前，我们将手动生成一个Let's Encrypt证书，然后将其附加到我们的负载平衡器上。唯一的问题是，我们需要记住每隔几个月做一次。</p>
+<p class="translated">我们的爬虫在那时是完全功能性的。迁移前唯一剩下的问题是PostgreSQL数据库中的数据可能会丢失，因为它仍然从Docker容器中运行，没有持久卷，也没有任何备份例程。</p>
+<p class="translated"><em> <strong>免责声明</strong>:自从我们迁移以来，<a href="https://github.com/ahmetb/gke-letsencrypt" target="_blank" rel="noopener">其他解决方案</a>让这个过程变得更加容易。我们还没试过。</em></p>
+<h2 class="translated"><a id="plug-into-a-managed-database" class="anchor" href="#plug-into-a-managed-database" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>插入托管数据库</h2>
+<p class="translated">数据是一件严肃的事情。我们的客户依赖于我们，因此他们的数据应该随时可用，无论规模如何都能响应，没有泄漏，并且在发生事故时能够快速恢复。这些都是信任托管数据库服务，而不是从Kubernetes可以随时终止的Docker容器中运行数据库的绝佳理由。</p>
+<p class="translated">作为谷歌云生态系统的一部分，CloudSQL产品最近将他们的托管PostgreSQL服务宣传为“生产就绪”，所以这对我们来说是显而易见的:我们应该将我们的爬虫插入到该服务中。我们的同事告诉我们，我们必须集成一个所谓的<a href="https://cloud.google.com/sql/docs/mysql/sql-proxy" target="_blank" rel="noopener"> CloudSQL代理</a>来连接到CloudSQL管理的PostgreSQL服务器。</p>
+<p class="translated">为此，我们遵循了谷歌提供的教程。除了用CloudSQL代理服务替换PostgreSQL服务之外，我们还必须:</p>
+<ul>
+<li class="translated">创建数据库用户；</li>
+<li class="translated">将用户密码安全地存储为Kubernetes秘密；</li>
+<li class="translated">创建一个服务帐户，从我们的组件访问CloudSQL实例；</li>
+<li class="translated">在所有需要连接到数据库的部署中，将秘密作为动态环境变量加载。</li>
+</ul>
+<p class="translated">尽管我们得到了帮助，但要将它集成到我们的系统中并不容易。Google提供的教程解释了如何以“sidecar”的方式运行代理，这意味着CloudSQL代理将与应用程序本身运行在同一个Pod上，从而可以轻松连接到该代理。</p>
+<p class="translated">在我们的系统中，我们有三个独立的组件需要访问同一个数据库，我们觉得给每个组件附加一个独立的CloudSQL代理会有些过头，而且更难维护。因此，我们必须花时间更好地理解如何配置部署。除此之外，有时有必要从集群外部访问我们的生产数据库(例如，出于调试目的从我们的开发笔记本电脑访问)。由于所有数据库连接都必须通过CloudSQL代理，我们有两个选择:</p>
+<ul>
+<li class="translated">通过在我们的生产集群中运行的CloudSQL代理进行连接；</li>
+<li class="translated">或者设置一个本地CloudSQL代理，每个开发人员有一个专用的服务帐户。</li>
+</ul>
+<p class="translated">出于安全原因，我们选择了第二种解决方案。在下载了与我们为每个人创建的服务帐户相关联的JSON密钥之后，下面是我们如何能够在我们的笔记本电脑上运行CloudSQL代理:</p>
+
+<p class="translated">如果您决定遵循这条路线，<strong>请确保您没有将与您的服务帐户相关联的JSON密钥保存在您的笔记本电脑上</strong>。我们建议使用像Vault这样的系统来更安全地存储这些密钥，或者甚至在每次连接时生成一个新的短期密钥。</p>
+<p class="translated"><em> <strong>免责声明</strong>:现在可以直接从GKE访问CloudSQL数据库了。我们还没试过这个。</em></p>
+<h2 class="translated"><a id="conclusion" class="anchor" href="#conclusion" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>结论</h2>
+<p class="translated">迁移需要时间，尽管我们采取了一些捷径，例如首先镜像我们系统的docker容器以达到iso功能阶段，然后用托管解决方案替换我们的数据库容器。最后，我们很高兴采取了循序渐进的方法。它让我们更好地了解Kubernetes如何工作，并掌握我们用来维护GKE集群的工具。它还防止我们不得不一次处理一个以上的问题，鉴于GKE的复杂性以及在这个生态系统中解决问题的无数方式，这可能成为沮丧和消极情绪的主要来源。</p>
+<p class="translated">我们花了几周时间让我们的爬虫在GKE上可持续运行，并最终关闭了我们的Heroku dynos和附加组件。虽然迁移比我们预期的更加繁琐和不简单——尽管我们得到了拥有Kubernetes和谷歌云产品经验的同事的帮助——但最终，我们对它带来的东西感到满意。例如:</p>
+<ul>
+<li class="translated">现在，我们对每个组件的硬件要求及其独立行为有了更好的理解。迁移到Kubernetes使它们在动态基础设施上更加健壮(例如，可以随时关闭和重新分配不同IP地址的节点)。</li>
+<li class="translated">我们目前正在探索如何自动水平扩展我们“工作人员”部署的副本数量，并且比我们在Heroku上所能做到的更有效。</li>
+<li class="translated">我们相信，我们能够根据客户的需求，在我们的集群上以编程方式设置静态IP代理服务器。</li>
+</ul>
+<p class="translated">好消息是，Google Kubernetes引擎最近的发展已经解决了我们的一些困难，使这个过程变得更加容易。</p>
+<p class="translated">顺便说一下，我们将于3月7日在巴黎办公室与一些谷歌专家组织一次关于Kubernetes的活动。如果那时你在欧洲，<a href="https://kubernetes-search-party.eventbrite.com/?aff=blog">请随意注册</a>！</p>
+<p class="translated"><em>作者感谢Rémy-Christophe Schermesser、Sarah Dayan、Peter Villani、Angélique Fey和Tiphaine Gillet对本文的贡献。以及所有帮忙校对的同事。❤️ </em></p>
+</div></div>    
+</body>
+</html>

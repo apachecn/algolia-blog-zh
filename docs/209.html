@@ -1,0 +1,161 @@
+<html>
+<head>
+<title>API keys vs JWT authorization: Which is best? | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">API密钥与JWT授权:哪个最好？</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/api-keys-vs-json-web-tokens/#0001-01-01">https://www.algolia.com/blog/engineering/api-keys-vs-json-web-tokens/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated"><span>当你构建自己的API时，检查你的</span> <i> <span>用例</span> </i> <span>将帮助你决定为每个API实现哪些安全方法。对于某些用例，API键就足够了；在其他情况下，您会想要JSON Web令牌(JWT)授权带来的额外保护和灵活性。所以在比较</span> <i> <span> API密匙和</span></i><span>JWT授权时，胜者是..看情况。</span></p>
+<p class="translated"><span>所有API调用都需要某种程度的安全性和访问控制。具有合理ACL的API密钥可以提供足够的安全性，而不会增加太多的开销。但是随着微服务在几乎所有大小任务中的使用越来越多，您的API生态系统可能需要一种更统一、更细粒度、更安全的方法，比如JWT授权。</span></p>
+<h2 class="translated"><a id="when-api-keys-are-fine" class="anchor" href="#when-api-keys-are-fine" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a>API键正常时</h2>
+<p class="translated"><span>使用基于云的搜索API的在线企业通常可以暴露只读API密钥，而没有太大的风险——如果数据的底层索引不包含秘密的话。事实上，客户端应用程序</span> <i> <span>应该</span> </i> <span>出于性能原因直接连接到云搜索引擎——从而暴露其API密钥——以避免在走向云之前更长时间的后端服务器之旅。另一方面，索引更新需要限制访问的API键，这些键永远不应该公开。</span></p>
+<p class="translated"><span>但是在两种用例(搜索和索引)中，<a href="https://www.algolia.com/doc/guides/security/security-best-practices/"> API键一般还好</a>；没有迫切需要JWT授权的开销。</span></p>
+<h2 class="translated"><a id="when-it%e2%80%99s-time-to-consider-jwt-authorization" class="anchor" href="#when-it%e2%80%99s-time-to-consider-jwt-authorization" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>什么时候才能考虑JWT的授权</h2>
+<p class="translated">然而，API越来越需要更多的灵活性和保护。JWT授权不仅增加了额外的安全级别(下面将详细介绍)，它还提供了一种更易于管理和更容易的方法来协调日常使用的大量API和网络。如下一节所述，<a href="https://en.wikipedia.org/wiki/JSON_Web_Token"><b/></a><b>通过生成包含用户和应用级信息(加密或散列)的</b> <b> <i>单个共享令牌</i> </b> <b>来帮助同一生态系统中的任何API确定令牌持有者被允许做什么，从而集中认证&amp;授权。</b></p>
+<p class="translated"><span> API密匙，乍一看，似乎很简单——你只需要发送正确的API密匙就可以了。但那有点骗人。当您的生态系统依赖于许多集成的微服务时，管理众多的API密钥会变得混乱、不可靠，并且几乎无法管理。它们的数量会增加、更改、过期、删除、ACL更改等等，而无需通知依赖这些API密钥的应用和用户。</span></p>
+<p class="translated"><b>借助JWT，您为单点登录架构奠定了基础。</b> <span>我们在下面的</span> <i> <span>一节中讨论这个切换到JWT。</span> </i></p>
+<blockquote><p class="translated">相关链接–</p>
+<ol>
+<li aria-level="1" class="translated"><span>深究<a href="https://www.algolia.com/blog/engineering/search-101-what-is-an-api-key-how-does-it-provide-api-security/"> API密钥安全</a>。</span> <span> </span></li>
+<li aria-level="1" class="translated"><span>对于CLI人员，一个全新的<a href="https://www.algolia.com/blog/engineering/algolia-devtool-introduction-the-algolia-cli/"> Algolia CLI工具</a>。</span></li>
+<li aria-level="1" class="translated">关于Algolia 的<a href="https://www.algolia.com/distributed-secure/security-compliance/">安全性和合规性。</a></li>
+</ol>
+</blockquote>
+<h2 class="translated"><a id="using-api-keys-vs-jwt-authorization" class="anchor" href="#using-api-keys-vs-jwt-authorization" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>使用API密钥vs JWT授权</h2>
+<h3 class="translated"><a id="using-api-keys" class="anchor" href="#using-api-keys" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>使用Api键</h3>
+<p class="translated"><span> API密钥直接、简单且完全透明。它们不代表任何潜在的信息，它们不加密秘密消息。它们只是一个不可读的唯一id。</span></p>
+<p class="translated"><span>这里有一个客户端javascript中公开可用的API密钥的例子。该代码包括一个应用程序ID (`app-id-BBRSSHR `)，它使用API键(` temp-search-key-ere 452 sdas 56 qsjh 565d `)来允许它进行搜索。应用程序ID是指您的一个面向用户的应用程序(如在线网站或流媒体服务)。API密钥是临时的和短暂的(在一段时间后过期),以提供某种保护来防止不必要的使用或滥用。</span></p>
+<pre class="lang:js decode:true">import { hitTemplate } from "./helpers";&#13;
+const search = instantsearch({&#13;
+  appId: "app-id-BBRSSHR",&#13;
+  apiKey: "temp-search-key-ere452sdaz56qsjh565d",&#13;
+  indexName: "demo_ecommerce"&#13;
+});&#13;
+</pre>
+<p class="translated"><span>再比如:索引，需要更安全的API密钥。它有相同的格式(<code>appId</code> + <code>apiKey</code>)，但它是私有的，因为它对公众是隐藏的，要么在编译的代码中，要么在后端的安全数据库中。App ID ( <code>YourApplicationID</code>)指的是后台系统。API密钥(<code>YourAdminAPIKey</code>)可能是一个永久的管理密钥，为了简化维护，它一年只改变一次。</span></p>
+<pre class="lang:php decode:true">use Algolia\AlgoliaSearch\SearchClient;&#13;
+$client = SearchClient::create(&#13;
+    'YourApplicationID',&#13;
+    'YourAdminAPIKey'&#13;
+);&#13;
+$index = $client-&gt;initIndex('demo_ecommerce');&#13;
+$index-&gt;saveObject(&#13;
+  [&#13;
+    'firstname' =&gt; 'Jimmie',&#13;
+    'lastname'  =&gt; 'Barninger',&#13;
+    'city'      =&gt; 'New York',&#13;
+    'objectID'  =&gt; 'myID'&#13;
+  ]&#13;
+);&#13;
+</pre>
+<h3 class="translated"><a id="using-the-jwt-token" class="anchor" href="#using-the-jwt-token" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>使用JWT令牌</h3>
+<p class="translated"><span>一个</span> <a href="https://jwt.io/introduction"> <span> JWT令牌</span> </a> <span>是一个庞大的不可读字符集，包含隐藏和编码的信息，被签名或加密算法掩盖。它由三部分组成:标题、正文和签名。它们之间用一个句号隔开:<code>Header.Body.Signature</code>。</span></p>
+<pre class="lang:json decode:true">EZPZAAdsqfqfzeezarEUARLEA.sqfdqsTIYfddhtreujhgGSFJ.fkdlsqEgfdsgkerGAFSLEvdslmgIegeVDEzefsqd&#13;
+</pre>
+<p class="translated"><b>JWT报头</b> <span>为<code>EZPZAAdsqfqfzeezarEUARLEA</code>，包含以下信息:</span></p>
+<pre class="lang:json decode:true">{&#13;
+  "alg": "HS256",&#13;
+  "typ": "JWT"&#13;
+}&#13;
+{&#13;
+  "sub": "1234567890",&#13;
+  "name": "John Doe",&#13;
+  "iat": 1516239022&#13;
+}&#13;
+</pre>
+<p class="translated"><span>有不同的算法可用，例如<code>RS256</code>和<code>HS256</code>。这里我们使用<code>HS256</code>，它要求在生成签名时使用一个私钥。“RS256”使用私钥和公钥组合。</span></p>
+<p class="translated"><b>JWT体</b> <span>(称为</span> <b>有效载荷</b> <span>)是<code>sqfdqsTIYfddhtreujhgGSFJ</code>，它包含用户的身份，帮助建立令牌用户的权限。它还给出其他信息，比如截止日期(越短越安全):</span></p>
+<pre class="lang:json decode:true">{&#13;
+  "sub": "1234567890",&#13;
+  "name": "John Doe",&#13;
+  "iat": 1516239022&#13;
+}&#13;
+</pre>
+<p class="translated"><b>签名</b> <span>是<code>fkdlsqEgfdsgkerGAFSLEvdslmgIegeVDEzefsqd</code>，</span> <span>，它是通过使用HS256散列方法组合报头、主体和共享私钥而生成的，如报头中所示。</span></p>
+<pre class="lang:json decode:true">HMACSHA256(&#13;
+  base64UrlEncode(header) + "." +&#13;
+  base64UrlEncode(payload),&#13;
+  secret)&#13;
+</pre>
+<p class="translated"><span>这就是你如何得到下面的令牌:<code>Header.Body.Signature</code> : </span></p>
+<pre class="lang:json decode:true">EZPZAAdsqfqfzeezarEUARLEA.sqfdqsTIYfddhtreujhgGSFJ.fkdlsqEgfdsgkerGAFSLEvdslmgIegeVDEzefsqd&#13;
+</pre>
+<h2 class="translated"><a id="a-word-about-authentication-authorization" class="anchor" href="#a-word-about-authentication-authorization" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>关于认证的一句话&amp;授权</h2>
+<p class="translated"><span>API密钥和JWT都用于认证和授权，但它们的工作方式不同。</span></p>
+<ul>
+<li aria-level="1" class="translated"><i> <span>认证</span> </i> <span>允许用户或应用程序使用API的一个或多个方法。</span></li>
+<li aria-level="1" class="translated"><i> <span>授权</span> </i> <span>定义了他们如何使用那些方法。有些app或用户只能读取数据；其他的可以更新；其他人是管理员(角色和权限)。API键也是如此，由它们的ACLS管理——它们可以是只读的、写访问的或管理的。</span></li>
+</ul>
+<p class="translated"><span> API密钥使用相同的API密钥进行认证和授权。JWT授权在生成授权令牌之前需要一个初始身份验证过程。令牌生成后，将在整个生态系统中使用，以确定令牌持有者可以做什么和不可以做什么。</span></p>
+<p class="translated"><span>另外，API密钥认证的是</span> <i> <span>应用</span> </i> <span>而不是</span> <i> <span>用户</span></i><span>；而JWT对用户和应用程序都进行身份验证。当然，您可以使用API密钥进行用户级授权，但它并不是为此而精心设计的——生态系统需要为每个用户或会话id生成和管理API密钥，这对系统来说是不必要的负担。</span></p>
+<h2 class="translated"><a id="a-word-about-better-protection-and-security" class="anchor" href="#a-word-about-better-protection-and-security" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>关于更好的保护和安全的一句话</h2>
+<p class="translated"><span>在安全性方面，API密匙和JWT都是易受攻击的</span> <i> <span>。</span> </i> <span>最好的安全措施是为所有的端到端通信实现一个安全的架构。</span></p>
+<p class="translated">也就是说，API密钥在历史上不太安全，因为它们依赖于隐藏的 <i> <span>。</span> </i> <span>你可以用SSL/TLS/HTTPS隐藏密钥，或者限制它们在后端进程中的使用。但是，你不能控制所有的API使用；API密钥可能会泄漏；HTTPS并不总是可能的；诸如此类。对于JWT，由于令牌经过了哈希处理/加密，因此它采用了更安全的方法，不太可能被暴露。</span></p>
+<h2 class="translated"><a id="what-information-is-in-a-jwt-token" class="anchor" href="#what-information-is-in-a-jwt-token" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a>JWT令牌中有什么信息？</h2>
+<p class="translated"><span>API</span><i><span>密钥</span> </i> <span>和JWT </span> <i> <span>令牌</span> </i> <span>之间最显著的区别是，JWT令牌是独立的:它们包含API需要的信息，以确保交易安全并确定令牌持有者的权限粒度。相比之下，API键使用它们的唯一性来获得初始访问权；但是API需要在一个中央表中找到一个键的相关ACL，以准确地确定这个键允许访问什么。通常，API密钥只提供应用程序级的安全性，给予每个用户相同的访问权限；而JWT令牌提供用户级访问。</span></p>
+<p class="translated">一个JWT令牌可以包含像它的截止日期和用户标识符这样的信息，以确定用户在整个生态系统中的权利。</p>
+<p class="translated">让我们来看看你可以在JWT令牌中包含的一些信息:</p>
+<pre class="lang:json decode:true">iss (issuer): identifies the principal that issued the JWT.&#13;
+sub (subject): identifies the principal that is the subject of the JWT. Must be unique&#13;
+aud (audience): identifies the recipients that the JWT is intended for (array of strings/uri)&#13;
+exp (expiration time): identifies the expiration time (UTC Unix) after which you must no longer accept this token. It should be after the issued-at time.&#13;
+nbf(not before): identifies the UTC Unix time before which the JWT must not be accepted&#13;
+iat (issued at): identifies the UTC Unix time at which the JWT was issued&#13;
+jti (JWT ID): provides a unique identifier for the JWT.&#13;
+</pre>
+<p class="translated"><span>示例</span></p>
+<pre class="lang:json decode:true">{&#13;
+    "iss": "stackoverflow", &#13;
+    "sub": "joe", &#13;
+    "aud": ["all"], &#13;
+    "iat": 1300819370, &#13;
+    "exp": 1300819380, &#13;
+    "jti": "3F2504E0-4F89-11D3-9A0C-0305E82C3301",&#13;
+    "context": &#13;
+    { &#13;
+        "user": &#13;
+        { &#13;
+            "key": "joe", &#13;
+            "displayName": "Joe Smith" &#13;
+        }, &#13;
+        "roles":["admin","finaluser"] &#13;
+    } &#13;
+}&#13;
+</pre>
+<h2 class="translated"><a id="jwt-authorization-offers-flexibility-reliability-and-more-security" class="anchor" href="#jwt-authorization-offers-flexibility-reliability-and-more-security" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> JWT授权提供了灵活性、可靠性和更多的安全性</h2>
+<p class="translated">这是一个场景。你有很多应用:</p>
+<ul>
+<li aria-level="1" class="translated"><span>允许我们跟踪所有用户的API使用情况的应用</span></li>
+<li aria-level="1" class="translated"><span>提供账单和客户数据的应用</span></li>
+<li aria-level="1" class="translated"><span>允许API用户在不同系统上更改设置的应用</span></li>
+<li aria-level="1" class="translated"><span>检索产品数据或业务内容的应用</span></li>
+<li aria-level="1" class="translated"><span>等等</span></li>
+</ul>
+<h3 class="translated"><a id="doing-it-with-api-keys" class="anchor" href="#doing-it-with-api-keys" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>用API键做</h3>
+<p class="translated"><span>运行节目的API多了，问题就出现了。您将所有这些访问所需的100多个API密钥存储在哪里？管理太多的API密钥需要将API密钥表提供给生态系统中运行的所有应用程序。</span></p>
+<p class="translated"><span>因此，生态系统中的每个应用都必须了解数据库。每个应用程序都需要连接并读取该表。一些应用程序将被允许生成新密钥或修改现有密钥。所有这些都很好，但是变得难以维持。管理这个问题的一种方法是创建一个API，根据这个数据库验证一个键。但是为此，您需要第二个身份验证系统来连接到这个API。</span></p>
+<p class="translated"><span>不仅检索API密钥很麻烦，而且维护它们的持续时间和授权级别也很繁琐。而且并不是每个app都是app级别的功能，他们需要用户级别的权限。此外，API的使用方式因系统而异。更糟糕的是，不同的应用程序共享API密钥，因此依赖于不同的应用程序来维护共享API密钥的正确访问级别。</span></p>
+<h3 class="translated"><a id="switching-over-to-jwt" class="anchor" href="#switching-over-to-jwt" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>切换到JWT</h3>
+<p class="translated">任何需要认证的API都可以很容易地切换到JWT的授权。通过JWT授权，您可以获得基于用户的身份验证。一旦用户通过身份验证，用户将获得一个可以在所有系统上使用的安全令牌。用户(以及令牌)的管理是集中的。您设置了访问权限，并为每个用户提供了每个系统的不同权限。JWT授权端点对用户进行身份验证并创建令牌。</p>
+<p class="translated">有了这个架构，下一步就是创建一个单点登录到完整的生态系统中，并且只依赖令牌来获得权限。最后，最简单、最可靠、最易于管理的方法是创建一个端点，专门进行身份验证和授权，这样整个生态系统中的所有其他服务器都可以依靠这个中心点来授权客户端和服务器之间的API交互。</p>
+<p class="translated"><img loading="lazy" class="alignnone wp-image-14059" src="../Images/7c5638233e5648fdbfaf7dd8150a690b.png" alt="jwt single sign on authentication and authorization" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/02/jwt-singline-sign-on-280x178.png 280w, https://blog-api.algolia.com/wp-content/uploads/2022/02/jwt-singline-sign-on-630x400.png 630w, https://blog-api.algolia.com/wp-content/uploads/2022/02/jwt-singline-sign-on-768x488.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/02/jwt-singline-sign-on.png 1074w" sizes="(max-width: 656px) 100vw, 656px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/02/jwt-singline-sign-on-280x178.png"/></p>
+<h2 class="translated"><a id="in-sum-sometimes-jwt-is-absolutely-needed-and-sometimes-it%e2%80%99s-overkill" class="anchor" href="#in-sum-sometimes-jwt-is-absolutely-needed-and-sometimes-it%e2%80%99s-overkill" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>总之，有时候JWT是绝对需要的，有时候又是多余的</h2>
+<p class="translated"><span>作为一名应用程序开发人员，我在构建API时主要关心的是正确使用它们并提供正确的数据和功能。因此，我非常依赖DevOps的建议来推荐最佳和最易管理的安全性。但这不仅仅是安全问题。在一个大型生态系统中，我们需要一种简单而健壮的方法来跨多个系统和服务器访问微服务，这种方法最好通过集中身份验证和授权流程来实现。</span></p>
+<h3 class="translated"><a id="jwt-is-overkill-in-the-following-two-situations" class="anchor" href="#jwt-is-overkill-in-the-following-two-situations" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a>【JWT】在以下两种情况下是矫枉过正:</h3>
+<ul>
+<li aria-level="1" class="translated"><span>只有几个API的简单生态系统</span></li>
+<li aria-level="1" class="translated"><span>第三方原料药供应商。</span></li>
+</ul>
+<p class="translated">第三方API应该易于使用和快速实现，集成时前期工作很少。此外，您需要共享用于签署令牌的密钥。所以两端都控制的时候最好，这在第三方场景中不太可能。您还需要信任实现。例如，API可以选择忽略截止日期或NBF(“不在此之前”)。</p>
+<h3 class="translated"><a id="jwt-is-not-overkill-when-%e2%80%a6" class="anchor" href="#jwt-is-not-overkill-when-%e2%80%a6" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> JWT不是矫枉过正当…</h3>
+<p class="translated"><span>当多个服务需要在一个巨大的网络上相互通信时，您会想要使用JWT。集中和保护这些交流至关重要。当每个网络或应用程序需要基于用户而不仅仅是应用程序的不同访问级别时，这一点尤为重要。控制流量并能够对网络呼叫进行优先级排序也很重要。最后，在添加新的微服务或改进现有微服务时，您需要简单的即插即用体验。</span></p>
+<blockquote><p class="translated">相关链接–</p>
+<ol>
+<li aria-level="1" class="translated"><span>深究<a href="https://www.algolia.com/blog/engineering/search-101-what-is-an-api-key-how-does-it-provide-api-security/"> API密钥安全</a>。</span> <span> </span></li>
+<li aria-level="1" class="translated">对于CLI人员来说，一个全新的<a href="https://www.algolia.com/blog/engineering/algolia-devtool-introduction-the-algolia-cli/"> Algolia CLI工具</a>。</li>
+<li aria-level="1" class="translated">关于Algolia 的安全性和合规性。</li>
+</ol>
+</blockquote>
+</div></div>    
+</body>
+</html>

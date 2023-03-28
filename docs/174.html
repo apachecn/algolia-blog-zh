@@ -1,0 +1,87 @@
+<html>
+<head>
+<title>Using ESLint, tagged template literals, and more to simplify Tailwind CSS | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">使用ESLint、标记模板文字等来简化Tailwind CSS </h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/simplifying-tailwind-css-with-eslint-tools-tagged-template-literals-and-a-lot-more/#0001-01-01">https://www.algolia.com/blog/engineering/simplifying-tailwind-css-with-eslint-tools-tagged-template-literals-and-a-lot-more/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated"><span>经过多年的开发，我们决定将我们最重要的产品之一——多应用仪表板的用户界面标准化。我们这样做是为了我们的客户和内部用户(易用性)以及我们的产品团队(更容易的设计过程、决策和编码)。我们还需要与我们公司的品牌更加一致。</span></p>
+<p class="translated"><span>为此，我们建立了一个内部设计系统，叫做卫星。在开发Satellite的过程中，我们研究了UI库的不同CSS解决方案，各有利弊:</span> <a href="https://sass-lang.com/"> <span> Saas </span> </a> <span>，</span> <a href="https://github.com/css-modules/css-modules"> <span> css模块</span> </a> <span>，</span><a href="https://cssinjs.org/?v=v10.9.0"><span>CSS-in-js</span></a><span>。</span></p>
+<p class="translated"><span>考虑到框架类似于Bootstrap，我们选定了CSS框架</span><a href="https://tailwindcss.com/"><span>Tailwind CSS</span></a><span>。为什么？</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>纯CSS(无JS运行时)——性能良好</span></li>
+<li aria-level="1" class="translated"><span>倾向于生成更小的CSS样式表文件(清除后)——对性能也有好处</span></li>
+<li aria-level="1" class="translated"><span>开发新组件时，不要在CSS文件和javascript代码之间切换</span></li>
+<li aria-level="1" class="translated">没有时间浪费在寻找实用程序类的好名字上</li>
+<li aria-level="1" class="translated"><span>有助于提高用户界面的一致性</span></li>
+<li aria-level="1" class="translated"><span>允许你定义一个间距和颜色的集合，很好地映射到设计符号(“受限调色板”)</span></li>
+</ul>
+<p class="translated">然而……顺风有一个缺点:复杂组件的可读性。当你不习惯它的类名时，顺风的汤可能很难消化。在我们的例子中，情况变得更糟，因为我们必须使用CSS类的前缀版本(<code>stl-</code>)来避免与我们的遗留CSS冲突，这给我们的类名字符串增加了更多的噪音和长度。</p>
+<p class="translated"><span>这篇文章展示了我们如何减轻可读性问题。首先，我们使用了几种web开发技术，比如标记文字和插值，来缩短字符串的长度。然后我们用linter工具ESLint简化了类名的使用，用两个工具提供了更好的DX:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>一个ESLint插件，因为当时没有</span> <a href="https://www.npmjs.com/package/eslint-plugin-tailwindcss"> <span>官方ESLint-Tailwind插件</span> </a> <span>。</span></li>
+<li aria-level="1" class="translated">一个Visual Studio代码扩展，通过提供对Tailwind的许多类的智能感知来简化使用。 <a href="https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss"> <span>官方ESLint VS extension</span></a><span>对我们不起作用，因为它期望项目中存在一个配置文件(<code>tailwind.config.js</code>)，而我们当时使用的是预构建版本。在其他任务中，我们需要VS来处理我们的配置文件。</span></li>
+</ul>
+<p class="translated">这或多或少就是背景。现在让我们进入实现阶段。</p>
+<h2 class="translated"><a id="tailwind-%e2%80%93-classnames-are-good-but-can-get-complex" class="anchor" href="#tailwind-%e2%80%93-classnames-are-good-but-can-get-complex" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a></h2>
+<h3 class="translated"><a id="classnames-are-good" class="anchor" href="#classnames-are-good" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>类名不错</h3>
+<p class="translated">像<a href="https://tailwindcss.com/"><span>Tailwind</span></a><span>这样的实用程序优先的CSS框架附带了大量预先存在的实用程序类，您可以在HTML和JavaScript中直接使用它们。这些类实现了代码的一致性。而且它们是完全可配置的:有了相同的类名，我们可以很容易地用变体来标记我们的应用程序。因此，使用Tailwind CSS类名使我们能够创建一组一致的颜色、间距、字体——本质上是CSS的所有东西——并推出一个易于实现的设计系统。</span></p>
+<h3 class="translated"><a id="but-tailwind-classes-can-get-complex" class="anchor" href="#but-tailwind-classes-can-get-complex" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>但是顺风类可以变复杂</h3>
+<p class="translated">我们想简化对Tailwind类的使用。为此，我们使用了标记模板文字、插值和条件等技术。</p>
+<p class="translated">我们从一长串CSS类开始，如下所示:</p>
+<pre class="lang:css decode:true">const className = 'stl-inline-flex stl-items-center stl-justify-center stl-rounded-full stl-h-10 stl-w-10 stl-bg-blue-100';&#13;
+</pre>
+<p class="translated"><span>但是我们很快意识到这并不容易读懂。此外，它包含了不必要的噪声，比如前缀<code>stl-</code>，用来避免与其他类冲突。因此，我们求助于</span> <a href="https://www.freecodecamp.org/news/a-quick-introduction-to-tagged-template-literals-2a07fd54bc1d/"> <span>标记的模板文字</span> </a> <span>来移除字符串中的前缀。我们创建了一个<code>stl</code> </span> <i> <span>标签:</span> </i></p>
+<pre class="lang:css decode:true">const className = stl 'inline-flex items-center justify-center rounded-full h-10 w-10 bq-blue-100';&#13;
+</pre>
+<p class="translated">最后，我们想要更多的可读性。所以我们加了:</p>
+<ul>
+<li aria-level="1" class="translated"><span>为了更好的可读性和公共元素的分组，使用单独的行</span></li>
+<li aria-level="1" class="translated"><span>内联标记模板文字插值</span></li>
+<li aria-level="1" class="translated"><span>更强大、适应性更强的造型条件</span></li>
+</ul>
+<p class="translated"><span>结果是一段优雅的(CSS)代码:</span></p>
+<pre class="lang:css decode:true">const className = stl '&#13;
+inline-flex items-center justify-center&#13;
+h-10 w-10&#13;
+${round &amp;&amp; 'rounded-full'}&#13;
+${iscool ? 'bg-blue-100' : 'bq-red-100'}&#13;
+;&#13;
+</pre>
+<h2 class="translated"><a id="eslint-%e2%80%93-effortlessly-correcting-human-error" class="anchor" href="#eslint-%e2%80%93-effortlessly-correcting-human-error" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a>ESLint——毫不费力地纠正人为错误</h2>
+<p class="translated">优雅是一回事。正确是另一回事。很容易拼错类，尤其是当在Tailwind中有很多类需要学习的时候。</p>
+<p class="translated">这里有一个可能出错的例子</p>
+<pre class="lang:css decode:true">cost className = stl 'felx space-between text-gray-200’;&#13;
+</pre>
+<p class="translated">你能发现这些错误吗？</p>
+<ul>
+<li aria-level="1" class="translated"><span>切换字母(felx代表flex) </span></li>
+<li aria-level="1" class="translated"><span>不完整或不存在的类(空格分隔)</span></li>
+<li aria-level="1" class="translated"><span>美式vs英式拼写(灰色)</span></li>
+</ul>
+<h3 class="translated"><a id="eslint-to-the-rescue-%e2%80%93-creating-an-eslint-plugin" class="anchor" href="#eslint-to-the-rescue-%e2%80%93-creating-an-eslint-plugin" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> ESLint来拯救——创建ESLint插件</h3>
+<p class="translated">我们需要验证人们使用的类是正确的。所以我们使用了linter工具<a href="https://eslint.org/"><span>ESLint</span></a><span>来解析代码，分析它，并报告错误。为了保证代码质量，我们创建了一个ESLint插件来报告不存在的类名错误。</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-full wp-image-14782" src="../Images/36896bf5d0140589601c39da92652e2c.png" alt="eslint errors" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/04/eslint-errors.png 1999w, https://blog-api.algolia.com/wp-content/uploads/2022/04/eslint-errors-320x68.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/04/eslint-errors-720x152.png 720w, https://blog-api.algolia.com/wp-content/uploads/2022/04/eslint-errors-768x163.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/04/eslint-errors-1536x325.png 1536w" sizes="(max-width: 1999px) 100vw, 1999px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/04/eslint-errors.png"/></p>
+<p class="translated"><span>下面是进行验证的中央ESLint代码:</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-full wp-image-14774" src="../Images/75665316f5c3b3889be54661cf1fda3d.png" alt="eslint ast " srcset="https://blog-api.algolia.com/wp-content/uploads/2022/04/eslint-ast.png 1254w, https://blog-api.algolia.com/wp-content/uploads/2022/04/eslint-ast-203x178.png 203w, https://blog-api.algolia.com/wp-content/uploads/2022/04/eslint-ast-456x400.png 456w, https://blog-api.algolia.com/wp-content/uploads/2022/04/eslint-ast-768x674.png 768w" sizes="(max-width: 1254px) 100vw, 1254px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/04/eslint-ast.png"/></p>
+<p class="translated"><span> ESLint使用抽象语法树(AST ),可以访问单独的代码行。AST本质上将代码的字符串转换成节点，您可以将节点解析为集合和元素。</span></p>
+<p class="translated">下面是ESLint解析代码的细节。整个表达式是一个类型为<code>VariableDeclataion</code> : 的<code>node</code></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-full wp-image-14778" src="../Images/58ad61ac947558182432b014425d8eee.png" alt="variable declaration" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/04/variable-declaration.png 1470w, https://blog-api.algolia.com/wp-content/uploads/2022/04/variable-declaration-320x122.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/04/variable-declaration-720x274.png 720w, https://blog-api.algolia.com/wp-content/uploads/2022/04/variable-declaration-768x293.png 768w" sizes="(max-width: 1470px) 100vw, 1470px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/04/variable-declaration.png"/></p>
+<p class="translated"><span>我们想要解析右边的表达式，即<code>TaggedTemplateExpression</code>。如您所见，有一个回调函数处理这种表达式:</span></p>
+<p class="translated">【T2<img loading="lazy" class="aligncenter size-full wp-image-14786" src="../Images/7d8428912b44822f12e0e17ac8f52639.png" alt="tagged template expression" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/04/tagged-template-expression.png 1999w, https://blog-api.algolia.com/wp-content/uploads/2022/04/tagged-template-expression-320x110.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/04/tagged-template-expression-720x249.png 720w, https://blog-api.algolia.com/wp-content/uploads/2022/04/tagged-template-expression-768x265.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/04/tagged-template-expression-1536x530.png 1536w" sizes="(max-width: 1999px) 100vw, 1999px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/04/tagged-template-expression.png"/></p>
+<p class="translated">在<code>TaggedTemplateExpression</code>回调中，我们收集模板中的所有字符串。例如:</p>
+
+<p class="translated"><img loading="lazy" class="aligncenter size-full wp-image-14780" src="../Images/99262af763b3927970b6fafdf05ba7e3.png" alt="template element" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/04/template-element.png 1999w, https://blog-api.algolia.com/wp-content/uploads/2022/04/template-element-320x106.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/04/template-element-720x238.png 720w, https://blog-api.algolia.com/wp-content/uploads/2022/04/template-element-768x254.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/04/template-element-1536x508.png 1536w" sizes="(max-width: 1999px) 100vw, 1999px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/04/template-element.png"/></p>
+
+<p class="translated"><img loading="lazy" class="aligncenter size-full wp-image-14784" src="../Images/48f8c2fcb4ee62478903adfee4d5823f.png" alt="literals" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/04/literals.png 1999w, https://blog-api.algolia.com/wp-content/uploads/2022/04/literals-320x103.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/04/literals-720x231.png 720w, https://blog-api.algolia.com/wp-content/uploads/2022/04/literals-768x247.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/04/literals-1536x493.png 1536w" sizes="(max-width: 1999px) 100vw, 1999px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/04/literals.png"/></p>
+<p class="translated">一旦收集完成，就会有另一个注册的回调循环遍历收集到的类名，并确认它们是否存在。它对集合<code>validClassNames</code> : 执行此操作</p>
+<p class="translated"><img loading="lazy" class="aligncenter size-full wp-image-14788" src="../Images/404d0d78db22bf95ee450b648ea15a5e.png" alt="tagged template expression eslint callback" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/04/tagged-template-expression-eslint-callback.png 1999w, https://blog-api.algolia.com/wp-content/uploads/2022/04/tagged-template-expression-eslint-callback-320x143.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/04/tagged-template-expression-eslint-callback-720x321.png 720w, https://blog-api.algolia.com/wp-content/uploads/2022/04/tagged-template-expression-eslint-callback-768x342.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/04/tagged-template-expression-eslint-callback-1536x685.png 1536w" sizes="(max-width: 1999px) 100vw, 1999px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/04/tagged-template-expression-eslint-callback.png"/></p>
+<p class="translated"><span>就这样。我们马上知道创建这个验证插件是正确的，因为我们实际上在我们的系统以及现有的仪表板代码库中发现了一些拼写错误！</span></p>
+<h3 class="translated"><a id="proposing-suggestions-with-our-eslint-visualstudio-extension" class="anchor" href="#proposing-suggestions-with-our-eslint-visualstudio-extension" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>用我们的ESLint VisualStudio扩展提出建议</h3>
+<p class="translated"><span>我们创建的最后一个工具是Visual Studio代码中的一个扩展。使用与我们插件中相同的逻辑，ESLint建议开发人员键入类型脚本类。这种智能感知使开发人员不必猜测或去Tailwind网站搜索和找到正确的类。</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-full wp-image-14776" src="../Images/cde2ad20585bb0d433b897fefa87a63d.png" alt="" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/04/visual-studio-code-extension.gif"/></p>
+<p class="translated"><span>正如你在GIF中看到的，它不仅给出了类名，还显示了每个建议的颜色或有用的图标。</span></p>
+<p class="translated"><span>有了Tailwind CSS和ESLint，我们已经能够通过改进DX来执行我们的标准(在Github上可以内部访问)。</span></p>
+</div></div>    
+</body>
+</html>

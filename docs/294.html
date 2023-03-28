@@ -1,0 +1,197 @@
+<html>
+<head>
+<title>30 days to improve our crawler performance by 50 percent | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">30天将我们的爬虫性能提高50 %|</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/30-days-to-improve-our-crawler-performance-by-50-percent/#0001-01-01">https://www.algolia.com/blog/engineering/30-days-to-improve-our-crawler-performance-by-50-percent/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">高性能应用程序的速度与其最慢的组件一样快。这在依赖第三方API组件的并行分布式系统中尤其具有挑战性。虽然外部组件可能很快，但组合它们需要仔细的设计、实验和测试，以避免不必要的低效。要实现最低限度的快速性能，但最具竞争力的产品需要远远超过最低限度。</p>
+<p class="translated">然而，不管一个软件过程有多好，总会有另一个客户带着一个独特的用例出现——你会发现还有更多事情要做。这种情况发生在我们的Crawler中，这是一种使用并行和分布式计算架构来抓取大量网站的产品，在运行中提取和构建信息，使每个网站都可以搜索。</p>
+<p class="translated">这篇文章是关于我们如何分析和改造我们的应用程序爬虫的内部，寻找瓶颈，最小化资源，简化任务等等，以优化这个复杂的并行和分布式软件的处理。</p>
+<h2 class="translated"><a id="technical-overview" class="anchor" href="#technical-overview" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>技术概述</span></h2>
+<p class="translated"><span>在深入研究之前，先快速浏览一下我们的技术堆栈。</span></p>
+<p class="translated"><span>后端完全由</span> <b> NodeJS和</b><span>Typescript提供动力，托管在</span><b>【GKE】</b><span>(Google Kubernetes引擎)</span> <b>云SQL </b> <span>。我们使用memorystore进行存储，使用RabbitMQ进行队列。</span></p>
+<p class="translated">在开始之前，我们使用的是1 VCPU和4GB内存的小型N1机器，主要是因为主要的计算是由我们的工作人员完成的，这些工作人员非常轻便并且可以水平扩展。</p>
+<figure id="attachment_11363" aria-describedby="caption-attachment-11363" class="wp-caption aligncenter"><img loading="lazy" class="wp-image-11363 size-full" src="../Images/589fc8fb2ae3af3f8c4321968e1ddd7a.png" alt="Simplified view of our infrastructure" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/02/image9.png 532w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image9-290x178.png 290w" sizes="(max-width: 532px) 100vw, 532px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/02/image9.png"/><figcaption id="caption-attachment-11363" class="wp-caption-text">Simplified view of our infrastructure</figcaption></figure>
+<p class="translated">如你所见，这是一个相当标准的架构，由一个经理来安排工作，工作人员的数量随着负载的增加而增加。因为这个基础设施的所有其他部分都是由谷歌管理的，我们认为我们的大多数问题都会出现在管理器中，这是一个SPOF(单点故障)。</p>
+<h3 class="translated"><a id="the-crawler-as-a-distributed-system" class="anchor" href="#the-crawler-as-a-distributed-system" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>将爬虫视为分布式系统</h3>
+<p class="translated">自2年多前成立以来，我们的定制爬虫已经成长了很多。从localhost MVP，到Heroku，然后是一个<a href="https://www.algolia.com/blog/engineering/challenging-migration-heroku-google-kubernetes-engine/">挑战性的GKE迁移</a>，爬虫的能力已经扩展，我们已经看到企业客户的稳定增长。</p>
+<p class="translated">一夜之间增长2倍并不容易:高度并行的代码和基础设施带来了巨大的挑战。但是也有很多优化的方法。</p>
+<h2 class="translated"><a id="identifying-potential-bottlenecks-with-a-stress-test" class="anchor" href="#identifying-potential-bottlenecks-with-a-stress-test" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>通过压力测试识别潜在瓶颈</span></h2>
+<p class="translated">管理一个爬虫不是一件简单的任务。该过程严重依赖于移动和脆弱的组件、队列、数据库存储、网络本身、水平扩展、web标准等。为了帮助我们完成这项正在进行的任务，我们正在使用数据狗和GKE密切监控我们系统的所有部分。一切都是用防御性编程和任何事情都可能在任何给定时间失败的思想构建的。当网络变得不可靠时，或者当我们在后端执行用户定义的JavaScript代码时，这被证明是非常有用的。<span><br/></span><span><br/></span>因此，我们借此机会实施了 <b>端到端基准测试</b> <span>，以便我们能够发现新的罪魁祸首，突出潜在的瓶颈，并规划未来的改进。</span></p>
+<p class="translated">为了做到这一点，我们使用了我们的暂存环境，并编写了一个脚本来在很短的时间内创建和触发几千个爬虫。虽然这个数字起初可能看起来不高，但每个爬虫实际上可以同时发现、获取、提取和 <span>索引</span> <b>数百万个URL。</b></p>
+<h2 class="translated"><a id="failing-fast" class="anchor" href="#failing-fast" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>衰快</span></h2>
+<p class="translated"><span>因为我们对这些新功能相当乐观，所以我们一开始就没有计划失败。这当然意味着一切很快就会失败。</span></p>
+<p class="translated"><span>我们在开始时学到了非常好的东西，并且很好地提醒我们，偷工减料可能会在多年后伤害到你:我们的Kubernetes集群是手动创建的，因此我们的试运行和生产出现了相当大的差异，无论是有意的(为了节省成本)还是无意的。</span> <span> <br/> </span> <span>第一次测试失败，因为集群无法扩展并承担我们当前生产中的负载。所以第一批几乎没用。</span> <span> <br/> </span> <span>然而，这被证明是同步我们的配置并将Terraform放回我们的路线图中的好时机。Terraform有助于编排复杂的基础设施并随意复制，对Kubernetes尤其有用，使它成为我们(以及管理一系列服务的每个人)真正的游戏规则改变者。</span></p>
+<h2 class="translated"><a id="failing-hard" class="anchor" href="#failing-hard" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>不成材难</span></h2>
+<p class="translated"><span>尽管开局不利，但我们仍然对基础设施的整体稳定性充满信心。但事实证明，这一过程中失败的地方更多。虽然这可能伤害了我们开发人员的感情，但这是最好的。以下是我们失败的原因、我们学到的东西以及我们改进筹码的地方。</span></p>
+<h3 class="translated"><b>减少RabbitMQ中的队列占用量</b></h3>
+<p class="translated"><span>我们集中使用RabbitMQ在我们的多区域集群中传输我们的工作。工作人员订阅单个扇出队列，该队列对作业进行负载平衡，GKE使用这些指标根据负载自动扩展我们的集群。没什么特别的，但它工作得很好，我们对这个非常强大的软件有十足的信心。</span></p>
+<p class="translated"><span>然而，当在这些工作器中获取和提取页面时，作业也被发送回不同的索引服务，该服务将作业推送到我们的监控堆栈，并最终到达Algolia。这个索引步骤是按爬虫分开的，这意味着我们有N个客户的N个队列。</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-full wp-image-11365" src="../Images/a22196941c73cc6fecb9b23980a41710.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/02/image11.png 521w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image11-247x178.png 247w" sizes="(max-width: 521px) 100vw, 521px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/02/image11.png"/></p>
+<p class="translated"><span>通过这种设置，我们可以根据负载来扩展工作线程(CPU最密集的任务),但在这一步之后独立控制每个爬虫，这样我们就可以计算全局范围，而不需要共享内存(例如，索引的全局速率限制、最大URL、有效负载验证)。</span></p>
+<p class="translated">我们几乎不知道大量的空队列会对RabbitMQ产生巨大的影响。 <b>所有队列都在消耗大量内存和CPU——即使在空闲时</b> <span>。在基准测试期间，我们很快达到了一个不合适的上限，这是我们以前认为无法达到的。</span></p>
+<p class="translated"><span>幸运的是，我们想到了一个解决方案:使用带有</span> <a href="https://www.rabbitmq.com/ttl.html#queue-ttl" target="_blank" rel="noopener noreferrer"> <b>内置TTL特性</b> <span>的短命队列。</span> </a> <span>然而，随之而来的第二个问题是:队列配置在创建后不能修改，这个问题在生产中给我们造成了很大的打击，因为在开发过程中，我们总是从头开始重新创建整个队列。</span> <span> <br/> </span> <span>删除旧队列可能需要相当长的时间，因为我们开发人员的目标是聪明地偷懒，我们找到了一个完美的天真解决方案，并将</span> <b>爬虫版本放在队列名称</b> <span>中。</span> <span> <br/> </span> <span>这样，我们现在每次部署都是从一个“全新的”环境开始，RabbitMQ只需在几分钟后自动处理旧队列。</span></p>
+<figure id="attachment_11367" aria-describedby="caption-attachment-11367" class="wp-caption aligncenter"><img loading="lazy" class="size-large wp-image-11367" src="../Images/610c088a04f6e4f9866e8027a3b59890.png" alt="The drop in CPU consumption after the TTL was applied." srcset="https://blog-api.algolia.com/wp-content/uploads/2021/02/Screenshot-2021-02-03-at-19.56.37-1-720x326.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/02/Screenshot-2021-02-03-at-19.56.37-1-320x145.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/02/Screenshot-2021-02-03-at-19.56.37-1-768x348.png 768w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/02/Screenshot-2021-02-03-at-19.56.37-1-720x326.png"/><figcaption id="caption-attachment-11367" class="wp-caption-text">The drop in CPU consumption after the TTL was applied.</figcaption></figure>
+<p class="translated"><span>解决方案:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>使用非常短的实时队列(15分钟),即使我们知道我们每天都要处理事情</span></li>
+<li aria-level="1" class="translated"><span>版本队列名，这样你就可以随时丢弃并从头开始重新创建一切</span></li>
+</ul>
+<h3 class="translated"><a id="improving-cost-and-resources-usage-in-kubernetes" class="anchor" href="#improving-cost-and-resources-usage-in-kubernetes" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>提高Kubernetes的成本和资源使用率</b></h3>
+<p class="translated">Kubernetes是一个需要掌握的非常复杂的系统，在爬虫团队中，我们不是基础设施专家。当我们在大约2年前进行迁移以实现更好的自动扩展时，我们主要关注的是在保持成本可接受的情况下简单地让事情运转起来。 <span>在进行这些基准测试时，我们意识到小型机器并不适合所有情况。</span></p>
+<p class="translated"><span>成本不会线性增加，也就是说，机器越大，成本越低。Kubernetes总是使用少量的CPU和内存，因此</span><b/><b>机器越大，占用空间</b> <span>就越小。</span> <span> <br/> </span></p>
+<p class="translated"><span>总的来说，在迁移之后，我们</span> <b>降低了我们的基础成本</b><span/><b>浪费了更少的CPU </b> <b>并提高了我们的性能</b> <span>仅仅通过改变一些需求。</span></p>
+<p class="translated"><span>解决方案:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>我们迁移到</span> <a href="https://cloud.google.com/compute/docs/machine-types" target="_blank" rel="noopener noreferrer"> <span> E2高cpu成本优化机器</span> </a> <span>，没有硬盘</span></li>
+<li aria-level="1" class="translated"><span>我们更改了所有资源要求，以允许Kubernetes玩更好的俄罗斯方块游戏(注意:默认情况下，Kubernetes调度程序不会尝试填满100%的节点)</span></li>
+</ul>
+<figure id="attachment_11356" aria-describedby="caption-attachment-11356" class="wp-caption aligncenter"><img loading="lazy" class="size-large wp-image-11356" src="../Images/a17bcb9f2af3f6d442b854d64a36fefc.png" alt="Total RAM consumption with a 50% improvement" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/02/image2-720x273.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image2-320x121.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image2-768x292.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image2.png 1644w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/02/image2-720x273.png"/><figcaption id="caption-attachment-11356" class="wp-caption-text">Total RAM consumption with a 50% improvement</figcaption></figure>
+<h3 class="translated"><b>无服务器和可扩展性</b></h3>
+<p class="translated"><span>在应用了相同的配置后，</span> <b>第二个基准测试也很快失败了</b> <span>因为我们没有正确地考虑规模。</span> <span> <br/> </span> <span>在Kubernetes中，即使你现在“无服务器”，你仍然被捆绑在一个水平扩展策略、磁盘扩展策略、CPU扩展策略等上..并不是所有的东西都会神奇地扩展，成本通常会随着扩展而扩展——你可能会依赖像Postgres或Redis这样的托管服务，它们还没有配置为承担巨大的负载。</span></p>
+<p class="translated"><span>这意味着配置一切，使其具有更好的最小值、更宽松的最大值、基于托管服务负载的自动扩展，以及无处不在的高可用性(区域或地区性)。</span></p>
+<p class="translated"><span>在我们的设置中，这意味着:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>缩放我们的</span> <a href="https://www.datadoghq.com/blog/autoscale-kubernetes-datadog/" target="_blank" rel="noopener noreferrer"> <span>工人用Datadog度量</span> </a> <span>(本例中为RabbitMQ度量)</span></li>
+<li aria-level="1" class="translated"><span>允许我们的</span> <a href="https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/" target="_blank" rel="noopener noreferrer"> <span> HPA </span> </a> <span>(水平Pod自动缩放器)中有数百名工人，而不是只有几十名(有一个最大值有助于控制成本)</span></li>
+<li aria-level="1" class="translated"><span>在我们位于GCP的</span> <span> <a href="https://cloud.google.com/sql/docs/postgres/high-availability" target="_blank" rel="noopener noreferrer"> Postgresql上自动扩展并激活高可用性</a> </span></li>
+<li aria-level="1" class="translated">激活我们的<a href="https://cloud.google.com/memorystore/docs/redis/pricing" target="_blank" rel="noopener noreferrer">存储库</a>上的HA</li>
+</ul>
+<p class="translated"><span>尽管99%的时间负载都是“正常”的，高可用性、区域复制和基准测试——你需要确保你能够处理大峰值——加起来就是初始成本。</span></p>
+<p class="translated">在GCP，这意味着每个月要多花几百美元，如果你有1:1分期付款，这个数字还要翻倍。因此，对一切进行良好的测试和配置可能会花费很多，但这是最终让客户满意所要付出的隐性代价。</p>
+<h3 class="translated"><a id="decreasing-dns-latency-and-errors-94-perf-increase" class="anchor" href="#decreasing-dns-latency-and-errors-94-perf-increase" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>减少DNS延迟和错误&gt; 94%的性能提升</b></h3>
+<p class="translated"><span>在你遇到问题 <span>之前被</span> <b>高度忽视的东西，就是DNS栈。通常这是一些不需要进一步优化的低层次的东西。但是一旦你关心网络和</b></span> <b>大规模高性能</b> <span>你就会遇到大麻烦。</span></p>
+<p class="translated"><span>一旦基础设施得到纠正，基准开始运行，我们就开始监控Datadog仪表板中的一切，我们注意到DNS问题</span> <b>增加</b> <span>。在一个非常强大的环境中，GCP让我们感到非常惊讶，对网站的简单调用都失败了，更糟糕的是，我们的Algolia调用也失败了。</span></p>
+<p class="translated"><span>错误隐晦，一点帮助都没有，像</span><i><span>【connect EADDRNOTAVAIL 95 . 211 . 230 . 144:443】【getaddrinfo enot found 8j 0 ky 6j 9 fn-1 . algolianet . com】【连接超时】</span> </i> <span>。</span> <span> <br/> </span> <span>显然，我们知道Algolia已经启动并运行，我们试图在本地重现这个问题，但由于我们个人电脑的限制，这几乎是不可能的。</span> <span> <br/> </span> <span>这些错误只在高负载时出现，在正常使用情况下我们无法重现。</span></p>
+<p class="translated">如前所述，这是一个普遍被忽视的话题，所以我们以前自然没有太关注它。但是很明显，我们的HTTP堆栈没有得到适当的优化。</p>
+<p class="translated"><span>经过大量的时间调查我们终于发现了几个不同的问题</span><b/><span>:</span></p>
+
+<p class="translated"><span/><b>第一个修复是通过在所有HTTP调用中始终使用<code>{ family: 4 }</code>来强制IPv4 </b> <span>解析。这个简单的修复极大地提高了我们的解决时间和成功率。</span></p>
+<pre><code>http.get({ family: 4, ... }, cb);</code></pre>
+<p class="translated">第二个更大的修正是在整个系统中使用一个共享的HTTP代理，只打开一个TCP池。这意味着将代理传递给algoliasearch客户端，以便进行简单的获取。</p>
+<pre><code>// agent.ts&#13;
+export const httpsAgent = new https.Agent({&#13;
+  keepAlive: true,&#13;
+  timeout: 60000,&#13;
+  maxFreeSockets: 2000,&#13;
+  scheduling: 'fifo',&#13;
+});&#13;
+&#13;
+// algolia.ts&#13;
+import algoliasearch from 'algoliasearch';&#13;
+import { httpsAgent } from '../http/agent';&#13;
+&#13;
+export const requester = createNodeHttpRequester({&#13;
+  httpsAgent,&#13;
+});&#13;
+const client = algoliasearch(appId, apiKey, {&#13;
+    requester,&#13;
+});</code></pre>
+<p class="translated">关于Kubernetes中的Alpine映像的<strong>最终修正</strong>是简单地<strong>改变需要它的部署/状态集上的dnsConfig </strong>选项。</p>
+<pre><code>apiVersion: apps/v1&#13;
+kind: StatefulSet&#13;
+metadata:&#13;
+  name: crawler&#13;
+spec:&#13;
+  replicas: 1&#13;
+  template:&#13;
+      dnsConfig:&#13;
+        options:&#13;
+          - name: ndots&#13;
+            value: '1'</code></pre>
+<p class="translated"><span>在部署了所有这些修补程序后，系统从每天90万个TCP连接减少到每天仅1.2万个。</span> <b>少浪费99%的CPU，少浪费时间，少浪费金钱。</b></p>
+<figure id="attachment_11357" aria-describedby="caption-attachment-11357" class="wp-caption aligncenter"><img loading="lazy" class="size-large wp-image-11357" src="../Images/8bae3b006c5eccf9e2e39cac31d1df44.png" alt="TCP connections requested per day" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/02/image3-720x274.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image3-320x122.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image3-768x292.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image3.png 1999w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/02/image3-720x274.png"/><figcaption id="caption-attachment-11357" class="wp-caption-text">TCP connections requested per day</figcaption></figure>
+<p class="translated"><span>更令人惊讶的是，我们看到索引记录时到达Algolia的时间大幅减少，</span> <b>从平均每次调用1.5秒减少到稳定的0.1秒</b><span>—</span><b>性能提升高达94%。对于我们认为已经足够快的东西来说，这已经很不错了。</b></p>
+<figure id="attachment_11362" aria-describedby="caption-attachment-11362" class="wp-caption aligncenter"><img loading="lazy" class="size-large wp-image-11362" src="../Images/6bfb2db6c0218f812f2fb6da13ac2a21.png" alt="Average duration to saveObjects call to Algolia." srcset="https://blog-api.algolia.com/wp-content/uploads/2021/02/image8-720x240.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image8-320x106.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image8-768x255.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image8.png 1999w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/02/image8-720x240.png"/><figcaption id="caption-attachment-11362" class="wp-caption-text">Average duration to saveObjects call to Algolia.</figcaption></figure>
+<p class="translated"><span>解决方案:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>重用HTTP代理</span></li>
+<li aria-level="1" class="translated"><span>强制IP v4解析</span></li>
+</ul>
+<h2 class="translated"><a id="other-improvements" class="anchor" href="#other-improvements" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>其他改进</span></h2>
+<h3 class="translated"><a id="docker-images-size-and-build-time-improvement" class="anchor" href="#docker-images-size-and-build-time-improvement" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b> Docker图片尺寸和构建时间改进</b></h3>
+<p class="translated"><span>当我们构建Docker映像时，我们通常会与Docker文件进行充分的斗争，以避免过度优化，尤其是在构建时间很长的情况下。然而，有很多问题，特别是层、基本映像、文件系统快照等。在这一点上值得研究。</span></p>
+<p class="translated"><span>我们在回顾中注意到两件事:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>我们的形象太大了</span></li>
+<li aria-level="1" class="translated"><span>我们的图像没有正确使用缓存</span></li>
+</ul>
+<p class="translated"><span>为什么要在意太慢或者太大的图像？嗯，图像大小增加了Kubernetes的产卵时间，因为优化的图像加载更快，所以启动更快。这也意味着更快地构建和推出补丁。所以双赢。</span>T17<br/>T19】</p>
+<p class="translated"><span>为了改善这一点，我们没有复制整个WORKDIR，而是使用了只先复制package.json的简单技巧，安装deps，然后复制其余的，这样Docker就可以在什么都没有改变的情况下缓存node_modules文件夹。我们的流程是每周升级一次依赖项，这意味着构建可以在剩下的日子里使用缓存。</span></p>
+<pre><code>FROM node:14.15.1-alpine AS base&#13;
+ENV NODE_ENV production&#13;
+&#13;
+# Install dependencies&#13;
+# python make and g++ are needed for native deps&#13;
+RUN apk add --no-cache bash python make g++&#13;
+&#13;
+# Setup the app WORKDIR&#13;
+WORKDIR /app/crawler&#13;
+&#13;
+# Copy and install dependencies separately from the app's code&#13;
+# To leverage Docker's cache when no dependency has change&#13;
+COPY package.json yarn.lock ./&#13;
+COPY pkg/crawler-manager/package.json pkg/crawler-manager/package.json&#13;
+[...]&#13;
+&#13;
+# Install dev dependencies&#13;
+RUN yarn install --production=false --frozen-lockfile --ignore-optional&#13;
+&#13;
+# This the rest of the code, no cache at this point&#13;
+COPY . /app/crawler</code></pre>
+<p class="translated"><span>现在映像仍然太大，因为它包含了构建最终映像所需的所有node_modules(例如，Typescript、webpack、babel…)，此时</span> <b>大约600mb </b> <span>。在Kubernetes中创建的每个工人都在绘制这个大图像，因此极大地增加了启动时间。</span></p>
+<p class="translated"><span>由于采用了</span> <b>多级构建，我们将尺寸缩小了&gt;5倍。</b> <span>在最后加上这个简单的加法，图像</span> <b>现在只有大约100mb </b> <span>(仍然很大，但是好得多)。</span></p>
+<pre><code>FROM node:14.15.1-alpine AS base&#13;
+ENV NODE_ENV production&#13;
+&#13;
+# Install dependencies&#13;
+# python make and g++ are needed for native deps&#13;
+RUN apk add --no-cache bash python make g++&#13;
+&#13;
+# Setup the app WORKDIR&#13;
+WORKDIR /app/crawler&#13;
+&#13;
+# Copy and install dependencies separately from the app's code&#13;
+# To leverage Docker's cache when no dependency has change&#13;
+COPY package.json yarn.lock ./&#13;
+&#13;
+# Install dev dependencies&#13;
+RUN yarn install --production=false --frozen-lockfile --ignore-optional&#13;
+&#13;
+# This the rest of the code, no cache at this point&#13;
+COPY . /app/crawler&#13;
+&#13;
+# Build and keep only prod dependencies&#13;
+RUN true \&#13;
+  &amp;&amp; yarn build \&#13;
+  &amp;&amp; yarn install --production=true --frozen-lockfile --ignore-optional&#13;
+&#13;
+# Final Image&#13;
+FROM node:14.15.1-alpine as web&#13;
+USER node&#13;
+WORKDIR /app/crawler&#13;
+COPY --from=base --chown=node:node /app/crawler /app/crawler&#13;
+EXPOSE 8000</code></pre>
+<h3 class="translated"><a id="front-end-bundle-size" class="anchor" href="#front-end-bundle-size" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>前端捆绑尺寸</b></h3>
+<p class="translated"><span>你可能认为大规模的性能只涉及到改进后端代码，但是一个缓慢的用户界面在用户心目中意味着一个缓慢的产品。对我们来说，更多的客户预期意味着为更多的人提供静态文件，这意味着大量的捆绑包，这意味着大量的加载时间、糟糕的UX和大量的带宽成本。</span> <span> <br/> </span> <span>因此，虽然后端性能是我们的主要关注点，但我们也借此机会开发了前端产品包。关于如何启用树抖动和优化webpack捆绑包有很多细节，所以我将简单总结一下我们所做的工作。</span></p>
+<p class="translated"><span>多亏了</span><span>`</span><a href="https://www.npmjs.com/package/webpack-bundle-analyzer" target="_blank" rel="noopener noreferrer"><span>web pack-bundle-analyzer</span></a><span>`</span><span>你可以很快拥有你的Javascript代码的地图，并找到应该在那里或不在那里的东西。我们发现我们的代码是包大小的10%,有十几个页面和数百个组件。然而，我们的主要依赖项:React.js、Monaco Editor(也就是vscode editor)、React Feather、Prettier(与Monaco结合使用)等构成了有效负载的主要部分，并不是所有的东西都经过了正确的树抖动和优化。</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-11359" src="../Images/08352e0f8b6446813f47c37a07c0ca5a.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/02/image5-720x382.jpg 720w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image5-320x170.jpg 320w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image5-768x408.jpg 768w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image5.jpg 1999w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/02/image5-720x382.jpg"/></p>
+<p class="translated">以下是我们的建议:</p>
+<ul>
+<li aria-level="1" class="translated">SVG会占据相当大的空间；仅仅通过正确压缩它们，我们就节省了将近500kb</li>
+<li aria-level="1" class="translated"><span>" module ":ts config . JSON中的" esnext "需要启用树抖动</span></li>
+<li aria-level="1" class="translated"><span>有些封装不是树摇动的，但是您可以使用<code>NormalModuleReplacementPlugin</code>或<code>null-loader</code> </span>轻松丢弃该部分</li>
+<li aria-level="1" class="translated"><span>当你不能减少你的包的大小时，Webpack块肯定会有所帮助</span></li>
+<li aria-level="1" class="translated"><span>如果使用nginx，<code>gzip:on</code>不足以启用gzip压缩，还需要指定<code>gzip_types</code> </span></li>
+</ul>
+<p class="translated"><span>经过几次调整，我们从7.6MB (1.8MB gzipped)压缩到5.9MB (1.2MB gzipped)，因此大小减少了33%。</span></p>
+<figure id="attachment_11355" aria-describedby="caption-attachment-11355" class="wp-caption aligncenter"><img loading="lazy" class="size-large wp-image-11355" src="../Images/06068c55168606671f1beea620dabf00.png" alt="Bandwidth cost, with sharp drop at the end of September " srcset="https://blog-api.algolia.com/wp-content/uploads/2021/02/image1-720x299.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image1-320x133.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image1-768x319.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image1.png 1484w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/02/image1-720x299.png"/><figcaption id="caption-attachment-11355" class="wp-caption-text">Bandwidth cost, with sharp drop at the end of September</figcaption></figure>
+<h2 class="translated"><a id="conclusion" class="anchor" href="#conclusion" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>结论</span></h2>
+<p class="translated"><span>我们的爬虫一直以稳定性第一、性能第二为宗旨，因为</span> <b>我们相信人们更需要一个可靠的工具</b> <span>而不是一个快速失效的工具。然而，我们错过了许多轻松的性能胜利，这些胜利从来没有成为我们的首要任务，因为事情只是在工作。</span></p>
+<p class="translated"><span>拥有一个新项目和新方向有助于将这些主题放回路线图中，也有助于我们为我们的产品构建更美好的未来。</span></p>
+<figure id="attachment_11358" aria-describedby="caption-attachment-11358" class="wp-caption aligncenter"><img loading="lazy" class="size-large wp-image-11358" src="../Images/037a0a16e32a15db85bd55d1393fc0f7.png" alt="Number of running crawlers with Netlify spike at the start of october" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/02/image4-691x400.png 691w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image4-308x178.png 308w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image4-768x444.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/02/image4.png 1476w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/02/image4-691x400.png"/><figcaption id="caption-attachment-11358" class="wp-caption-text">Number of running crawlers with Netlify spike at the start of October</figcaption></figure>
+<p class="translated">我们现在不仅更有信心，而且自修复以来，我们已经增加了我们的负载，我们有信心在未来一年内实现10倍的增长——这是由我们增强的技能和对任何并行和分布式系统的特定需求的理解以及实现50%性能提升的成功推动的。</p>
+</div></div>    
+</body>
+</html>

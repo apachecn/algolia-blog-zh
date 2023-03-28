@@ -1,0 +1,58 @@
+<html>
+<head>
+<title>How to quickly evaluate Algolia with your Google Merchant Center data - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">如何用你的谷歌商业中心数据快速评估Algolia-Algolia博客</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/ecommerce/how-to-quickly-evaluate-algolia-with-your-google-merchant-center-data/#0001-01-01">https://www.algolia.com/blog/ecommerce/how-to-quickly-evaluate-algolia-with-your-google-merchant-center-data/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated"><a href="https://www.google.com/retail/solutions/merchant-center/"> Google Merchant Center </a>编辑了您的全球产品目录，这是您的Google广告或Google购物战略的一部分。既然你已经付出了努力，你知道它可以帮助你评估购物体验的另一个重要方面:网站搜索吗？</p>
+<p class="translated">评估一个搜索解决方案通常需要前端和后端开发人员，并且在看到实际结果之前需要大量的资源投入。在本帖中，我们将回顾如何使用Google Merchant Center和Algolia dashboard在几分钟内构建POC，不需要任何编码技能。</p>
+<p class="translated">Algolia为9，000多家客户提供搜索和发现服务，从财富100强公司到小型企业和初创公司。我们的使命是为每家公司提供卓越的搜索和发现体验。以下是快速入门的方法。</p>
+<h2 class="translated"><a id="results-in-no-time" class="anchor" href="#results-in-no-time" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>结果没来得及</h2>
+<p class="translated">您的Google Merchant Center产品目录中的数据可以轻松导出，然后通过用户友好的拖放界面导入到Algolia，只需几秒钟。一旦数据被加载，Algolia仪表板将让您在一个实时用户界面中搜索数据。</p>
+<h3 class="translated"><a id="1-export-the-feed-from-the-merchant-center" class="anchor" href="#1-export-the-feed-from-the-merchant-center" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> 1。从商业中心导出提要</h3>
+<ul>
+<li class="translated">登录到商家中心后，选择“产品”-&gt;“订阅源”。</li>
+</ul>
+<p class="translated"><a href="https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC1-.jpg"><img loading="lazy" class="aligncenter size-full wp-image-10808" src="../Images/0fcb1bab26f3a64c39620d6c50933f26.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC1-.jpg 521w, https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC1--220x178.jpg 220w, https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC1--495x400.jpg 495w" sizes="(max-width: 521px) 100vw, 521px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC1-.jpg"/>T2】</a></p>
+<ul>
+<li class="translated">点击提要窗格(不是右上角)中的溢出菜单(3个点)-&gt;“下载”。</li>
+</ul>
+<p class="translated"><a href="https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC2.jpg"> <img loading="lazy" class="aligncenter size-full wp-image-10807" src="../Images/f452e9eb8b1b3c4b7d1f66db96c77b5d.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC2.jpg 520w, https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC2-318x178.jpg 318w, https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC2-360x200.jpg 360w" sizes="(max-width: 520px) 100vw, 520px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC2.jpg"/> </a></p>
+
+<p class="translated"><a href="https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC3.jpg"> <img loading="lazy" class="aligncenter size-full wp-image-10806" src="../Images/a16d909567d90ab41725b1e33374451b.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC3.jpg 520w, https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC3-318x178.jpg 318w, https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC3-360x200.jpg 360w" sizes="(max-width: 520px) 100vw, 520px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2020/08/GMC3.jpg"/> </a></p>
+
+<h3 class="translated"><a id="2-load-the-data-into-algolia" class="anchor" href="#2-load-the-data-into-algolia" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> 2。将数据载入Algolia</h3>
+<p class="translated">去https://www.algolia.com/users/sign_up<a href="https://www.algolia.com/users/sign_up">报名参加完全免费的试用(不需要信用卡)。</a></p>
+<p class="translated"><a href="https://blog-api.algolia.com/wp-content/uploads/2020/08/image9.png"><img loading="lazy" class="aligncenter wp-image-10809 size-medium" src="../Images/b60b2a22e575bf4844813e3a426558eb.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2020/08/image9-186x178.png 186w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image9-768x734.png 768w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image9-419x400.png 419w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image9.png 980w" sizes="(max-width: 186px) 100vw, 186px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2020/08/image9-186x178.png"/>T2】</a></p>
+<ul>
+<li class="translated">选择最近的数据中心。</li>
+</ul>
+<p class="translated"><a href="https://blog-api.algolia.com/wp-content/uploads/2020/08/image1-1.png"> <img loading="lazy" class="aligncenter size-full wp-image-10813" src="../Images/91ce8a6cb1907537e50d6dc463961813.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2020/08/image1-1.png 1999w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image1-1-320x162.png 320w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image1-1-768x390.png 768w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image1-1-720x365.png 720w" sizes="(max-width: 1999px) 100vw, 1999px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2020/08/image1-1.png"/> </a></p>
+<ul>
+<li class="translated">按下“创建索引”按钮。你需要将数据发送到我们的服务器，这样我们就可以搜索到它，数据放在一个索引，这是一个超级快速的数据模型优化搜索。你可以给它起任何你想要的名字。</li>
+</ul>
+<p class="translated"><a href="https://blog-api.algolia.com/wp-content/uploads/2020/08/image3.png"> <img loading="lazy" class="aligncenter size-full wp-image-10812" src="../Images/d78c20c4ebb41e260b47140994ab6c07.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2020/08/image3.png 664w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image3-207x178.png 207w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image3-464x400.png 464w" sizes="(max-width: 664px) 100vw, 664px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2020/08/image3.png"/> </a></p>
+<ul>
+<li class="translated">输入名称，然后按“创建”按钮</li>
+</ul>
+<p class="translated"><a href="https://blog-api.algolia.com/wp-content/uploads/2020/08/image4-1.png"> <img loading="lazy" class="aligncenter size-full wp-image-10811" src="../Images/a243970d15a0b6add6ff6429a4a7360d.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2020/08/image4-1.png 1240w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image4-1-320x172.png 320w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image4-1-768x414.png 768w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image4-1-720x388.png 720w" sizes="(max-width: 1240px) 100vw, 1240px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2020/08/image4-1.png"/> </a></p>
+<ul>
+<li class="translated">选择“添加记录”-&gt;“上传文件”</li>
+</ul>
+<p class="translated"><a href="https://blog-api.algolia.com/wp-content/uploads/2020/08/image7-1.png"><img loading="lazy" class="aligncenter size-full wp-image-10810" src="../Images/ba875f2f7ac6d69361cd5522fa5427e8.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2020/08/image7-1.png 744w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image7-1-194x178.png 194w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image7-1-435x400.png 435w" sizes="(max-width: 744px) 100vw, 744px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2020/08/image7-1.png"/>T2】</a></p>
+<ul>
+<li class="translated">拖拽TSV文件并按<a href="https://blog-api.algolia.com/wp-content/uploads/2020/08/image5-1.png"> <img loading="lazy" class="aligncenter size-full wp-image-10814" src="../Images/0ca438b31be5d9bb302fcfbeb00384c0.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2020/08/image5-1.png 1206w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image5-1-165x178.png 165w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image5-1-768x828.png 768w, https://blog-api.algolia.com/wp-content/uploads/2020/08/image5-1-371x400.png 371w" sizes="(max-width: 1206px) 100vw, 1206px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2020/08/image5-1.png"/> </a>上传</li>
+</ul>
+<p class="translated">恭喜，您已经在Algolia中索引了您的数据！</p>
+<p class="translated">从这里，您可以在我们的仪表板中测试基本的搜索查询。</p>
+<h2 class="translated"><a id="whats-next" class="anchor" href="#whats-next" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>接下来是什么？</h2>
+<p class="translated">如果你想更进一步，你可以:</p>
+<ul>
+<li class="translated"><a href="https://www.algolia.com/doc/guides/managing-results/relevance-overview/">配置搜索引擎</a>提高搜索结果的相关性。</li>
+<li class="translated">添加一个<a href="https://www.algolia.com/doc/guides/managing-results/must-do/custom-ranking/">业务指标</a>(如转化率、受欢迎程度或利润率)。谷歌产品提要不包括它，但这可以作为一个自定义字段添加，或者Algolia可以集成到<a href="https://www.algolia.com/doc/guides/getting-insights-and-analytics/search-analytics/understand-reports/how-to/connect-search-with-google-analytics/">谷歌分析</a>来获得这些信息。</li>
+</ul>
+<p class="translated">当然，我们很乐意帮助您！如果您对Algolia能够为您的企业带来的价值感兴趣，请<a href="https://www.algolia.com/contact/enterprise/">联系我们</a>，我们可以帮助您优化您的试验，在实时在线搜索中查看您的数据，或者帮助您解决任何其他问题。寻找快乐！</p>
+</div></div>    
+</body>
+</html>

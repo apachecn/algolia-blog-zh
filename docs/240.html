@@ -1,0 +1,68 @@
+<html>
+<head>
+<title>Recommendations and User Actions | Algolia | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">推荐和用户操作| Algolia </h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-v/#0001-01-01">https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-v/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><h2 class="translated"><span>建议和用户操作</span></h2>
+<p class="translated"><span>在本系列的前几篇文章中，您学习了</span><a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-1/"><span/></a><span>，如何使用</span> <a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-2/"> <span>正确的数据源</span> </a> <span>，如何</span> <a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-3/"> <span>设计它将从中学习的正确特性</span> </a> <span>，以及有哪些</span> <a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-iv/"> <span>工业级推荐模型和技术</span> </a></p>
+<p class="translated">现在你已经有了一个可靠的推荐模型，是时候回到你的用户身边了。为什么用户甚至会在意推荐？在这里，从一些角度来看用户在网上导航时必须做出的越来越复杂的决定是有好处的。</p>
+<p class="translated"><span>引用网飞的研究:</span></p>
+<blockquote><p class="translated"><i> <span>“人类在生活的各个方面都面临着越来越多的选择——当然是在视频、音乐和书籍等媒体方面，但更重要的是，在健康保险计划、治疗和测试、求职、教育和学习、约会和寻找生活伴侣以及其他许多选择非常重要的领域。</span> </i></p>
+<p class="translated">“我们相信，推荐系统领域将继续发挥关键作用，利用现有的丰富数据使这些选择变得可管理，有效地引导人们选择真正最好的几个选项进行评估，从而做出更好的决策。” </p></blockquote>
+<p class="translated">卡洛斯·a·戈麦斯-乌里韦&amp;尼尔·亨特。2015.<a href="https://doi.org/10.1145/2843948">网飞推荐系统:算法、商业价值和创新</a>  </p>
+<p class="translated">我们已经到达了这样一个点，选择的数量让<a href="https://www.ted.com/talks/malcolm_gladwell_choice_happiness_and_spaghetti_sauce">瘫痪</a>。以YouTube为例:现在有82年的视频内容每天上传到他们的目录。作为一个用户，我甚至从哪里开始为我<i>将会重视的gem探索这一堆内容呢？<br/>T55】</i></p>
+<p class="translated"><span>在我们系列的一开始，我们就着手“</span> <i> <span>筛选出用户的选择，并根据他们的要求或喜好为他们提供最合适的建议</span> </i> <span>”。一旦你手头有了一个高性能的推荐系统，是时候充分利用它可以生成的</span><b/><span>预测，在一个战略性的时间和地点向你的用户展示它们，以建议要采取的相关</span> <b>行动</b> <span>。</span></p>
+<h2 class="translated"><a id="what-you-can-get-from-a-high-performance-recommender-system" class="anchor" href="#what-you-can-get-from-a-high-performance-recommender-system" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>你能从高性能推荐系统中得到什么</span></h2>
+<p class="translated">正如我们在上面网飞的引文中所看到的，对人类来说，能够独自在他们面对的网上选择的海洋中航行已经太晚了。因此，推荐系统的兴起是由商业需要驱动的:如果人们很难做出选择来访问你的内容，并且如果你有足够的数据来帮助他们做出正确的选择，那么你会因为 <i> <span>而不是</span> </i> <span>帮助他们而失去业务。</span></p>
+<p class="translated">什么样的推荐可以帮助你的用户充分利用你的服务？在本系列的 <a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-iv/"> <span>第四部分</span> </a> <span>中，我们看到不同的推荐器模型可以提供不同种类的推荐:</span></p>
+
+<p class="translated">从用户的角度来看，在每种情况下，他们都获得了 <b>浏览快捷方式</b> <span>:取代用户随机浏览一段时间，希望最终偶然发现正确的项目，高性能的推荐者可以直接为他们指出旅程的目的地。</span></p>
+<p class="translated"><span>不仅如此，用户还获得了</span> <b>新的机会</b> <span>:登陆这个页面的人可能不知道他们可能对一些相关项目感兴趣。这些预测可以让你扩大用户对你能提供的内容的接触，帮助他们充分利用大量的选择。</span></p>
+<p class="translated"><span>这使得企业能够为用户提供数量惊人的新内容，同时帮助他们理解这些内容:如果我们回到YouTube的例子，82年来每天都有新内容出现，平均会话长度仍然很长—</span><b>13m</b><a href="https://www.statista.com/statistics/910910/us-most-popular-us-video-streaming-services-session-duration/">T5】平均 </a> <span>。因此，YouTube用户的参与度很高，</span><b/><span>月活跃用户20亿，其中</span><b>1.22亿</b> <span>为</span> <a href="https://backlinko.com/youtube-users#monthly-active-users"> <span>日活跃用户</span> </a> <span>。</span></p>
+<p class="translated"><span>同样，</span> <a href="https://www.wsj.com/video/series/inside-tiktoks-highly-secretive-algorithm/investigation-how-tiktok-algorithm-figures-out-your-deepest-desires/"> <span>抖音在这一点上非常出色</span> </a> <span>:你开始观看任何种类的内容，你的互动告知系统你的兴趣。如果你表示对烹饪视频感兴趣，随着系统学习迎合你当前的口味，你可能会突然在你的提要中看到很多这样的视频。</span></p>
+<h2 class="translated"><a id="encouraging-actions-showing-how-users-can-profit-from-strategic-recommendations" class="anchor" href="#encouraging-actions-showing-how-users-can-profit-from-strategic-recommendations" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>鼓励行动:展示用户如何从战略建议中获利</span></h2>
+<p class="translated">在上一节中，我们已经看到了为什么有很多产品的企业对公开工业级推荐以帮助他们的用户有着至关重要的兴趣。然而，这不仅仅是把推荐信硬塞给他们。让我们举一个极端的例子，一个脱销的产品页面显示你的前500个相关商品作为备选:即使有一个高性能的系统，用户也不太可能滚动浏览它们。</p>
+<p class="translated"><span>我们如何从</span> <i> <span>获得好的推荐</span> </i> <span>到</span> <i> <span>展示战略推荐？</span>T52<span>T54】</span></i></p>
+<p class="translated"><span>把推荐当成一种手段而不是目的:推荐是你让用户参与进来的方式，但是</span> <i> <span>行动</span> </i> <span>是你引导他们的目标。因此，一份好的推荐信应该是:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>有限公司</span></li>
+<li aria-level="1" class="translated"><span>上下文</span></li>
+<li aria-level="1" class="translated"><span>省力</span></li>
+</ul>
+<h3 class="translated"><a id="limited" class="anchor" href="#limited" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>限定</b></h3>
+<p class="translated"><span>只显示一个</span><b/><span/><b>相关的</b> <span>项。</span></p>
+<p class="translated">人们很容易被诱惑去展示更多的选择，认为这只能提供更多的机会。然而，这种直觉很容易被<a href="https://en.wikipedia.org/wiki/Analysis_paralysis"><span/></a><span>推翻，而且有一个</span> <a href="https://faculty.washington.edu/jdb/345/345%20Articles/Iyengar%20%26%20Lepper%20(2000).pdf"> <span>的研究机构</span> </a> <span>证明，少量的选项(3-6)可以比大量的选项(10-24)转换高达10倍。我们在这里是为了帮助用户过滤不相关的选项，而不是为了带回太多信息的</span><i><span/></i><span>综合症，我们已经开始着手解决了！</span></p>
+<h3 class="translated"><a id="contextual" class="anchor" href="#contextual" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>语境</b></h3>
+<p class="translated"><span>一个推荐物品此时此地应该有用</span><i><span/></i><span>。</span></p>
+<p class="translated">推荐的价值来源于它在当前时间和地点为当前用户提供了多少服务；这种直接的相关性使得上下文意识成为提供优秀推荐的一个重要方面。</p>
+<p class="translated">这里有一些例子</p>
+<ul>
+<li aria-level="1" class="translated"><span>在</span> <i> <span>产品登陆页面上，用户在购物车</span> </i> <span>中添加了一件商品后，用户想知道</span> <i> <span>中是否有他们需要</span> </i> <span>购买的所有商品。这正是时候推荐</span> <b>补充，</b> <b> <i>经常一起买的</i> </b> <b>产品一键添加到购物车</b> <span>按钮</span> <b>。</b></li>
+<li class="translated"><span>另一方面，在一个</span><i><span/></i><span>产品登陆页面上，用户正在</span> <i> <span>寻找其他选项</span> </i> <span>来解决同样的需求；推荐</span> <b>替代，</b> <b> <i>相关产品</i> </b> <b>带链接看其详情</b> <span>肯定会带来更多价值。</span></li>
+<li aria-level="1" class="translated"><i> <span>一个视频播放完</span> </i> <span>后，强烈推荐相似的视频不太可能令人满意；最好推荐那些经常一起看</span><b><i/></b><span>的内容，最大限度地提高用户参与度。</span></li>
+<li aria-level="1" class="translated"><i> <span>在某个类别的登陆页面上</span> </i> <span>，用户正在寻找灵感或者一个新的想法；因此，显示具有该类别最佳推荐的轮播，例如，通过向该类别 <span>中的最畅销者显示</span> <b> <i>相关产品</i> </b> <b>，可能在将首次访问者转化为顾客方面表现良好。</b></span></li>
+</ul>
+<h3 class="translated"><a id="effort-saving" class="anchor" href="#effort-saving" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>省力</b></h3>
+<p class="translated">只有在为用户节省时间并帮助他们实现目标时，推荐才有价值。</p>
+<ul>
+<li aria-level="1" class="translated"><span>一方面，这意味着你需要</span> <b>保守</b> <span>:推荐变化多端的内容，虽然增加了意外收获，却带来了用户受挫的风险。设身处地为用户着想，以初学者的视角浏览服务，并想知道:“这些推荐能帮助我更好地实现目标吗？”</span></li>
+<li aria-level="1" class="translated"><span>另一方面，这意味着你可以</span> <b>创新</b> <span>:推荐在很多方面都很有用，不仅仅是作为你网站上的旋转木马。将这样的推荐反馈到营销平台和你的内容管理系统等其他工具中，会释放出很多价值。例如:</span><ul>
+<li aria-level="3" class="translated"><strong>邮件活动</strong> <span> <strong>，如SendGrid </strong>:您可以根据相关建议定制您的邮件。这可以把普通的每周电子邮件变成动态的、高度相关的时事通讯！</span></li>
+<li aria-level="3" class="translated"><b>营销自动化</b> <strong> n </strong> <span> <strong>，例如，Shopify </strong>:您可以让您商店中的应用程序利用来自Algolia的预测，将这些用户/商品洞察与您现有的商品和促销内容相结合，从而提高您当前Shopify应用程序的实用性。</span></li>
+<li aria-level="3" class="translated"><b> CRM集成，例如HubSpot </b> <span>:您可以通过对潜在感兴趣的服务进行分段推荐来扩充客户的资料，以通知您的销售团队在下次致电时提出正确的新功能。</span></li>
+<li aria-level="3" class="translated"><b>像Segment或BigQuery </b> <span>这样的数据平台:从这些平台你可以使用生成的推荐来</span> <b>扩充你自己的数据。</b></li>
+</ul>
+</li>
+</ul>
+<p class="translated"><span>如果您遵循这些指导原则，您可以相信，您从系统中获得的可靠建议会有效地为您的用户服务。</span></p>
+<p class="translated">推荐系统可能只需要数据和算法，但推荐系统本身并不能让用户满意。决定如何利用其 <b>推荐</b> <span>，通过在正确的时间向正确的人建议正确的</span> <b>行动</b> <span>来最大限度地提高用户的满意度，这是让这种高性能推荐系统为您的用户群服务的关键，并最终使<a href="https://www.algolia.com/blog/product/introducing-algolia-recommend-the-next-best-way-for-developers-to-increase-revenue/">为您的业务充分利用推荐</a>。</span></p>
+<h2 class="translated"><a id="how-do-we-measure-the-success-of-your-recommendations" class="anchor" href="#how-do-we-measure-the-success-of-your-recommendations" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>我们如何衡量你的推荐是否成功？</span></h2>
+<p class="translated">在这篇博文中，我们了解了什么是好的推荐，用户可以根据它们采取哪些行动，以及它们如何最好地服务于你的用户，以指导他们在你的服务中的行动。要了解 Algolia推荐，<a href="https://www.algolia.com/products/recommendations/">从这里开始</a>或查看我们的<a href="https://www.algolia.com/doc/guides/algolia-recommend/overview/">推荐API文档</a>。</p>
+<p class="translated">但是我们怎么知道这是正确的行动呢？您如何根据您的业务指标来衡量您的建议的有效性？一个人如何避免为了<i><span/></i><span>的短期表现而优化</span> <i> <span>的长期商业目标</span> </i> <span>【确保这个用户不会在一次又一次深夜狂看会议后取消他们的会员资格？)</span></p>
+<p class="translated"><b>请继续关注本系列的下一部分——结果和评估，深入了解在您的产品中利用推荐系统的这些关键方面！</b></p>
+<p class="translated"><i> <span>如果你想继续对话，在推特上联系保罗-路易:</span></i><a href="https://twitter.com/PaulLouisNech"><i><span>【https://twitter.com/PaulLouisNech】</span></i></a></p>
+</div></div>    
+</body>
+</html>

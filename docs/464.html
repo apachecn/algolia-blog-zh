@@ -1,0 +1,71 @@
+<html>
+<head>
+<title>A Tale of Two Engines - Algolia &amp; Unity - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">双引擎的故事-阿尔戈利亚和统一-阿尔戈利亚博客|阿尔戈利亚博客</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/tale-two-engines-algolia-unity/#0001-01-01">https://www.algolia.com/blog/engineering/tale-two-engines-algolia-unity/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated"><span>游戏引擎里面的搜索引擎？</span> <span>这个想法是在阿尔戈利亚的一个非冲刺日之前形成的，这是一个阿尔戈利亚人尝试新概念的活动。</span></p>
+<p class="translated">在之前的冲刺阶段，我的同事塞缪尔·博丁和我在想:阿尔戈利亚有一个 <a href="https://github.com/algolia/algoliasearch-client-csharp" target="_blank" rel="noopener noreferrer"> <span>。NET API客户端</span> </a> <span>和</span><a href="https://unity3d.com/" target="_blank" rel="noopener noreferrer"><span>Unity</span></a><span>都支持C#作为脚本语言——为什么不试着把它们结合在一起呢？</span></p>
+<p class="translated"><span>我们的想法是在一个Unity游戏场景中实现“随你搜”的体验。我们决定创建一个</span> <b>市场</b> <span>，一个在游戏中搜索的常见用例。</span></p>
+<p class="translated"><span>结果？成功。除了一个小的性能挑战，这是通过切换到异步模式解决的，在一天结束时，我们在Unity中有一个全功能的Algolia搜索，包括游戏资产和图像的索引，以及完整的搜索和结果UI。让我们看看这是怎么做到的！</span></p>
+<h1 class="translated"><a id="using-algolia-with-unity-getting-started" class="anchor" href="#using-algolia-with-unity-getting-started" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>用阿洛与阿洛合一。入门！</span></h1>
+<p class="translated"><span>团结不支持。NET包管理器NuGet。要解决这个问题，你必须直接在</span><a href="https://www.nuget.org/" target="_blank" rel="noopener noreferrer"><span>【nuget.org】</span></a><span>上下载</span> <a href="https://www.nuget.org/packages/Algolia.Search/" target="_blank" rel="noopener noreferrer"> <span> Algolia库</span> </a> <span>的zip包，然后解压你的Unity项目的</span><i><span>Assets/Plugins</span></i><span>文件夹中的内容。</span></p>
+<p class="translated"><span>在这一步之后，您必须在C#脚本中添加</span> <code>using Algolia.Search.Clients;</code> <span>语句，才能开始使用Algolia with Unity。</span></p>
+<p class="translated">既然我们已经把Algolia接入了Unity，下一步就是创建游戏场景。</p>
+<h2 class="translated"><a id="finding-assets" class="anchor" href="#finding-assets" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>寻找资产</span></h2>
+<p class="translated">我们的第一个任务是找到游戏资产和一个数据集来设计我们的游戏场景。</p>
+<p class="translated"><span>我们从Unity找到了这个</span> <a href="https://assetstore.unity.com/packages/essentials/unity-samples-ui-25468" target="_blank" rel="noopener noreferrer"> <span>优秀的入门套件</span> </a> <span>，并把它作为我们实验的基础。好的一面是，它包含了许多UI元素——我们只需要重用它们来创建市场场景，并添加一个菜单来访问它！</span></p>
+<h2 class="translated"><a id="creating-a-dataset-of-planets" class="anchor" href="#creating-a-dataset-of-planets" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>创建行星数据集</span></h2>
+<p class="translated">在深入研究游戏设计之前，我们必须创建一个数据集。由于科幻小说是资产的主题，我们决定创建一个由行星组成的数据集。我们用强大的数据集生成器<a href="https://mockaroo.com/" target="_blank" rel="noopener noreferrer"><span>Mockaroo</span></a><span>创造了一千个假行星。我们接着用</span> <a href="https://opengameart.org/content/17-planet-sprites" target="_blank" rel="noopener noreferrer"> <span> CC图像</span> </a> <span>来说明数据集。一旦完成，我们就准备好出发了！如果你想重用这些数据，你可以在</span><a href="https://github.com/algolia/unity-example/blob/master/src/Assets/Resources/planets.json" target="_blank" rel="noopener noreferrer"><span>GitHub</span></a><span>上找到。</span></p>
+<h1 class="translated"><a id="crafting-the-marketplace" class="anchor" href="#crafting-the-marketplace" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>神石市场</span></h1>
+<p class="translated">最后也是最具挑战性的一步是为市场创建游戏场景。我们希望它简单:它将由一个搜索栏和一个显示结果的面板组成。为了实现这一点，我们从初学者工具包中取出 <i> <span>控件</span> </i> <span>场景并对其进行定制。结果——行星面板</span>——<span>看起来像这样:</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter wp-image-8395 size-full" src="../Images/81782c8b8036ba161b934b0321c781df.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2019/03/Screenshot-2019-03-14-at-09.38.19.jpg 3358w, https://blog-api.algolia.com/wp-content/uploads/2019/03/Screenshot-2019-03-14-at-09.38.19-320x155.jpg 320w, https://blog-api.algolia.com/wp-content/uploads/2019/03/Screenshot-2019-03-14-at-09.38.19-768x373.jpg 768w, https://blog-api.algolia.com/wp-content/uploads/2019/03/Screenshot-2019-03-14-at-09.38.19-720x349.jpg 720w" sizes="(max-width: 3358px) 100vw, 3358px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2019/03/Screenshot-2019-03-14-at-09.38.19.jpg"/></p>
+<p class="translated">搭建好场景后，需要做一点工作来使它生动起来。我们需要编写一些C#来把空盒子变成行星。</p>
+<h2 class="translated"><a id="scripting-the-as-you-type-search" class="anchor" href="#scripting-the-as-you-type-search" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>为随键入搜索编写脚本</span></h2>
+<p class="translated">在向Algolia发送请求之前，我们需要捕捉用户的每一次击键。为了实现这一点，我们给 <i> <span> InputField附加了一个C#脚本，以</span></i><span>catch</span><span/><i><span>ValueChangeCheck()</span></i><span>event</span><i><span>。</span> </i> <span>一切正常，我们能够检索输入的击键！用检索到的字符串向Algolia发出请求非常简单:</span></p>
+<pre>var results = await _searchIndex.SearchAsync(new Query(SearchInput.text)&#13;
+{&#13;
+    HitsPerPage = 8,&#13;
+});</pre>
+<p class="translated"><i> <span>注意:我们已经在</span></i><i><span>Start()</span></i><i><span>方法中实例化了</span></i><i><span>AlgoliaClient</span><i><span>和</span></i><i><span>Index</span></i><i><span>对象，以避免为每个请求创建一个客户端。</span> </i></i></p>
+<p class="translated"><span>我们让搜索工作起来，Algolia的C# API返回了一个行星列表(</span><i><span>List&lt;Planet&gt;</span></i><span>)</span><i><span>)。</span> </i> <span>现在我们不得不展示它们。我们必须创建</span> <i> <span>游戏对象。</span>T46】</i></p>
+<p class="translated"><span>我们编写了<code>void LoadResults(List&lt;planets&gt;)</code> </span> <span>方法，该方法从</span> <i> <span>列表&lt;&gt;</span></i><span>中创建游戏对象。你可以在</span><a href="https://github.com/algolia/unity-example" target="_blank" rel="noopener noreferrer"><span>GitHub</span></a><span>上找到源代码。这里我们只指出几个部分。简而言之，该方法在行星上循环以创建游戏对象，每个行星一个。</span></p>
+<p class="translated"><span>完美。</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter wp-image-8394 size-full" src="../Images/b0e84869839fba5391cd6724ba8d5019.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2019/03/Screenshot-2019-03-14-at-09.38.54.jpg 3358w, https://blog-api.algolia.com/wp-content/uploads/2019/03/Screenshot-2019-03-14-at-09.38.54-320x155.jpg 320w, https://blog-api.algolia.com/wp-content/uploads/2019/03/Screenshot-2019-03-14-at-09.38.54-768x373.jpg 768w, https://blog-api.algolia.com/wp-content/uploads/2019/03/Screenshot-2019-03-14-at-09.38.54-720x349.jpg 720w" sizes="(max-width: 3358px) 100vw, 3358px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2019/03/Screenshot-2019-03-14-at-09.38.54.jpg"/></p>
+<p class="translated">不，不完美。还没有:行星的显示太慢，图像刷新不稳定。</p>
+<h2 class="translated"><a id="asynchronicity" class="anchor" href="#asynchronicity" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>不同步</span></h2>
+<p class="translated">我们的第一个想法是为每个星球创建两个游戏对象:一个<i><span>raw image</span></i><span>和一个</span> <i> <span> Text，</span> </i> <span>，然后做一些计算来确定它们在场景中的位置。搜索体验还可以，但是有点滞后。</span></p>
+<p class="translated"><span>所以我们对此进行了调查，发现了我们展示行星方式的一个缺陷。我们同步加载行星的纹理，这使得它看起来很慢。让搜索体验更加流畅的解决方案是异步加载行星的纹理。为了实现这一点，我们使用了来自Unity中的<code>Resources.LoadAsync&lt;Texture2D&gt;</code> </span> <span>方法</span> <em> <span> LoadTexture </span> </em></p>
+<pre>IEnumerator LoadTexture(RawImage image, Planet planet)&#13;
+{&#13;
+    var resourceRequest = Resources.LoadAsync&lt;Texture2D&gt;($"{planet.Path}"); ;&#13;
+    while (!resourceRequest.isDone)&#13;
+    {&#13;
+        yield return 0;&#13;
+    }&#13;
+&#13;
+    image.texture = resourceRequest.asset as Texture2D;&#13;
+    image.color = Color.white;&#13;
+}</pre>
+<p class="translated"><span>你可以在下面的视频中看到不同:</span></p>
+<p class="aerial-video-wrapper translated"><iframe title="Unity sample" src="https://www.youtube.com/embed/qHtWuM6E-8s?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">视频</iframe></p>
+<p class="translated"><span>完美！但是没有完成。虽然搜索体验对于我们的POC来说已经足够快了，但是我们还没有从主菜单中加载场景。</span></p>
+<h2 class="translated"><a id="loading-the-scene-from-the-main-menu" class="anchor" href="#loading-the-scene-from-the-main-menu" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>从主菜单中加载场景</span></h2>
+<p class="translated">为了结束这个循环，我们在主菜单中创建了一个按钮来访问市场。我们附加了一个<i><span>LoadSceneOnClick</span></i><span>脚本到这个按钮的</span> <span> <code>OnClick()</code> </span> <span>事件上。顾名思义，这个脚本在按钮被点击后加载一个场景及其索引:</span></p>
+<pre>public class LoadSceneOnClick : MonoBehaviour&#13;
+{&#13;
+    public void LoadByIndex(int sceneIndex)&#13;
+    {&#13;
+        SceneManager.LoadScene(sceneIndex);&#13;
+    }&#13;
+}</pre>
+<p class="translated">我们现在已经准备好了所有的部分，让我们看看结果吧！</p>
+<p class="aerial-video-wrapper translated"><iframe title="Unity sample with menu" src="https://www.youtube.com/embed/xALmioNiwS0?feature=oembed" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen="">视频</iframe></p>
+<h1 class="translated"><a id="are-we-done" class="anchor" href="#are-we-done" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>我们完成了吗？</span></h1>
+<p class="translated">一天之内，我们用Algolia的C# API客户端创建了一个简单的搜索市场。我们还没完！一个有趣的方向是尝试与其他游戏引擎相同；例如，另一个项目将重现这种与<a href="https://www.cryengine.com/" target="_blank" rel="noopener noreferrer"><span>CryEngine</span></a><span>的集成，它也支持C#作为脚本语言！</span></p>
+<p class="translated"><span>但真正的下一步是将Algolia的所有功能添加到解决方案中。我们仍然有很多可能性可以探索:在MMO游戏的库存中创建一个搜索，为搜索服务器添加一个UI，添加方面和过滤，深化数据集，添加分析和个性化等等。本质上，随着你的游戏越来越复杂，你的市场，以及Unity中任何基于搜索的功能，都需要跟着做。祝游戏愉快！</span></p>
+<p class="translated"><span>与塞缪尔·博丁合作撰写。</span></p>
+</div></div>    
+</body>
+</html>

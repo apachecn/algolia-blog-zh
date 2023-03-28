@@ -1,0 +1,89 @@
+<html>
+<head>
+<title>Building real-time Analytics APIs at scale | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">大规模构建实时分析API </h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/building-real-time-analytics-apis/#0001-01-01">https://www.algolia.com/blog/engineering/building-real-time-analytics-apis/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">我们最近重新设计了我们的分析API，以便为我们的客户提供每天数十亿次搜索查询的近实时分析。我们是这样做的。</p>
+<h2 class="translated"><a id="redsigning-our-analytics-system-from-the-ground-up" class="anchor" href="#redsigning-our-analytics-system-from-the-ground-up" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>我们的分析系统从一开始就是红色的</h2>
+<p class="translated">我们的第一个分析系统是从一个小项目开始的。它由一批批压缩日志文件组成，这些文件从我们所有的搜索服务器发送到一个中央存储服务，然后被推送到一个Elasticsearch集群，我们从那里提供分析查询。</p>
+<p class="translated">自然，这个系统有其局限性。首先，我们需要为新的点击分析功能铺平道路，我们希望利用一个更加关系化的模型。在Elasticsearch中，文档是独立的，这样做太麻烦了。</p>
+<p class="translated">其次，由于要跨许多节点处理数百亿条记录，管理这样的集群变成了一项全职工作。</p>
+<p class="translated">我们的搜索分析为我们的客户提供了关于他们的搜索如何被使用的见解。这些见解很容易变大。从搜索数量或独立用户数量等概述，到诸如“用户最感兴趣的类别是什么？”等可操作的业务洞察，不一而足或者“哪些查询没有返回结果？”。所有这些都可以在特定的时间范围内完成，在某些情况下，时间范围可能非常大。</p>
+<p class="translated">以下是我们在从头开始重建我们的分析时所做的技术选择的解释，以及我们使用的一些设计原则的概述。</p>
+<h2 class="translated"><a id="choosing-the-datastore-for-analytics" class="anchor" href="#choosing-the-datastore-for-analytics" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>选择用于分析的数据存储</h2>
+<p class="translated">我们需要满足的最高要求是:</p>
+<ul>
+<li class="translated">每天处理数十亿个事件的接收、存储和删除。</li>
+<li class="translated">对于大多数查询，无论请求的时间范围如何，都可以在几秒钟内返回结果。</li>
+<li class="translated">与我们一起扩展。我们的规模每年都在翻倍，因此所选的解决方案应该能够轻松地跟上这种增长。理想的情况是增加更多的机器。</li>
+</ul>
+<p class="translated">我们首先评估了像<a href="https://aws.amazon.com/redshift/">红移</a>、<a href="https://cloud.google.com/bigquery/">大查询</a>和<a href="https://clickhouse.yandex/">点击之家</a>这样的强国。虽然它们对于数据仓库来说肯定是很好的选择，但是我们发现它们对于实时分析工作流来说还不够好。</p>
+<p class="translated">在我们的例子中，重点是执行亚秒级分析查询，而不是长时间运行的分析。</p>
+<p class="translated">然而，在非常大的数据集上实现亚秒级的聚合性能对于红移来说是极其昂贵的，对于BigQuery来说是不可能的。</p>
+<p class="translated">此外，我们发现BigQuery的另一个问题是定价取决于使用情况，而不是存储。因此，我们不认为支持公共API是一个安全的选择。</p>
+<p class="translated">对于ClickHouse，我们很想尝试一下，但最终发现托管、维护和微调它需要大量额外的工程开销。</p>
+<p class="translated">最后，我们的搜索将我们带到了<a href="https://www.citusdata.com/"> Citus Data </a>及其针对PostgreSQL的Citus扩展，这使得通过跨多个节点分布表和查询来无缝扩展Postgres成为可能。</p>
+<p class="translated">Citus Data还提供了几个扩展<a href="https://www.citusdata.com/blog/2017/12/27/real-time-analytics-dashboards-with-citus/">非常适合实时分析，如</a><a href="https://www.citusdata.com/blog/2017/04/04/distributed_count_distinct_with_postgresql/"> HLL </a> (HyperLogLog)和<a href="https://www.citusdata.com/blog/2018/03/27/topn-for-your-postgres-database/"> TopN </a>。前者是一种快速近似非重复计数的算法，后者的作用类似于一个堆，它允许在JSONB字段中按照频率对顶部的项目进行排序。</p>
+<p class="translated">如果我们选择这个解决方案，我们可以将客户的数据分布在许多节点上，利用搭配，并预先计算指标。额外的好处是，我们仍然可以从运行最新Postgres实例的关系数据库中获益。</p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-7577" src="../Images/d8c0f5c99d3486b24f9dfdfe99b51e5d.png" alt="An example of data distribution in Citus" srcset="https://blog-api.algolia.com/wp-content/uploads/2018/04/schema1-720x389.png 720w, https://blog-api.algolia.com/wp-content/uploads/2018/04/schema1-320x173.png 320w, https://blog-api.algolia.com/wp-content/uploads/2018/04/schema1-768x415.png 768w, https://blog-api.algolia.com/wp-content/uploads/2018/04/schema1.png 1322w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2018/04/schema1-720x389.png"/></p>
+<p class="translated">做出数据存储决策后，下面是我们分析解决方案的其余部分在实践中的工作方式。</p>
+<h2 class="translated"><a id="creating-near-real-time-analytics" class="anchor" href="#creating-near-real-time-analytics" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>创造近乎实时的分析</h2>
+<p class="translated">然而，实现亚秒级分析查询并不是现成的。我们通过跨分片分布数据和使用汇总方法来实现这一点。</p>
+<p class="translated">为此，我们必须执行以下步骤:</p>
+<ul>
+<li class="translated">将原始事件纳入系统。</li>
+<li class="translated">定期将事件汇总到专用汇总表中。</li>
+<li class="translated">查询汇总表并以毫秒为单位获得结果。</li>
+</ul>
+<h3 class="translated"><a id="ingestion" class="anchor" href="#ingestion" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>摄取</h3>
+<p class="translated">我们利用Postgres <a href="https://www.postgresql.org/docs/10/static/sql-copy.html"> COPY </a>命令将批处理事件插入Citus。正如我们将在下面看到的，我们从不直接查询原始数据，所以这些表可以保持非常简单的模式。</p>
+<p class="translated">由于没有大量的索引需要更新，插入操作的性能相当可观。Citus <a href="https://www.citusdata.com/blog/2016/06/15/copy-postgresql-distributed-tables" target="_blank" rel="noopener noreferrer">宣称每秒钟可以接收700万行数据</a>(也就是每天600亿行！)和我们自己的基准测试显示了类似的趋势。</p>
+<p class="translated">我们按客户分发我们的数据。单个客户的数据存储在同一个碎片上，因此我们可以利用搭配优势。以单个客户应用为目标的请求将只需要以单个Postgres实例为目标。</p>
+<h3 class="translated"><a id="rollup" class="anchor" href="#rollup" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>汇总</h3>
+<p class="translated">我们不提供来自原始事件的指标。在某些情况下，如果您希望获得亚秒级的响应时间，即使是单个客户的数据集也会变得太大而无法即时处理。</p>
+<p class="translated"><a href="https://www.citusdata.com/blog/2017/09/29/what-performance-can-you-expect-from-postgres/" target="_blank" rel="noopener noreferrer">根据经验法则</a>，使用PostgreSQL，每个内核每秒可以聚合100万行。</p>
+<p class="translated">我们改用卷式桌子。汇总表保存给定时间范围内预先计算的指标。</p>
+<p class="translated">正如我们在简介中看到的，我们经常需要返回tops和distinct count。由于上面提到的TOPN和HLL扩展，这变得很容易。</p>
+<p class="translated">下面是一个简化的汇总函数，涵盖了几个用例:</p>
+<p/>
+<p class="translated">此函数将在给定时间范围内收到的所有查询聚合到5分钟的桶中，并计算它们的计数，即用户的唯一数量(使用HLL)，并保留排名靠前的查询及其各自的计数(使用TOPN)。</p>
+<p class="translated">该功能将在所有节点上同时执行。</p>
+<p class="translated">对于我们的分析解决方案，我们有几个级别的汇总。我们每5分钟汇总一次事件，并进一步按天汇总。我们这样做有几个原因:</p>
+<ul>
+<li class="translated">这意味着API返回的指标会频繁更新。大约每隔5分钟，数据就会刷新一次，因此客户不必等待很长时间，他们的查询就会反映在控制面板中。</li>
+<li class="translated">为了进一步压缩我们的数据集，我们保留了每日总量。这意味着在某些时候粒度会降低到一天的级别，但这对我们来说是可以接受的。我们甚至可以考虑在某个时间点之后按月滚动我们的数据集，这将允许我们以更粗的粒度为代价继续提供接近无限的保留。反之亦然，增加中间每小时汇总也是将来的一个选项。</li>
+<li class="translated">因为我们预计算top，所以我们不能一整天都向它们追加查询。这样做会产生非常不正确的顶部。相反，我们在一天中建立了许多顶部，我们通过EOD将它们合并在一起。我们仍然在做top中的top，但是考虑到它们的细粒度和我们一次合并它们的事实，最终，我们只看到了与更详尽(和计算更密集)的方法相比的最小差异。</li>
+</ul>
+<p> </p>
+<p class="translated"><img loading="lazy" class="aligncenter wp-image-7584 size-large" src="../Images/b505ef20144496c6675a64a5623042fc.png" alt="Example of rollup creation from the raw data" srcset="https://blog-api.algolia.com/wp-content/uploads/2018/04/schema2-1-720x110.png 720w, https://blog-api.algolia.com/wp-content/uploads/2018/04/schema2-1-320x49.png 320w, https://blog-api.algolia.com/wp-content/uploads/2018/04/schema2-1-768x117.png 768w, https://blog-api.algolia.com/wp-content/uploads/2018/04/schema2-1.png 1860w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2018/04/schema2-1-720x110.png"/></p>
+<p> </p>
+<p class="translated">这种方法的结果是，一旦数据被卷起，我们就可以删除它。我们不需要在Citus中保存太字节的原始事件来提供指标，并且由于Citus能够跨节点并行删除，删除数据变得很容易。</p>
+<h3 class="translated"><a id="analytics-queries" class="anchor" href="#analytics-queries" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>分析查询</h3>
+<p class="translated">API的目标是汇总表，而不是原始表。如果我们比较原始表和汇总表中的行数，我们会看到平均压缩率从50，000到150不等(当然，这取决于为聚合选择的维度)。</p>
+<p class="translated">这就是这种方法如此有效的原因。因为最终我们的指标是每天预先计算的，所以我们很容易理解为什么我们在几乎任何时间范围内都能在毫秒内得到结果:查询时扫描的数据量是微不足道的。</p>
+<p class="translated">例如，要获得一个给定客户在过去一周的查询计数，快速的索引扫描是获取位于相同实例上的7行，后跟一个sum。</p>
+<p class="translated">为了获得上个月的前1000个搜索，我们获取30行，去掉前几个条目，并进一步将它们聚合成最终的前1000个。</p>
+<p class="translated">下面是几个简化的示例查询来演示:</p>
+<p class="translated">要获取查询计数，请执行以下操作:</p>
+<p/>
+<p class="translated">因为我们的指标在合并到每日汇总之前首先存在于5分钟汇总表中，所以我们查询这两个表并在查询时联合它们的结果。</p>
+<p class="translated">为了获得不同的用户计数，我们利用了HLL类型，它可以计算几个HLL字段的交集。</p>
+<pre>SELECT hll_cardinality(sum(user_count))::bigint FROM ... WHERE ...</pre>
+<p class="translated">最后但同样重要的是，下面是获取前10个查询的方式:</p>
+<pre>SELECT (topn(topn_union_agg(top_queries), 10)).* FROM ... WHERE ...</pre>
+<p class="translated">我们所有的分析查询都遵循这种模式，在查询时只执行最少的聚合逻辑。</p>
+<h2 class="translated"><a id="the-big-picture" class="anchor" href="#the-big-picture" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>大局</h2>
+<p class="translated">让我们后退一步，看看整个系统:</p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-7585" src="../Images/d40f4857a081b330a76f6e440ec68e82.png" alt="Our whole architecture for analytics processing" srcset="https://blog-api.algolia.com/wp-content/uploads/2018/04/schema3-1-720x284.png 720w, https://blog-api.algolia.com/wp-content/uploads/2018/04/schema3-1-320x126.png 320w, https://blog-api.algolia.com/wp-content/uploads/2018/04/schema3-1-768x303.png 768w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2018/04/schema3-1-720x284.png"/></p>
+<p class="translated">在实际将查询插入Citus之前，我们首先将击键聚合到查询中。我们的大多数客户都实现了即时搜索。使用InstantSearch，您可以在键入时获得结果。这是一个很好的用户体验，它会为给定的搜索生成许多API请求。例如，搜索“Algolia”可能会产生多达7个查询(A、Al、Alg…等)。说到分析，我们只想提供关于完整查询的见解(有人搜索过Algolia一次)，而不是中间的击键。</p>
+<p class="translated">为了确保这一点，我们有一个管道来处理我们的日志，将击键序列聚合到搜索中，然后直接推送到Citus。</p>
+<p class="translated">我们使用Go作为我们选择的语言来重建这个管道。我们在Algolia一直有一个微服务方法，在过去的一年里，我们开始在Go中构建我们的大多数服务(除了我们的<a href="https://www.algolia.com/blog/engineering/inside-the-algolia-engine-part-1-indexing-vs-search/">搜索引擎</a>)，到目前为止，在性能和生产率方面都非常满意。</p>
+<p class="translated">为了完成这幅图，我们依靠GKE上的Kubernetes进行编排，依靠Google Pub/Sub进行跨服务的通信。</p>
+<h2 class="translated"><a id="conclusion" class="anchor" href="#conclusion" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>结论</h2>
+<p class="translated">由于Citus和基于汇总的方法，我们的分析每天处理数千个客户的数十亿次搜索，这个数字还在快速增长。到目前为止，我们对该系统的性能和可伸缩性非常满意，并期待着在它的基础上构建更多的产品。</p>
+<p class="translated">了解我们如何将AWS上的<a href="https://www.algolia.com/blog/engineering/migrating-citus-on-aws-to-citus-on-azure-our-playbook-and-testing-strategies/"> Citus迁移到Azure上的Citus</a>而不影响我们的用户或代码库。</p>
+</div></div>    
+</body>
+</html>

@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>How to optimize an already fast indexing process for real-time | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">如何优化已经很快的实时索引过程</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/how-to-optimize-an-already-fast-indexing-process-advanced-use-cases/#0001-01-01">https://www.algolia.com/blog/engineering/how-to-optimize-an-already-fast-indexing-process-advanced-use-cases/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated"><i> <span>快速</span> </i> <span>索引确保搜索结果以最及时的方式包含最新的信息。“及时”的含义取决于每个公司特定的业务活动。但是正如我们在上一篇关于</span> <a href="https://www.algolia.com/blog/engineering/search-indexing-best-practices-for-top-performance-with-code-samples/"> <span>索引最佳实践</span> </a> <span>的文章中提到的那样，快速索引是现成的——也就是说，您</span> <i> <span>不需要</span> </i> <span>来优化索引过程，对于大多数用例来说，它已经足够快了。</span></p>
+<p class="translated"><i> <span>优化</span> </i> <span>一个已经很快的索引过程可能看起来没有必要。但是在某些情况下，优化会提高标准索引过程的速度。我们在一些高级用例中看到了这一点，在这些用例中，数据需要比平时更新得更快，有时甚至是实时更新。</span></p>
+<p class="translated"><span>我们将讨论以下高级用例:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>高频数据变化</span></li>
+<li aria-level="1" class="translated"><span>危机</span></li>
+<li aria-level="1" class="translated"><span>黑色星期五或其他高活动事件</span></li>
+<li aria-level="1" class="translated"><span>实时索引，场景1:预订酒店，预订&amp;租赁可用性</span></li>
+<li aria-level="1" class="translated"><span>实时指数，场景2:投标和股票市场</span></li>
+</ul>
+<p class="translated"><i><span>*只是对</span> </i> <i> <span>标引</span> </i> <i> <span>的一个大概说明。对于所有用例，无论是标准用例还是高级用例，您总是希望执行一个"</span></i><i><span/></i><i><span>"批量索引过程，以增量方式更新<a href="https://www.algolia.com/doc/guides/sending-and-managing-data/send-and-update-your-data/how-to/sending-records-in-batches/"/>、</span></i><a href="https://www.algolia.com/doc/guides/sending-and-managing-data/send-and-update-your-data/how-to/incremental-updates/"><i><span/></i></a>、<i> <span>和</span> </i> <a href="https://www.algolia.com/doc/guides/sending-and-managing-data/send-and-update-your-data/in-depth/the-different-synchronization-strategies/#partial-record-updates"> <i> <span>中的数据</span>T77】</i></a></p>
+<h2 class="translated"><a id="high-frequency-data-changes" class="anchor" href="#high-frequency-data-changes" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>高频数据变化</span></h2>
+<p class="translated">在这种情况下，关键是你如何优先考虑一些变化。我们称之为“选择性更新”。例如，您决定现在发送一些更新(如价格)，稍后发送其他更新(如描述)。这降低了每批中的变化次数，缩短了批处理过程的频率(例如，从每5分钟到每1分钟)。</p>
+<p class="translated"><span>另一种技术是使用“非删除索引”，即在记录上设置一个“不可用”属性，而不是删除它。就性能而言，删除记录比仅仅更新属性花费更多。但这是一种权衡。虽然更改属性值更快，但通过删除来减小索引的大小总是更好，这样可以更快地建立索引。因此，最佳实践是将这些技术结合起来:每5分钟修改一次属性，每30分钟删除一次记录。</span></p>
+<h2 class="translated"><a id="crisis" class="anchor" href="#crisis" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>危机</span></h2>
+<p class="translated"><span>当工厂无法交付货物时，就会发生危机。或者一艘船被困在苏伊士运河，阻断了世界的货物供应。在这些情况下，在线企业必须立即从其网站上删除不可用的商品，并用另一组产品替换它们。他们也可能不得不重新考虑他们的促销活动。</span></p>
+<p class="translated"><span>实际上没有理由做任何不同于标准索引过程的事情。然而，如果危机持续的时间太长，或者需要在短时间内进行大量的更改，避免索引过载是很重要的。那么最好的方法就是对变更进行分类:</span></p>
+<ul>
+<li aria-level="1" class="translated"><b>立即清除缺货商品</b> <span>。这里有两种选择:从索引中删除商品，或者使用“脱销”布尔值，过滤掉“脱销”属性为假的记录。如前一节所述，最好的方法是每5分钟更改一次属性，每30分钟删除一次标记的记录。</span></li>
+<li aria-level="1" class="translated"><b>在新项目到达时更新</b>，<span>与其他两个类别分开批量更新。</span></li>
+<li aria-level="1" class="translated"><b>在批量更新中分别更改促销活动</b>、<span>，与其他两个类别分开。</span> <b/></li>
+</ul>
+<h2 class="translated"><a id="black-friday-or-other-high-activity-events" class="anchor" href="#black-friday-or-other-high-activity-events" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>黑色星期五或其他高活动事件</span></h2>
+<p class="translated">黑色星期五结合了高频率变化和“危机”的场景，所以你会想要遵循那些场景的建议。这里的区别在于，在黑色星期五，高活动期可能比危机持续的时间更长，或者产生突然的活动高峰——但至少你可以提前为活动做好计划，这样更容易管理。</p>
+<h2 class="translated"><a id="real-time-indexing-scenario-1-booking-a-hotel-reservations-rental-availability" class="anchor" href="#real-time-indexing-scenario-1-booking-a-hotel-reservations-rental-availability" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>实时索引，场景1:预订酒店，预订&amp;租赁房源</span></h2>
+<p class="translated">用户期望搜索结果能够提供最新、最准确的信息。从技术上讲，这意味着他们希望看到后台的变化立即出现在他们的搜索结果中。企业也希望如此:过时的信息会对利润和客户信任产生负面影响。</p>
+<p class="translated"><span>举例:预订酒店。如果一家酒店出现在搜索结果中，用户希望当他们点击查看更多细节时，它具有相同的状态和价格。但是如果酒店在查询和点击之间被预订了呢？你可以用一个友好的前端UX优雅地管理它(见下文)。但是，您也可以使用额外的索引策略来缓解这个问题，这种策略通常用在实时系统级编程中，它依赖于第二个更小的索引。</span></p>
+<p class="translated"><span>你在收集更新的Algolia服务器</span>  <span>上创建一个微型索引</span> <i> <span>，最多1000条记录。前端代码</span> <i> <span>会在每次搜索时将这个微小的索引与您的主索引合并，删除结果(如缺货商品)或动态更新信息(如价格)。算法如下:</span></i></i></p>
+<ul>
+<li aria-level="1" class="translated"><span>主指数包含所有产品数据，正常。</span></li>
+<li aria-level="1" class="translated"><span>微小的索引随着每次发生的变化而更新，还不是主要的索引。这个微小的索引应该包含不超过1000条记录。</span></li>
+<li aria-level="1" class="translated"><span>对于每个查询，前端合并两个索引。有两种可能:</span><ul>
+<li aria-level="2" class="translated"><span>微型索引包含每个记录的一个属性，即对象id。如果记录存在于结果中(在对象id上匹配)，它将从结果中删除。</span></li>
+<li aria-level="2" class="translated"><span>微小索引包含2个属性(对象id、价格)。对象id用于匹配结果中的记录，价格属性用于覆盖结果中的价格信息。</span></li>
+</ul>
+</li>
+<li aria-level="1" class="translated"><span>同时，在后端，主索引会定期用小索引中的数据进行更新(遵循前面描述的标准批量更新技术)。微小的索引然后被清零，准备接收新的更新。</span></li>
+</ul>
+<p class="translated"><span>备注:</span></p>
+<ul>
+<li class="translated"><span data-preserver-spaces="true">客户端合并应该不会影响性能，因为客户端合并简单、快速，并且只包含少量记录。</span></li>
+<li aria-level="1" class="translated"><span>分页:删除结果会影响分页，因为删除的项目会在结果列表中产生空隙。因此，一些搜索结果页面会比其他页面有更少的条目。要解决这个问题，可以在空白处放一个横幅或一个促销广告。但是，如果您需要经常删除项目，最好的解决方案是使用无限滚动或“加载更多”逻辑。</span></li>
+</ul>
+<h2 class="translated"><a id="real-time-indexing-scenario-2-bidding-and-stock-markets" class="anchor" href="#real-time-indexing-scenario-2-bidding-and-stock-markets" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>实时指数化，场景二:竞价和股市</span></h2>
+<p class="translated"><span>在这里，用户期望和业务需求更加严格:这个用例</span> <i> <span>要求</span> </i> <span>后台的变化在搜索结果中立即显示</span><i><span/></i><span>。我们在股票市场交易或投标应用程序中看到这种情况，价格每秒甚至毫秒都会发生变化。如果您遇到了这种情况，<a href="https://support.algolia.com/hc/en-us">请联系Algolia </a>，讨论您可以在应用程序、引擎和数据上调整的不同高级设置，以最大限度地提高索引性能。虽然很少进行引擎级的更改，但在特殊情况下，它们可以缩短索引时间。</span></p>
+<h2 class="translated"><a id="other-considerations" class="anchor" href="#other-considerations" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>其他注意事项</span></h2>
+<h3 class="translated"><a id="perceived-performance-%e2%80%93-front-end-uiux-solutions%c2%a0%c2%a0" class="anchor" href="#perceived-performance-%e2%80%93-front-end-uiux-solutions%c2%a0%c2%a0" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>感知性能–F</span><span>前端UI/UX解决方案</span></h3>
+<p class="translated"><span>表现的一个重要方面是</span> <a href="https://simonhearne.com/2021/optimistic-ui-patterns/"> <i> <span>感知表现</span> </i> </a> <span>。我们不会在这里讨论<a href="https://www.algolia.com/blog/product/the-ultimate-guide-to-site-search/"> UI/UX最佳实践</a>，但是我们想承认构建一个前端的重要性，这个前端给人高性能的感觉。这不是要制造一个错误的印象，而是要告诉用户有一个(合理的)等待时间。友好的进度条</span>  <span>就是一个例子:它友好地要求用户等待，如果时间不太长，人们会接受。有许多同样有效的方法来管理UI的性能。</span></p>
+<h3 class="translated"><a id="out-of-the-box-performance" class="anchor" href="#out-of-the-box-performance" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>开箱即用的性能</span></h3>
+<p class="translated"><span>正如我所承诺的，我想说一下我们所说的“开箱即用的高性能”是什么意思。我们的索引采用了以下技术:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>使用高级索引技术的搜索引擎</span></li>
+<li aria-level="1" class="translated"><span>高性能</span> <a href="https://www.algolia.com/doc/guides/scaling/servers-clusters/"> <span>裸机服务器</span> </a> <span>为性能而配置</span></li>
+<li aria-level="1" class="translated"><span>全球可用的基于集群的云基础设施，具有低延迟和服务器冗余(即，无服务器停机)</span></li>
+<li aria-level="1" class="translated"><span>一个带有重试方法的API，确保(合同上)</span> <a href="https://www.algolia.com/policies/sla/"> <span> 99.99%的可用性</span> </a> <span> </span></li>
+</ul>
+<h2 class="translated"><a id="next-readings" class="anchor" href="#next-readings" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>下次阅读</span></h2>
+<p class="translated"><span>我们的第一篇关于索引的文章</span><a href="https://www.algolia.com/blog/product/an-exploration-of-search-and-indexing-real-time-indexing-scenarios/"><span/></a><span>高度概括了标准和高级索引用例。我们的下一篇文章将带您了解</span> <a href="https://www.algolia.com/blog/engineering/search-indexing-best-practices-for-top-performance-with-code-samples/"> <span>索引最佳实践</span> </a> <span>以及标准索引过程的实现细节。本文讨论了如何在高级用例中优化索引。</span></p>
+<p class="translated"><span>现在是时候帮你构建解决方案了。我们剩余的文章将为我们讨论的一些高级索引用例提供前端&amp;后端代码，从实时定价开始。</span></p>
+<p class="translated"><span>要开始索引，您可以</span> <a href="https://www.algolia.com/users/sign_up"> <span>免费上传您的数据，</span> </a> <span>或从我们的搜索专家那里获得一个</span> <a href="https://www.algolia.com/demorequest/"> <span>定制演示</span> </a> <span>。</span></p>
+</div></div>    
+</body>
+</html>

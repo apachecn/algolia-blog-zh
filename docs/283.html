@@ -1,0 +1,231 @@
+<html>
+<head>
+<title>Building a COVID-19 geosearch index using CSV files, MongoDB, or GraphQL - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">使用CSV文件、MongoDB或GraphQL建立新冠肺炎地理搜索索引</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/building-a-covid-19-geosearch-index-using-csv-files-mongodb-or-graphql/#0001-01-01">https://www.algolia.com/blog/engineering/building-a-covid-19-geosearch-index-using-csv-files-mongodb-or-graphql/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">我的孩子们最近回到了学校，这意味着新冠肺炎再次在我的脑海中鲜活起来。我认为建立一个新冠肺炎地理搜索网站来探索使用地图界面的病例计数可能会很有趣。第一步是选择数据源并构建索引。从结构良好的数据中创建托管索引对于Algolia如何快速准确地返回搜索结果至关重要。创建一个索引也可能是我们作为开发人员试图启动和运行搜索的第一个挑战。</p>
+<p class="translated">我想为我的网站建立使用<a href="https://www.jhu.edu/">约翰·霍普斯金大学</a>的聚集新冠肺炎数据集的索引。事实证明，我们有几种不同的方式来消费这个数据集。这为我们探索从不同类型的后端(包括平面文件、数据库和API)获取数据的几种模式提供了机会。作为开发人员，我们通常不会选择从哪里获取数据。应用程序带有预先存在的数据源和定义的接口。我们甚至可能需要与多个数据源进行交互，以构建应用程序所需的搜索类型。</p>
+<p class="translated">顺便说一下，Algolia继续为非营利的新冠肺炎相关应用程序提供<a href="https://www.algolia.com/blog/algolia/supporting-our-communities-during-this-time-of-need/">免费专业计划</a>，如果你正在寻找建立(或已经建立)类似的东西。</p>
+<h2 class="translated"><a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>入门</h2>
+<p class="translated">在Algolia，我们将数据摄取称为<a href="https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/">三步索引流程</a>:</p>
+<ol>
+<li class="translated">从我们的数据源获取数据</li>
+<li class="translated">转换提取的数据</li>
+<li class="translated">将我们的记录发送到索引</li>
+</ol>
+<p class="translated">在这篇博客的其余部分，我们将通过一些策略从JHU提供的每种可用数据格式中获取数据。接下来，你需要在现有的Algolia账户下创建一个索引，或者<a href="https://www.algolia.com/users/sign_up?utm_source=blog&amp;utm_medium=main-blog&amp;utm_campaign=devrel&amp;utm_id=covid-geosearch">注册一个免费账户</a>并安装一个应用程序。</p>
+<p class="translated">你可以在新冠肺炎地理搜索演示报告的<a href="https://github.com/chuckmeyer/covid-geosearch/tree/development/scripts">目录下找到我们下面讨论的所有摄取脚本。随意克隆它并测试完成的演示。您需要从<code>example.env</code>创建一个<code>.env</code>文件，并在运行脚本之前添加您的Algolia应用程序信息和API密钥。</a></p>
+<h2 class="translated"><a id="fetching-data-from-flat-files" class="anchor" href="#fetching-data-from-flat-files" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>从平面文件中提取数据</h2>
+<p class="translated">约翰·霍普斯金方便地将他们的全球和美国数据发布到至少每天更新的GitHub回购协议上。数据本身以CSV格式存储。这些文件包含地图前端所需的地理编码坐标。</p>
+<p class="translated">例如，这是我的家乡俄亥俄州的记录:</p>
+<pre class="lang:csv decode:true ">`39049,Franklin,Ohio,US,2021-08-31 04:21:46,39.96995815,-83.01115755,139178,1531,,,"Franklin, Ohio, US",10569.763874248532,1.0863785943180675`&#13;
+</pre>
+<p class="translated">数据科学家发现在存储库中使用平面文件存储数据很有吸引力，因为它强调版本控制和跟踪随时间的变化。如果有更好的信息可用，他们可以更新历史记录，同时还可以捕捉到记录已经更改的事实。高阶数据库可能很难跟踪这种变化。我们将编写一个快速脚本，将原始CSV数据直接接收到我们的索引中。我们可以使用Python <a href="https://pandas.pydata.org/"> pandas </a>库来做到这一点。</p>
+<pre class="lang:python decode:true ">#!python3&#13;
+import pandas&#13;
+&#13;
+DATA_FILE = '../COVID-19/csse_covid_19_data/csse_covid_19_daily_reports/08-30-2021.csv'&#13;
+&#13;
+def main():&#13;
+  df = pandas.read_csv(DATA_FILE)&#13;
+  print(df)&#13;
+&#13;
+if __name__ == "__main__":&#13;
+    main()&#13;
+</pre>
+<p class="translated">他们用日期戳命名每个文件，这意味着我们最终需要一种方法来找到包含最新数据的文件名。目前，我们只是把摄入时间锁定在某一天。尽管文件本身有很多数据。我们想把它精简到我们搜索需要的信息。由于我们不能在摄取步骤中这样做，我们将把它保存到<a href="#transforming-our-data">转换步骤</a>中，然后继续下一个数据源。</p>
+<h2 class="translated"><a id="fetching-data-from-a-database" class="anchor" href="#fetching-data-from-a-database" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>从数据库中提取数据</h2>
+<p class="translated">MongoDB的开发人员已经将JHU数据集导入到一个托管的<a href="https://www.mongodb.com/developer/article/johns-hopkins-university-covid-19-data-atlas/"> MongoDB文档存储库</a>。从数据库而不是原始文件消费有几个优点。首先，他们负责从Github repo接收CSV文件，并确保每小时更新一次数据。住在文档存储的下游意味着我们不必做整理平面文件和查找最新数据的工作。此外，MongoDB为我们提供了一个受管理的端点和一个已知的接口，减少了开发人员的摩擦，因为我们不再需要处理平面文件的定制数据结构。</p>
+<p class="translated">我们可以使用<a href="https://pypi.org/project/pymongo/"> pymongo </a>直接连接到他们的文档存储，并使用它的元数据来检索最新的记录。</p>
+<pre class="lang:python decode:true ">#!python3&#13;
+from pymongo import MongoClient&#13;
+&#13;
+MDB_URL = "mongodb+srv://readonly:readonly@covid-19.hip2i.mongodb.net/covid19"&#13;
+&#13;
+def main():&#13;
+  client = MongoClient(MDB_URL)&#13;
+  db = client.get_database("covid19")&#13;
+  stats = db.get_collection("global_and_us")&#13;
+  metadata = db.get_collection("metadata")&#13;
+&#13;
+  # Get the last date loaded:&#13;
+  meta = metadata.find_one()&#13;
+  last_date = meta["last_date"]&#13;
+&#13;
+  results = stats.find(&#13;
+    {&#13;
+      "date":last_date,&#13;
+    }&#13;
+    print(results)&#13;
+&#13;
+if __name__ == "__main__":&#13;
+    main()&#13;
+</pre>
+<p class="translated">构建搜索索引的一个关键部分是将数据精简到我们搜索数据所需的数量。因为我们使用数据库，所以不需要像平面文件那样接收整个文档。让我们将查询范围缩小到位置信息、地理编码坐标和确诊病例数。我们还可以跳过任何缺少位置数据的记录:</p>
+<pre class="lang:python decode:true ">  results = stats.find(&#13;
+    {&#13;
+      "date":last_date,&#13;
+      "loc":{"$exists": True, "$ne": [] }&#13;
+    }, {&#13;
+      "combined_name": 1, &#13;
+      "county": 1,&#13;
+      "state": 1,&#13;
+      "country": 1,&#13;
+      "confirmed": 1,&#13;
+      "loc": 1&#13;
+    }&#13;
+</pre>
+<p class="translated">当我们以后转换数据记录时，这将使我们的工作更容易。</p>
+<h2 class="translated"><a id="fetching-data-from-rest-apis" class="anchor" href="#fetching-data-from-rest-apis" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>从REST APIs获取数据</h2>
+<p class="translated">MongoDB还提供了一个RESTful API<a href="https://www.mongodb.com/developer/article/johns-hopkins-university-covid-19-rest-api/">来检索相同的数据，而不必连接到文档存储。API的优势在于只需要一个安全的HTTP连接就可以使用。挑战来自于复杂的数据请求，这些请求需要对API设计有深入的了解，我们将在下面看到。</a></p>
+<p class="translated">首先，让我们构建我们的REST请求:</p>
+<pre class="lang:python decode:true ">#!python3&#13;
+import json&#13;
+import requests&#13;
+&#13;
+METADATA_URL = 'https://webhooks.mongodb-stitch.com/api/client/v2.0/app/covid-19-qppza/service/REST-API/incoming_webhook/metadata'&#13;
+REST_URL = 'https://webhooks.mongodb-stitch.com/api/client/v2.0/app/covid-19-qppza/service/REST-API/incoming_webhook/global_and_us'&#13;
+&#13;
+def main():&#13;
+  meta = requests.get(METADATA_URL)&#13;
+  last_date = meta.json()['last_date']&#13;
+  query = {&#13;
+    'min_date': last_date,&#13;
+    'max_date': last_date,&#13;
+    'hide_fields': '_id, fips, country_code, country_iso2, country_iso3, population, deaths, confirmed_daily, deaths_daily, recovered, recovered_daily'&#13;
+  }&#13;
+  response = requests.get(REST_URL, params=query)&#13;
+  print(response.json())&#13;
+&#13;
+if __name__ == "__main__":&#13;
+    main()&#13;
+</pre>
+<p class="translated">同样，我们使用元数据来确保我们只获取最新的数据。注意，REST API公开了一个<code>hide_fields</code>参数，我们可以用它作为负过滤器来获取我们需要的字段。这并不像列出我们想要的字段那样简单，但是这样设计API可能是有原因的。对于API，我们必须使用给定的接口。幸运的是，正如我们将在下一节看到的，这是开发人员一直在思考的问题。</p>
+<h2 class="translated"><a id="fetching-data-from-graphql-apis" class="anchor" href="#fetching-data-from-graphql-apis" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>从GraphQL APIs获取数据</h2>
+<p class="translated">我们探索的最后一个接口是经过认证的GraphQL API。GraphQL提供了与REST API相同的HTTPS可访问接口，但是增加了一个<a href="https://graphql.org/">规范化查询语言</a>，这样就不需要对单个API非常熟悉。我们再次使用元数据来查找最新数据的日期，并只检索我们需要的字段。但是，因为这个API是经过身份验证的，所以我们必须首先访问一个身份验证端点并获取一个短期访问令牌:</p>
+<pre class="lang:python decode:true ">#!python3&#13;
+import json&#13;
+import requests&#13;
+&#13;
+GRAPHQL_AUTH = "https://realm.mongodb.com/api/client/v2.0/app/covid-19-qppza/auth/providers/anon-user/login"&#13;
+GRAPHQL_URL  = "https://realm.mongodb.com/api/client/v2.0/app/covid-19-qppza/graphql"&#13;
+&#13;
+def main():&#13;
+  response = requests.get(GRAPHQL_AUTH)&#13;
+  access_token =  response.json()['access_token']&#13;
+&#13;
+  headers = {}&#13;
+  headers["Accept"] = "application/json"&#13;
+  headers["Content-Type"] = "application/json"&#13;
+  headers["Authorization"] = "Bearer {}".format(access_token)&#13;
+&#13;
+  metadata = requests.post(GRAPHQL_URL, headers=headers, json={'query': 'query { metadatum{ last_date }}'})&#13;
+  if metadata.status_code != 200:&#13;
+    raise Exception(f"Query failed to run with a {response.status_code}.")&#13;
+  last_date = metadata.json()['data']['metadatum']['last_date']&#13;
+&#13;
+  query = '''query {&#13;
+    global_and_us(query: { date: "''' + last_date + '''" }, limit:5000)&#13;
+    { confirmed county state country combined_name loc { type coordinates }}&#13;
+}'''&#13;
+&#13;
+  response = requests.post(GRAPHQL_URL, headers=headers, json={'query': query})&#13;
+  if response.status_code != 200:&#13;
+    raise Exception(f"Query failed to run with a {response.status_code}.")&#13;
+  print(response.json())&#13;
+&#13;
+if __name__ == "__main__":&#13;
+    main()&#13;
+</pre>
+<p class="translated">这个界面并没有给桌面带来多少新的东西。与REST API相比，它有一点是标准化的。当我们跨多个不同的后端进行查询，或者针对移动或低带宽用例对数据进行精简切片时，GraphQL确实大放异彩。在搜索之后引入额外的数据可能很有趣，但是我们可以用其他开销更少的接口来实现。</p>
+<h2 class="translated"><a id="choosing-our-data-source" class="anchor" href="#choosing-our-data-source" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>选择我们的数据源</h2>
+<p class="translated">这些摄取方法各有利弊。直接使用平面文件可以让我们最接近数据，并包含一些下游数据源中没有的全球市政数据。然而，使用这些文件意味着需要额外的代码来判断哪个文件有最新的数据。我们还需要做我们自己的数据标准化。</p>
+<p class="translated">通过MongoDB使用文件提供了一个简单的接口，并建立在平面文件的托管数据接收层之上，但是会牺牲一些全局数据的保真度。对于这个用例，REST和GraphQL APIs并没有提供比我们从消费上游资源中得到的更多的东西。所有这三个(MongoDB和两个API方法)都提供了查询接口来过滤记录，并只检索索引所需的属性。</p>
+<p class="translated">当我们考虑随着时间的推移保持数据同步时，我们可能会发现MongoDB接口很有吸引力，因为我们可以使用元数据来确保我们总是获取最新的案例计数。尽管我喜欢通过消费原始CSV文件获得的额外数据，但我们必须建立一种方法来监控回购，以确保我们总是获得最新的数据。</p>
+<h2 class="translated"><a id="transforming-our-data" class="anchor" href="#transforming-our-data" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>转换我们的数据</h2>
+<p class="translated">选择数据源后，我们的下一个任务是<a href="https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/#simplifying-your-records">为我们的索引构建数据</a>。Algolia索引必须是JSON格式，每个记录有一个唯一的<code>objectID</code>。将这些ID映射到数据源中的现有ID是有意义的。Algolia API可以<a href="https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/in-depth/what-is-in-a-record/#unique-record-identifier">为我们</a>创建这些id，但是我们不建议这样做。除了这些要求之外，这里的目标是将我们的记录精简到最简单的形式，仍然在性能搜索和有用的结果之间提供正确的平衡。</p>
+<p class="translated">我们正在创建新冠肺炎数据的地理表示，因此最起码，我们需要地理编码坐标和我们要显示的每条记录的确诊病例数。为了使数据更容易使用，我们应该包括位置信息，如显示在地图上的县或省，以及州和国家，以提高搜索的相关性。</p>
+<p class="translated">下面是我们用于CSV平面文件摄取的转换代码，同样使用了<code>pandas</code>:</p>
+<pre class="lang:python decode:true ">  covid_records = []&#13;
+  for index, row in df.iterrows():&#13;
+    # Skip locations w/o coordinates&#13;
+    if pandas.isna(row['Lat']):&#13;
+      print('Skipping {}: No geocode'.format(row['Combined_Key']))&#13;
+    else:&#13;
+      covid_record = {}&#13;
+      covid_geocode = {}&#13;
+      print(row['Combined_Key'])&#13;
+      covid_record['`objectId`'] = row['Combined_Key']&#13;
+      # Let's not use the combined key for US counties, instead let's use county and state  &#13;
+      if pandas.isna(row['Admin2']):&#13;
+        covid_record['location'] = row['Combined_Key']&#13;
+      else:&#13;
+        covid_record['location'] = row['Admin2'] + ', ' + row['Province_State']&#13;
+      covid_record['country'] = row['Country_Region']&#13;
+      covid_record['confirmed_cases'] = int(row['Confirmed'])&#13;
+      covid_geocode['lat'] = row['Lat']&#13;
+      covid_geocode['lng'] = row['Long_']&#13;
+      covid_record['_geoloc'] = covid_geocode&#13;
+      covid_records.append(covid_record)&#13;
+</pre>
+<p class="translated">摄取代码在所有摄取模式中保持相当一致。这是有意义的，因为它们都继承了作为根源文件的CSV文件的形状。下面是我们的MongoDB源代码的相同代码:</p>
+<pre class="lang:python decode:true ">  covid_records = []&#13;
+  for row in response.json():&#13;
+    # Unassigned and Unknown records are alread scrubbed in this DB&#13;
+    # Skip 'US' and 'Canada' since they have incomplete data&#13;
+    # and locations w/o coordinates&#13;
+    if row['combined_name'] != 'US' and row['combined_name'] != 'Canada' and 'loc' in row:&#13;
+      covid_record = {}&#13;
+      covid_geocode = {}&#13;
+      print(row['combined_name'])&#13;
+      covid_record['`objectId`'] = row['combined_name']&#13;
+      # Let's not use the combined key for US counties, instead let's use county and state  &#13;
+      if 'county' in row:&#13;
+        covid_record['location'] = row['county'] + ', ' + row['state']&#13;
+      else:&#13;
+        covid_record['location'] = row['combined_name']&#13;
+      covid_record['country'] = row['country']&#13;
+      covid_record['confirmed_cases'] = row['confirmed']&#13;
+      covid_geocode['lat'] = row['loc']['coordinates'][1]&#13;
+      covid_geocode['lng'] = row['loc']['coordinates'][0]&#13;
+      covid_record['_geoloc'] = covid_geocode&#13;
+      covid_records.append(covid_record)&#13;
+    else:&#13;
+      print('Skipping {}: No geocode'.format(row['combined_name']))&#13;
+</pre>
+<p class="translated">在这两种情况下，我们都只剩下一个带有搜索和发现所需属性的规范化Python字典。</p>
+<h2 class="translated"><a id="building-our-index" class="anchor" href="#building-our-index" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>建筑节令</h2>
+<p class="translated">最后一步是将我们的规范化数据发送到Algolia搜索API。此时，代码是使用<a href="https://www.algolia.com/doc/guides/getting-started/quick-start/tutorials/quick-start-with-the-api-client/python/?client=python"> Python SDK </a>的样板文件:</p>
+<pre class="lang:python decode:true ">  client = SearchClient.create(os.getenv('APP_ID'), os.getenv('API_KEY'))&#13;
+  index = client.init_index(os.getenv('ALGOLIA_INDEX_NAME'))&#13;
+  index.clear_objects()&#13;
+  index.save_objects(covid_records)&#13;
+</pre>
+<p class="translated">这段代码清除所有现有记录，并使用最新数据重建索引。通过使用Python客户端与Algolia API进行交互，我们不必担心记录批处理和API重试之类的事情，从而减少了这里所需的代码量。它还<a href="https://support.algolia.com/hc/en-us/articles/4406981911697-What-is-the-standard-SLA-">确保零停机时间</a>。</p>
+<p class="translated">大多数索引默认值对于这个用例来说都很好。我想做的唯一改变是将我们的可搜索属性限制为<code>country</code>和<code>location</code>，并根据案例数量对结果进行降序排列。高病例数倾向于映射到大型人口中心，这使得我们缩小地图时数据更有用。</p>
+<p class="translated">以下是我的索引配置片段:</p>
+<pre class="lang:json decode:true ">{&#13;
+...&#13;
+  "searchableAttributes": ["unordered(country)", "unordered(location)"],&#13;
+  "ranking": ["typo", "geo", "words", "filters", "proximity", "attribute", "exact", "custom"],&#13;
+  "customRanking": ["desc(confirmed_cases)"],&#13;
+...&#13;
+}&#13;
+</pre>
+<h2 class="translated"><a id="next-steps" class="anchor" href="#next-steps" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>下一步步骤</h2>
+<p class="translated">在最初的数据接收之后，我们还需要决定如何随着底层数据的变化来更新我们的索引。根据我们启动更新和修改索引的方式，我们可以遵循许多模式。</p>
+<h3 class="translated"><a id="rebuilding-our-index" class="anchor" href="#rebuilding-our-index" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>重建我们的索引</h3>
+<p class="translated">因为我们的新冠肺炎数据集有固定数量的记录，所以每隔几个小时或一天几次清除和重建索引并不是特别繁重。我们可以使用预定的<a href="https://www.serverless.com/examples/aws-python-scheduled-cron">无服务器函数</a>或在构建过程中嵌入我们的脚本，以固定的时间间隔来完成这项工作。如果我们想要更接近实时更新，我们可以在新冠肺炎回购协议上设置一个GitHub动作，每当我们合并一个新的PR时触发我们的索引重建。</p>
+<h3 class="translated"><a id="atomic-rebuilds-for-production-data" class="anchor" href="#atomic-rebuilds-for-production-data" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>生产数据的原子重建</h3>
+<p class="translated">对于较大的生产索引，我们希望避免索引重建时的停机时间或更新失败的可能性。出于这个原因，我们将使用<a href="https://www.algolia.com/doc/api-reference/api-methods/replace-all-objects/">替换所有对象</a>方法来执行原子重新索引。这种方法不是就地重建索引，而是创建一个新的索引，并且只在保存所有记录后进行切换，从而减少了停机时间，并确保操作实际上是原子性的。</p>
+<h3 class="translated"><a id="incremental-updates" class="anchor" href="#incremental-updates" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>增量更新</h3>
+<p class="translated">有时，对单个记录甚至单个数据字段执行<a href="https://www.algolia.com/doc/guides/sending-and-managing-data/send-and-update-your-data/how-to/incremental-updates/">增量更新</a>比重建整个索引更有意义。例如，如果我们在一段时间内跟踪确诊病例，我们将需要考虑历史数据的偶尔更新。没有必要为一个小的数据变化重建整个索引。使用webhook订阅或通过直接监控文件来监控更改更有意义。然后，随着数据的变化，我们可以批量增加或更新记录。在这种模式中，惟一的<code>objectId</code>对于在更新期间引用现有记录变得至关重要。</p>
+<h3 class="translated"><a id="building-a-front-end" class="anchor" href="#building-a-front-end" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>建筑前端</h3>
+<p class="translated">现在我们有了索引，我们可以专注于构建我们的前端。Algolia React InstantSearch库中的<a href="https://www.algolia.com/doc/api-reference/widgets/geo-search/react/">地理搜索小部件</a>让我们可以使用谷歌地图相当轻松地构建一个前端。您可以先睹为快回购中的<a href="https://github.com/chuckmeyer/covid-geosearch">，但是我们将把它留到以后再实现。</a></p>
+<p class="translated">在我们的开源代码交换平台上查看相关解决方案。</p>
+<p class="translated"><a class="aligncenter" href="https://www.algolia.com/developers/code-exchange/?page=1&amp;refinementList%5Bproduct_features%5D%5B0%5D=Geo%20Search"> <img loading="lazy" class="wp-image-13777" src="../Images/7665551c18b687f25dcadc15cb213b7d.png" alt="" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/01/CodeX@2x.png"/> </a></p>
+</div></div>    
+</body>
+</html>

@@ -1,0 +1,153 @@
+<html>
+<head>
+<title>5 reasons to add clicks to site search analytics (and code to do it) - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">增加网站搜索分析点击的5个理由(和代码)</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/product/5-reasons-to-add-clicks-to-site-search-analytics-and-code-to-do-it/#0001-01-01">https://www.algolia.com/blog/product/5-reasons-to-add-clicks-to-site-search-analytics-and-code-to-do-it/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">用<i>点击</i>(和转换事件)捕捉用户行为和意图不应该是事后的想法。<span>你在网上的成功取决于你以直接和即时的方式跟踪和回应用户的能力。这种直接性提供了关于他们意图的无价</span> <b>洞察力</b> <span>。除了打电话问他们，你最好的选择是将点击分析整合到你的网站搜索分析中。</span></p>
+<p class="translated"><span>正如您将在下文中看到的，通过网站搜索分析以及点击和转化数据获得的洞察力构成了更高级和更具竞争力的搜索功能的基础，这些功能让您能够利用您的搜索工具获得乐趣和利润。</span></p>
+<p class="translated"><span>好处:实现出奇的简单:在本文中，我们包括了所需的<strong>单行代码</strong>。</span></p>
+<h2 class="translated"><a id="site-search-analytics-click-analytics-and-the-insights-api-why-you-should-read-this-article" class="anchor" href="#site-search-analytics-click-analytics-and-the-insights-api-why-you-should-read-this-article" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>站点搜索分析，点击分析，洞察API:为什么你应该阅读这篇文章</span></h2>
+<ul>
+<li aria-level="1" class="translated"><span>了解</span> <b>网站搜索分析</b> <span>和</span> <b>点击分析</b>的区别</li>
+<li aria-level="1" class="translated"><span>了解点击分析对于动态相关性、A/B测试、推荐和个性化的必要性</span></li>
+<li aria-level="1" class="translated"><span>了解使用我们的</span> <a href="https://www.algolia.com/doc/api-client/methods/insights/"> Insights API </a>实现点击分析有多简单</li>
+</ul>
+<h2 class="translated"><a id="comparing-site-search-analytics-with-click-analytics" class="anchor" href="#comparing-site-search-analytics-with-click-analytics" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>比较网站搜索分析和点击分析</span></h2>
+<p class="translated"><a href="https://www.algolia.com/blog/product/internal-site-search-analysis/"> <span>网站搜索分析</span> </a> <span>提供关于用户搜索内容和最常用术语的见解。但是</span> <a href="https://moz.com/blog/5-actionable-analytics-reports-for-internal-site-search"> <span>搜索分析</span> </a> <span>对于你的网站来说只是故事的一部分；它错过了用户旅程的很大一部分。</span></p>
+<p class="translated"><a href="https://www.algolia.com/doc/guides/getting-analytics/search-analytics/advanced-analytics/"> <span>点击分析</span> </a> <span>从那里拿起并告诉你你的用户做了什么</span> <i> <span>在</span> </i> <span>之后他们执行搜索——他们是否点击或查看项目，以及他们是否转换。</span></p>
+<h2 class="translated"><a id="what-is-click-analytics" class="anchor" href="#what-is-click-analytics" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>什么是点击分析？</span></h2>
+<p class="translated"><span>点击分析</span> <b>收集用户搜索时查看和点击的详细数据</b> <span>，让您准确了解他们的产品兴趣和行为。在这方面，它类似于</span><a href="https://www.lovesdata.com/blog/site-search-setup"><span>Google Analytics</span></a><span>，但其用途也不同于</span> <a href="https://www.foregroundweb.com/google-analytics-site-search-tracking/"> <span> GA </span> </a> <span>。</span></p>
+<p class="translated"><span>点击分析对提高你的</span> <a href="https://support.google.com/analytics/answer/1012264?hl=en"> <span>网站搜索</span> </a> <span>至关重要，因为它给你</span> <b>关于你的目录的洞察力</b> <span>，这是你根本无法通过任何其他方式获得的。它会根据用户购买、添加到购物车、收听或观看的内容生成</span> <b>转换率</b> <span>。与转换分析一起，它提供并实现了ML/AI驱动的功能，如</span> <a href="https://www.algolia.com/doc/guides/personalization/what-is-personalization/"> <span>个性化</span> </a> <span>，</span> <a href="https://www.algolia.com/doc/guides/ab-testing/what-is-ab-testing/"> <span> A/B测试</span> </a> <span>，</span> <a href="https://www.algolia.com/doc/guides/algolia-ai/re-ranking/"> <span>动态重新排名</span> </a> <span>，所有这些都使您能够产生与</span><a href="https://www.algolia.com/blog/ecommerce/advanced-search-experience-for-e-commerce/"><span/></a><span>不相上下的消费级搜索体验</span></p>
+<p class="translated"><b>使用Insights API，您只需一行代码就能实现所有这些。</b></p>
+<h2 class="translated"><a id="top-5-reasons-to-add-click-analytics-to-your-site-search-analytics" class="anchor" href="#top-5-reasons-to-add-click-analytics-to-your-site-search-analytics" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>添加点击分析到你的网站搜索分析的5大理由</span></h2>
+<p class="translated">在深入技术细节之前，让我们看看点击分析提供了什么。可以:</p>
+<h3 class="translated"><a id="1-view-trends-over-time" class="anchor" href="#1-view-trends-over-time" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span> 1。查看一段时间内的趋势</span></h3>
+<p class="translated"><span>实现点击分析可以让你</span> <a href="https://www.algolia.com/doc/guides/sending-events/guides/plan/"> <span>保持对指标</span> </a> <span>的跟踪，包括点击率(CTR)、转化率、无点击率，所有这些都揭示了用户意图。</span></p>
+<p class="translated"><img loading="lazy" class=" wp-image-11600 aligncenter" src="../Images/da3bd8ea3496368991606e907747f60a.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-trends-1-320x128.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-trends-1-720x288.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-trends-1-768x307.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-trends-1-1536x614.png 1536w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-trends-1-2048x819.png 2048w" sizes="(max-width: 523px) 100vw, 523px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-trends-1-320x128.png"/></p>
+<ul>
+<li aria-level="1" class="translated"><b>高</b> <a href="https://www.algolia.com/doc/guides/sending-events/guides/plan/"> <b>点击率</b> </a> <span>意味着一个条目被点击的搜索百分比高。它表明客户参与度。</span></li>
+</ul>
+<p> </p>
+<ul>
+<li aria-level="1" class="translated"><b>高</b><b/><a href="https://www.algolia.com/doc/guides/sending-events/guides/plan/"><b>转换率</b> </a> <span>意味着某个项目被转换的搜索百分比很高。这表明，用户可以找到他们正在寻找的，他们想转换。</span></li>
+</ul>
+<p> </p>
+<ul>
+<li aria-level="1" class="translated"><b/><b>高</b> <a href="https://www.algolia.com/doc/guides/getting-analytics/search-analytics/understand-reports/"> <b>无点击率</b> </a> <span>意味着没有产生点击的查询百分比高。它表明，项目可能不再是趋势，或在市场上获得较少的牵引力。</span></li>
+</ul>
+<p class="translated">这些指标衡量了你当前的表现，并帮助你迭代和改进你的搜索解决方案。随着网站搜索分析的持续流动，加上点击和转换，当你改变相关性设置时，你会看到这些指标如何随着时间的推移而增长。</p>
+<h3 id="dynamic-ranking" class="translated"><span> 2。融入“群众的智慧”(有一点人工智能的帮助)</span></h3>
+<p class="translated"><a href="https://www.algolia.com/doc/guides/algolia-ai/re-ranking/"><span/></a><span>——一种基于最近点击调整结果顺序的功能——是点击分析如何直接影响用户搜索和发现体验的显著例子。此功能会对用户最近的行为做出响应，并将您的最佳表现项目推至用户结果的顶部。</span></p>
+<p class="translated"><span>例如，如果一个项目出乎意料地出现趋势，动态重新排名会抓住该趋势，并将该项目的位置提升到顶部。流行艺术家的新电影和音乐一发布就自动被送到顶端。季节性和突发性的时尚趋势也得到推动。</span></p>
+<p class="translated"><img loading="lazy" class=" wp-image-11601 aligncenter" src="../Images/cd95b5df48409d4f41509574a6dc320e.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-drr-1-320x136.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-drr-1-720x306.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-drr-1-768x326.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-drr-1-1536x652.png 1536w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-drr-1.png 1772w" sizes="(max-width: 581px) 100vw, 581px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-drr-1-320x136.png"/></p>
+<h3 class="translated"><a id="3-enable-a-personalized-search-experience" class="anchor" href="#3-enable-a-personalized-search-experience" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span> 3。实现个性化搜索体验</span></h3>
+<p class="translated"><span>当您将</span> <a href="https://www.algolia.com/doc/guides/personalization/personalizing-results/"> <span>用户特定信息</span> </a> <span>添加到您的点击和转换事件中时，您可以利用您的分析数据来实现个性化:这是一种广泛使用的功能，可以根据用户对特定方面或类别的个人偏好来提升产品。个性化将特定于用户的上下文添加到查询中，并使转换更有可能。</span></p>
+<h3 class="translated"><a id="4-improve-search-results-and-locate-problem-queries" class="anchor" href="#4-improve-search-results-and-locate-problem-queries" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span> 4。改进搜索结果并定位问题查询</span></h3>
+<p class="translated"><span>每次查询的点击率和转换率</span><i><span/></i><span>有助于您找到表现不佳的查询。通过</span> <a href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/improve-relevance-with-analytics/"> <span>深入了解您的点击分析</span> </a> <span>，包括点击</span> <i> <span>位置</span> </i> <span>，您可以准确了解您的用户如何与他们的搜索结果进行交互。这些数据在Algolia的仪表板上很容易查看，应该可以帮助您分析特定的查询并优化相关性，或者创建</span> <a href="https://www.algolia.com/doc/guides/managing-results/rules/rules-overview/"> <span>规则</span> </a> <span>来提高它们的性能。</span></p>
+<h3 class="translated"><a id="5-test-how-users-interact-with-optimizations" class="anchor" href="#5-test-how-users-interact-with-optimizations" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span> 5。测试用户如何与优化互动</span></h3>
+<p class="translated"><span>除了衡量特定查询的成功，您还可以更改引擎中的设置，并衡量其对整体成功的影响。Algolia处理一个</span> <a href="https://www.algolia.com/doc/guides/ab-testing/what-is-ab-testing/"> <span> A/B测试</span> </a> <span>的所有变量切换。你要做的就是设置好你想改变什么，改变多久。</span></p>
+<p class="translated"><span>持续测试您的相关性可以微调您的解决方案设置，并确保直观的相关性和</span> <span>个性化策略。</span></p>
+<h2 class="translated"><a id="click-analytics-and-the-insights-api-free-to-use-costly-not-to-use" class="anchor" href="#click-analytics-and-the-insights-api-free-to-use-costly-not-to-use" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>点击分析和洞察API:免费使用，昂贵不使用</span></h2>
+<p class="translated"><span>网站搜索分析和点击分析不是成本与收益的问题。点击分析是免费的。我们的Insights API公开了一组简单的方法来捕捉用户的点击；就时间和资源而言，成本可以忽略不计。而且，正如您将看到的，实现起来非常简单。</span></p>
+<p class="translated"><span>上述五项关键优势非常巨大，使得点击分析成为每个搜索解决方案的必要组成部分。从用户那里获得关于他们的行为、兴趣和期望的直接而准确的反馈有助于你衡量你的搜索解决方案的成功并提高客户保持率。</span></p>
+<h2 id="how-to-code-analytics" class="translated"><span>如何使用Insights API实施点击分析【技术🤓] </span></h2>
+<p class="translated">提前了解实现给定组件的复杂性(或者在这种情况下，简单性)总是有用的。</p>
+<p class="translated"><span>所以你会很高兴地知道，有了点击分析，你只需要采取一个行动:发送用户</span> <b>事件</b> <span>到Algolia。</span></p>
+<p class="translated"><span>您可以发送这些事件:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>点击</span></li>
+<li aria-level="1" class="translated"><span>转换</span></li>
+<li aria-level="1" class="translated"><span>刻面选择</span></li>
+<li aria-level="1" class="translated"><span>页面或产品浏览量</span></li>
+</ul>
+<p class="translated">一旦你开始发送这些事件，Algolia就会完成剩下的工作。</p>
+<p class="translated">点击分析是关于收集关键用户事件以建立用户活动数据库，然后分析和综合这些数据以得出关于用户行为、需求和偏好的准确见解。</p>
+<p class="translated">当你有大量的流量时，在很短的时间内，你的分析数据将产生前面讨论过的好处。</p>
+<h3 id="sending-events" class="translated"><span>如何发送事件？我们的Insights API的快速概述</span></h3>
+<p class="translated"><span>很简单，Algolia需要用户旅程中缺失的部分:当用户从搜索中得到结果时，他们做了什么。</span></p>
+<p class="translated">第一步是告诉Algolia你将在用户执行查询后发送事件。如下图所示， <a href="https://www.algolia.com/doc/guides/sending-events/guides/queryid/"> <span> Algolia为每一组结果返回一个<code>queryID</code> </span> </a> <span>，您可以使用它将查询与后续的点击事件关联起来。该图概述了当用户执行查询、查看结果、单击项目并将项目放入购物篮时发生的情况。</span></p>
+<p class="translated"><img loading="lazy" class=" wp-image-11599 aligncenter" src="../Images/d2890f4de05154741a59b41ee90f4c95.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-clicks-1-312x178.png 312w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-clicks-1-701x400.png 701w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-clicks-1-768x438.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-clicks-1-1536x876.png 1536w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-clicks-1-2048x1168.png 2048w" sizes="(max-width: 549px) 100vw, 549px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-clicks-1-312x178.png"/></p>
+<p class="translated"><span>要轻松地将这些信息发送到Algolia，您有许多选择(API客户端或前端库)。最重要的部分是决定哪一个最适合您的技术堆栈。</span></p>
+<h3 class="translated"><a id="which-library-or-api-do-you-use-to-send-events" class="anchor" href="#which-library-or-api-do-you-use-to-send-events" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>你用哪个库或者API来发送事件？</span></h3>
+<p class="translated"><span> Algolia让发送事件变得尽可能简单，您选择的路线将取决于您的技术能力和您想要做的事情。</span></p>
+<p class="translated"><img loading="lazy" class=" wp-image-11605 aligncenter" src="../Images/5051cdae002472f5898939cd01942374.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-library-1-310x178.png 310w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-library-1-696x400.png 696w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-library-1-768x442.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-library-1-1536x883.png 1536w, https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-library-1.png 1976w" sizes="(max-width: 484px) 100vw, 484px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/analytics-library-1-310x178.png"/></p>
+<p class="translated"><span>您可以根据您是否使用</span> <a href="https://www.algolia.com/doc/guides/building-search-ui/what-is-instantsearch/js/"> <span>即时搜索</span> </a> <span>以及您希望从前端还是后端发送事件来决定:</span></p>
+<ol>
+<li aria-level="1" class="translated"><span>你在前端使用即时搜索</span><ul>
+<li aria-level="2" class="translated"><i> <span>新增！</span> </i> <span>在搜索结果页面</span>使用 <a href="https://www.algolia.com/doc/guides/building-search-ui/going-further/send-insights-events/js/#creating-the-insights-middleware"> <span>洞察中间件进行事件</span> </a> <span>(需要InstantSearch.js v4.8.3)</span></li>
+<li aria-level="2" class="translated"><span>使用</span> <a href="https://www.algolia.com/doc/guides/sending-events/getting-started/"> <span> Insights客户端库处理事件</span> </a> <span>和任何其他需要事件的页面，如结账或意愿列表页面，</span></li>
+<li aria-level="2" class="translated">注意: <span>我们有普通JavaScript、React、Angular、Vue、iOS和Android的即时搜索版本。</span></li>
+</ul>
+</li>
+<li aria-level="2" class="translated"><span>你是</span> <i> <span>不是</span> </i> <span>在你的前端使用即时搜索，但是你想从前端发送事件。</span></li>
+<li aria-level="2" class="translated"><span>你是</span> <i> <span>不是</span> </i> <span>使用InstantSearch，你有一个后端实现，你想从前端发送事件</span></li>
+<li aria-level="2" class="translated"><span>你是</span> <i> <span>不是</span> </i> <span>使用InstantSearch，你有一个后端实现，你想从后端发送事件</span></li>
+</ol>
+<p class="translated"><span>我们建议您使用</span> <a href="https://www.algolia.com/doc/guides/building-search-ui/what-is-instantsearch/js/"> <span> Algolia的即时搜索库</span> </a> <span>，让即时搜索管理对我们的</span><a href="https://www.algolia.com/doc/api-client/methods/insights/"><span>Insights API</span></a><span>的调用。也就是说，Insights API非常简单，只需要一个调用就可以创建点击事件。</span></p>
+<h2 class="translated"><a id="ok-let%e2%80%99s-see-the-code-one-minute-read" class="anchor" href="#ok-let%e2%80%99s-see-the-code-one-minute-read" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>好了，我们来看代码(一分钟读完)</span></h2>
+<p class="translated">那么我们的洞察库是什么样的呢？它如何使实现变得更容易？</p>
+<p class="translated">下面的标准代码片段说明了您需要的代码。它向Algolia的分析引擎发送以下信息:</p>
+<ul>
+<li aria-level="1" class="translated"><span>用户令牌</span></li>
+<li aria-level="1" class="translated"><span>查询ID </span></li>
+<li aria-level="1" class="translated"><span>单击项目的对象ID</span></li>
+<li aria-level="1" class="translated"><span>项目在结果中的位置</span></li>
+<li aria-level="1" class="translated"><span>事件类型(点击、转化、查看)</span></li>
+</ul>
+<h3 id="code-to-send-click-event" class="translated"><span>这是发送点击事件的代码:</span></h3>
+<pre><code>insights_library('clickedObjectIDsAfterSearch', {&#13;
+    userToken: 'user-123456',&#13;
+    eventName: 'Product Clicked',&#13;
+    index: 'products',&#13;
+    queryID: 'cba8245617aeace44',&#13;
+    objectIDs: ['9780545139700'],&#13;
+    positions: [7],&#13;
+});&#13;
+</code></pre>
+<p class="translated"><span>就是这样。</span></p>
+<p class="translated"><span>如需完整代码，您可以将其复制到您的应用程序中，请查看我们的</span> <a href="https://www.algolia.com/doc/guides/sending-events/getting-started/"> <span>发送点击事件文档</span> </a> <span>。</span></p>
+<p class="translated">对于那些喜欢看现场编码的人，看看我们如何<a href="https://www.youtube.com/watch?v=G705BxglREc">在5分钟内构建一个发送分析事件的应用</a>。</p>
+<h3 class="translated"><a id="what-does-this-code-do" class="anchor" href="#what-does-this-code-do" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>这段代码是做什么的？</span></h3>
+<p class="translated"><span>代码背后的一般思想是发送特定类型的事件。这里，事件是用户在搜索结果上点击 <span>的</span> <b>。</b></span></p>
+<p class="translated">还有其他种类的事件。例如，我们给上面的“点击”事件添加一个“转换”事件:</p>
+<pre><code>insights_library('convertedObjectIDsAfterSearch', {&#13;
+    userToken: 'user-123456',&#13;
+    index: 'products',&#13;
+    eventName: 'Product Wishlisted',&#13;
+    queryID: 'cba8245617aeace44',&#13;
+    objectIDs: ['9780545139700', '9780439785969']&#13;
+});&#13;
+</code></pre>
+<p class="translated"><span>这个发送一个wishlist </span> <b>转换</b> <span>事件。该函数的参数表明用户向他们的愿望列表添加了两个对象(</span> <span> <code>9780545139700</code>和<code>9780439785969</code> </span> <span>)。</span></p>
+<p class="translated"><span>要获得完整的代码，您可以将其复制到您的应用程序中，请查看我们的</span> <a href="https://www.algolia.com/doc/guides/sending-events/getting-started/"> <span>发送转换事件文档</span> </a> <span>。</span></p>
+<h3 class="translated"><a id="what-do-these-events-tell-us-about-the-user%e2%80%99s-journey-and-buying-preferences" class="anchor" href="#what-do-these-events-tell-us-about-the-user%e2%80%99s-journey-and-buying-preferences" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>这些事件告诉我们用户的旅程和购买偏好是什么？</span></h3>
+<p class="translated">首先，用户搜索“哈利·波特”。然后做了如下操作:</p>
+<ul>
+<li class="translated"><span> <em>点击</em>一个结果(假设“哈利波特，第一册”，用它的<code>objectID</code>表示)</span></li>
+<li aria-level="1" class="translated"><span> <em>将</em>《哈利波特，第一部》加入他们的愿望清单</span></li>
+<li aria-level="1" class="translated"><span> <em>改装</em>另一本书(《哈利波特，第二部》)</span></li>
+</ul>
+<p class="translated">你能从这次旅行中学到什么？</p>
+<ul>
+<li aria-level="1" class="translated"><span>该用户显示出对儿童物品以及冒险或奇幻书籍的喜爱。您可以使用这些信息来个性化他们的结果。</span></li>
+<li aria-level="1" class="translated"><span>如果许多用户做同样的事情，那么《哈利·波特》应该会出现在搜索结果中更靠前的位置。如果这是一种趋势，并且你已经启用了<a href="#dynamic%20ranking">动态排名</a>，那么搜索引擎会自动这样做。否则，您可以改进您让<a href="#code-to-send-click-event">与您的点击事件</a>一起发送的<code>position</code>值(该值保存在分析数据库中)。这个例子你发了<code>positions: [7]</code>，可能太低了。您可以通过</span> <a href="https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/#algolia-records"> <span>提炼和重组您的数据</span> </a> <span>和/或</span> <a href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/override-search-engine-defaults/#dont-override-engine-defaults-unless-absolutely-necessary"> <span>调整您的设置</span> </a> <span>来提高职位。</span></li>
+</ul>
+<h3 class="translated"><a id="further-reading" class="anchor" href="#further-reading" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>延伸阅读</span></h3>
+<p class="translated"><span>我们的文档很好的解释了</span> <a href="https://www.algolia.com/doc/api-reference/api-methods/send-events/"> <span>发送事件</span> </a> <span>的各个参数。他们还展示了其他11种语言的代码片段(</span> <a href="https://www.algolia.com/doc/api-reference/api-methods/clicked-object-ids-after-search/?client=php"> <span> PHP </span> </a> <span>，</span><a href="https://www.algolia.com/doc/api-reference/api-methods/clicked-object-ids-after-search/?client=javascript"><span>JavaScript</span></a><span>，</span> <a href="https://www.algolia.com/doc/api-reference/api-methods/clicked-object-ids-after-search/?client=ruby">，<span> Ruby </span> </a> <span>，</span><a href="https://www.algolia.com/doc/api-reference/api-methods/clicked-object-ids-after-search/?client=python"><span>Python</span></a><span>，</span> <a href="https://www.algolia.com/doc/api-reference/api-methods/clicked-object-ids-after-search/?client=csharp"> <span> C#/。NET </span> </a> <span>，</span><a href="https://www.algolia.com/doc/api-reference/api-methods/clicked-object-ids-after-search/?client=java"><span>Java</span></a><span>，</span><a href="https://www.algolia.com/doc/api-reference/api-methods/clicked-object-ids-after-search/?client=swift"><span>Swift</span></a><span>，</span><a href="https://www.algolia.com/doc/api-reference/api-methods/clicked-object-ids-after-search/?client=android"><span>Android</span></a><span>，</span><a href="https://www.algolia.com/doc/api-reference/api-methods/clicked-object-ids-after-search/?client=kotlin"><span>Kotlin</span></a><span>，</span><a href="https://www.algolia.com/doc/api-reference/api-methods/clicked-object-ids-after-search/?client=go"><span>Golang</span></a></p>
+<p class="translated"><span>我们也有很多有用的教程；例如，查看我们的</span> <a href="https://www.algolia.com/doc/guides/sending-events/getting-started/"> <span>点击分析解决方案</span> </a> <span>。</span></p>
+<h2 class="translated"><a id="what%e2%80%99s-next%c2%a0" class="anchor" href="#what%e2%80%99s-next%c2%a0" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>接下来是什么</span></h2>
+<p class="translated"><span>现在你知道了实施点击分析的五个关键原因。概括地说，它让您:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>检测点击和转换行为的模式，然后您可以使用这些模式来配置您的设置和重新排序结果</span></li>
+<li aria-level="1" class="translated"><span>检测最近的购买趋势，搜索引擎可以利用这一趋势将表现最佳的商品推至搜索结果的顶部——动态且即时</span></li>
+<li aria-level="1" class="translated"><span>捕捉每个用户独特的搜索和点击活动，针对一组特定的方面或项目类别个性化他们的结果</span></li>
+<li aria-level="1" class="translated"><span>检测并帮助解决低效的搜索体验</span></li>
+<li aria-level="1" class="translated"><span>使用A/B测试测试搜索设置</span></li>
+</ul>
+<p class="translated">搜索栏可以提供如此多的见解，这仍然有点新奇。或者是？Google Analytics   <span>已经存在一段时间了，它帮助在线企业迭代他们成功的最佳公式..我们已经描述了如何使用点击分析来获得类似的洞察力，</span></p>
+<p class="translated"><span>我们的建议:让您的业务和开发团队一起实施</span><a href="https://www.algolia.com/doc/guides/sending-events/getting-started/"><span>Click Analytics Insights API</span></a><span>。</span></p>
+</div></div>    
+</body>
+</html>

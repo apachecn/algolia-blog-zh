@@ -1,0 +1,124 @@
+<html>
+<head>
+<title>AI-powered recommendations for user testing and UI design - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">人工智能为用户测试和用户界面设计提供的建议</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/ai-powered-recommendations-for-user-testing-and-ui-design/#0001-01-01">https://www.algolia.com/blog/engineering/ai-powered-recommendations-for-user-testing-and-ui-design/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">我们继续关于在后台使用人工智能推荐的系列报道。当我们建立Algolia推荐时，我们最初的目标是为电子商务客户推荐产品。但是我们推荐的API涵盖了许多其他用例。 <span data-preserver-spaces="true">这篇文章是关于如何改进你的在线和后台表单的设计，就像在一个典型的网站或Salesforce UI上看到的那样。</span></p>
+<h2 class="translated"><a id="filling-out-painstakingly-complicated-online-forms" class="anchor" href="#filling-out-painstakingly-complicated-online-forms" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span data-preserver-spaces="true">填写繁琐复杂的在线表格</span></h2>
+<p class="translated"><span data-preserver-spaces="true">对于客户和员工来说，填写电子表格需要耐心和专注。在最糟糕的情况下，它还需要大量的点击和屏幕变化，以及想象力的飞跃，才能找到适当的行动。</span></p>
+<p class="translated">员工是错综复杂的电子表格的主要受害者。他们每天都要与表单进行交互，不同公司、不同系统、不同职业、不同任务的用户界面(UI)也各不相同。如果员工幸运的话，他们有开发人员和设计人员来创建UI，但是众多的需求和系统约束阻碍了良好的设计。常用的解救方法是 <em> <span data-preserver-spaces="true">用户测试</span></em><span data-preserver-spaces="true">——但是这既费钱又费时，而且用户的行为并不总是容易解释的。</span></p>
+<h2 class="translated"><a id="how-ai-driven-recommendations-can-improve-electronic-form-ui-design" class="anchor" href="#how-ai-driven-recommendations-can-improve-electronic-form-ui-design" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><span data-preserver-spaces="true">AI驱动推荐如何改进电子表单UI设计</span></h2>
+<p class="translated"><span data-preserver-spaces="true">在这篇文章中，我们设想Algolia推荐自动化用户测试和UI设计过程。它可以捕捉动作的组合，并围绕这些组合建立模型。当这些模型定期输入员工打字和按钮点击(作为分析数据捕获)时，可以非常快速地生成如下推荐:</span></p>
+<ul>
+<li class="translated"><span data-preserver-spaces="true">在同一屏幕上放置哪些字段</span></li>
+<li class="translated"><span data-preserver-spaces="true">哪些字段应该相邻</span></li>
+<li class="translated"><span data-preserver-spaces="true">在一个屏幕上问多少个问题</span></li>
+<li class="translated"><span data-preserver-spaces="true">如何减少给定任务的屏幕和动作数量</span></li>
+<li class="translated"><span data-preserver-spaces="true">是使用引导式导航(向导)还是允许自由进入</span></li>
+</ul>
+<h3 class="translated"><a id="two-api-calls" class="anchor" href="#two-api-calls" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><strong><span data-preserver-spaces="true">两个API调用</span> </strong></h3>
+<p class="translated">在本系列的前一篇文章中，我们讨论了推荐如何依赖于两个API:</p>
+<ol>
+<li class="translated"><span data-preserver-spaces="true">我们的</span><strong><span data-preserver-spaces="true">Insights API</span></strong><span data-preserver-spaces="true">发送事件并捕获用户活动和分析，如点击和转化。当发送了足够多的事件后，Algolia Recommend就可以构建模型来执行第二步。</span></li>
+<li class="translated"><span data-preserver-spaces="true">我们的<strong>推荐API </strong>了解最频繁的组合。推荐可以帮助您发现用户在使用任何用户界面(尤其是表单)时采取的操作组合。</span></li>
+</ol>
+<p class="translated"><em> <span data-preserver-spaces="true">注意推荐可以找到比频繁组合更多的组合。同样强大的是相关条目字段的概念。结合相关的领域打开了用户设计的新的可能性，这在本文中没有讨论。</span>T3】</em></p>
+<h2 class="translated"><a id="rearrange-and-reduce-the-number-of-fields-using-recommendations" class="anchor" href="#rearrange-and-reduce-the-number-of-fields-using-recommendations" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span data-preserver-spaces="true">使用建议重新排列并减少字段数量</span></h2>
+<h3 class="translated"><a id="the-general-idea" class="anchor" href="#the-general-idea" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><strong><span data-preserver-spaces="true">大意</span> </strong></h3>
+<p class="translated"><span data-preserver-spaces="true">首先，需要将</span> <strong> <span data-preserver-spaces="true">字段中的</span> </strong> <span data-preserver-spaces="true">用户倾向一起修改。然后，Algolia对这些数据进行建模。该模型允许推荐引擎将</span> <strong> <span data-preserver-spaces="true">常用字段与</span> </strong> <span data-preserver-spaces="true">一起编译成一个完整的列表。有了这份报告，您的设计人员可以开始在单个屏幕上重新排列或删除字段，或者重新思考字段在工作流和系统中的分布方式。</span></p>
+<p class="translated">例如，航空公司已经知道如何只问三个问题就开始预订:机场、日期和乘客数量。不幸的是，大多数公司不知道该问哪三个问题，所以他们在屏幕上散布了10个问题，希望用户自己找出合适的领域。只有10个字段的内部网应用程序很少见——大概有15到30个。</p>
+<p class="translated"><span data-preserver-spaces="true">让我们看看推荐是如何简化表单交互性的。</span></p>
+<h3 class="translated"><a id="the-code-to-send-user-activity-and-system-events" class="anchor" href="#the-code-to-send-user-activity-and-system-events" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong> <span data-preserver-spaces="true">代码发送用户活动和系统事件</span> </strong></h3>
+<p class="translated"><span data-preserver-spaces="true">发送一个洞察事件，告知推荐引擎文本字段1、3和8被一起修改:</span></p>
+<pre class="lang:php decode:true ">convertedObjectIDs(
+  'on_save_form',
+  'ui_forms_index',
+  ["field1_id", "field3_id", "field8_id"]
+);
+</pre>
+<h3 class="translated"><a id="getting-the-recommendations" class="anchor" href="#getting-the-recommendations" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><strong><span data-preserver-spaces="true">获取推荐</span> </strong></h3>
+<p class="translated"><span data-preserver-spaces="true">返回与屏幕1上的字段1相关的字段:</span></p>
+<pre class="lang:php decode:true ">$recommendations = $recommendClient-&gt;getFrequentlyBoughtTogether([
+  [
+    'indexName' =&gt; 'ui_forms_index',
+    'objectID' =&gt; 'field1_id',
+  ],
+]);
+</pre>
+<p class="translated"><span data-preserver-spaces="true">这里要注意两件事:</span></p>
+<ol>
+<li class="translated"><span data-preserver-spaces="true">虽然API方法的名称经常是</span><em/><span data-preserver-spaces="true">一起购买，但是“购买”一词可以被认为是在任何给定事件</span>  <span data-preserver-spaces="true">期间捕获两个或更多objectIDs的任何动作。我们在这里定义的事件是“on_save_form”。然而，如下所示，我们可以使用“在用户会话期间”。</span></li>
+<li class="translated"><span data-preserver-spaces="true">这个特殊的代码是关于只跟踪一个屏幕。接下来，我们将把它扩展到多个屏幕。</span></li>
+</ol>
+<h3 class="translated"><a id="what-you-can-learn-from-these-recommendations" class="anchor" href="#what-you-can-learn-from-these-recommendations" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong> <span data-preserver-spaces="true">从这些推荐中你能学到什么</span> </strong></h3>
+<p class="translated"><span>您可以从这个用例中生成一个报告:</span></p>
+<table>
+<tbody>
+<tr>
+<td class="translated"><span>目标字段</span></td>
+<td class="translated"><span>经常一起编辑</span></td>
+</tr>
+<tr>
+<td class="translated"><span>字段1 </span></td>
+<td class="translated"><span>字段3、8、11 </span></td>
+</tr>
+<tr>
+<td class="translated"><span>字段2 </span></td>
+<td class="translated"><span>字段3、9、20 </span></td>
+</tr>
+<tr>
+<td class="translated"><span>场X </span></td>
+<td class="translated"><span>字段a、b、c、..</span></td>
+</tr>
+</tbody>
+</table>
+<p class="translated">通过一点旋转和交叉引用，你可以发现暗示字段不同位置的模式。也许您会将频繁的字段配对放在彼此相邻的位置。</p>
+<h2 class="translated"><a id="improve-the-distribution-of-fields-over%c2%a0multiple%c2%a0screens-using-recommendations" class="anchor" href="#improve-the-distribution-of-fields-over%c2%a0multiple%c2%a0screens-using-recommendations" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span data-preserver-spaces="true">改善字段在</span> <strong> <span data-preserver-spaces="true">多个</span> </strong> <span data-preserver-spaces="true">屏幕上的分布使用建议</span></h2>
+<p class="translated"><span data-preserver-spaces="true">继续前面的例子，让我们添加几个屏幕。您需要更改数据以反映不止一个屏幕的更大上下文。为此，你只需要做一个改变:</span></p>
+<ul>
+<li class="translated"><span data-preserver-spaces="true">添加该字段的屏幕信息</span></li>
+</ul>
+<h3 class="translated"><a id="the-code-to-send-user-activity-and-system-events%c2%a0" class="anchor" href="#the-code-to-send-user-activity-and-system-events%c2%a0" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong> <span data-preserver-spaces="true">代码发送用户活动和系统事件</span> </strong> <span data-preserver-spaces="true"> </span></h3>
+<pre class="lang:php decode:true ">convertedObjectIDs(
+  'on_save_form',
+  'ui_forms_index',
+  ["screen1.field1_id", "screen2.field1_id", "screen2.field2_id"]
+);
+</pre>
+<h3 class="translated"><a id="getting-the-recommendations" class="anchor" href="#getting-the-recommendations" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><strong><span data-preserver-spaces="true">获取推荐</span> </strong></h3>
+<p class="translated"><span data-preserver-spaces="true">返回与屏幕1上的字段1相关的字段:</span></p>
+<pre class="lang:php decode:true ">$recommendations = $recommendClient-&gt;getFrequentlyBoughtTogether([
+  [
+    'indexName' =&gt; 'ui_forms_index',
+    'objectID' =&gt; 'screen1.field1_id',
+  ],
+]);
+</pre>
+<h3 class="translated"><a id="what-you-can-learn-from-these-recommendations" class="anchor" href="#what-you-can-learn-from-these-recommendations" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><strong><span data-preserver-spaces="true">从这些推荐中你能学到什么</span> </strong></h3>
+<p class="translated"><span data-preserver-spaces="true">如您所见，现在我们知道屏幕1上的字段1通常与屏幕2上的字段1和字段2的修改相结合。您需要执行额外的解析来分配正确的屏幕分类。</span></p>
+<p class="translated"><span data-preserver-spaces="true">更进一步:什么会阻止我们跨多个</span> <em> <span data-preserver-spaces="true">系统</span> </em> <span data-preserver-spaces="true">捕获模式？您只需要指定字段所在的“系统”。然而，真正的技巧是事件:“保存”事件通常不能跨多个系统工作。我们可以在系统工作流中使用一个已知的端点，但是我们将使用时间来代替。</span></p>
+<h2 class="translated"><a id="streamlining-the-workflow-and-efficiency-of-filling-out-forms-across-multiple-systems" class="anchor" href="#streamlining-the-workflow-and-efficiency-of-filling-out-forms-across-multiple-systems" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span data-preserver-spaces="true">简化跨多个系统填表的工作流程和效率</span></h2>
+<p class="translated"><span data-preserver-spaces="true">这里提出的解决方案是使用一个</span> <strong> <span data-preserver-spaces="true">会话超时</span> </strong> <span data-preserver-spaces="true">。</span></p>
+<h3 class="translated"><a id="the-code-to-send-user-activity-and-system-events" class="anchor" href="#the-code-to-send-user-activity-and-system-events" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><strong><span data-preserver-spaces="true">代码发送用户活动和系统事件</span> </strong></h3>
+<pre class="lang:php decode:true ">convertedObjectIDs(
+  'session_time_out',
+  'ui_forms_index',
+  ["system1.screen1.field1_id", "system2.screen1.field1_id", "system2.screen2.field2_id"]
+);
+</pre>
+<h3 class="translated"><a id="getting-the-recommendations" class="anchor" href="#getting-the-recommendations" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><strong><span data-preserver-spaces="true">获取推荐</span> </strong></h3>
+<p class="translated"><span data-preserver-spaces="true">返回与系统1屏幕1上的字段1相关的字段:</span></p>
+<pre class="lang:php decode:true ">$recommendations = $recommendClient-&gt;getFrequentlyBoughtTogether([
+  [
+    'indexName' =&gt; 'ui_forms_index',
+    'objectID' =&gt; 'system1.screen1.field1_id',
+  ],
+]);
+</pre>
+<h2 class="translated"><a id="conclusion" class="anchor" href="#conclusion" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span data-preserver-spaces="true">结论</span></h2>
+<p class="translated">这仅仅是如何使用人工智能驱动的推荐来分析用户活动的开始。我相信你能想到更多。这就是它的美妙之处:推荐是一个通用的工具，通过想象和一些思考就可以很容易地适应它。</p>
+</div></div>    
+</body>
+</html>

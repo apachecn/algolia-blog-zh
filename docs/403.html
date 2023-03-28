@@ -1,0 +1,100 @@
+<html>
+<head>
+<title>Why Shopify filters and Shopify faceted search aren’t enough | Algolia | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">为什么Shopify过滤器和Shopify分面搜索还不够| Algolia </h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/ux/filters-vs-facets-in-site-search/#0001-01-01">https://www.algolia.com/blog/ux/filters-vs-facets-in-site-search/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">一个优秀的网站搜索工具不仅能帮助网站访问者使用搜索词找到他们想要的东西，还能帮助他们发现产品，交叉销售或追加销售他们以前从未考虑过的想法。但为了让这种搜索和发现体验发挥作用，产品搜索过程必须无缝、直观，无论购物者是使用移动设备还是坐在台式电脑前。</p>
+<p class="translated"><span>使用Shopify的在线零售商可以改善客户搜索体验和产品发现的一个重要方法是在其用户界面中利用过滤器和分面搜索。</span></p>
+<p class="translated"><span>应用过滤器和方面可以让购物者细化他们的查询，发现你网站上更多的商品。通过使人们能够快速缩小选择范围并找到他们正在寻找的产品描述，您可以改善用户体验并潜在地增加您的转化率。</span></p>
+<h2 class="translated"><a id="filters-and-facets-two-ways-of-narrowing-search-choices" class="anchor" href="#filters-and-facets-two-ways-of-narrowing-search-choices" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>过滤器和刻面:缩小搜索选择的两种方式</span></h2>
+<p class="translated"><span>对于拥有大量内容的电子商务网站来说，过滤器和方面都是有用的工具，否则很难导航。购物者选择过滤器和方面来减少搜索(并进一步细化他们生成的结果)到一个子集。</span></p>
+<p class="translated"><span>通常认为过滤器和方面是可互换的概念。但是，虽然它们都可以帮助用户改进他们的查询并快速获得他们想要的结果，但它们在功能上并不完全相同。事实上，它们在站点搜索中的显示方式和使用方式有很大的不同。</span></p>
+<p class="translated"><span>让我们来看看每一种搜索优化方法，以及正确使用这些方法如何提高用户参与度，从而促进销售。</span></p>
+<h2 class="translated"><a id="the-differences-between-filters-and-facets" class="anchor" href="#the-differences-between-filters-and-facets" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>滤镜和刻面的区别</span></h2>
+<h3 class="translated"><a id="filters" class="anchor" href="#filters" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>滤镜</span></h3>
+<p class="translated"><span>在搜索中，收集过滤器会排除不符合用户所选标准的结果。主题过滤器是广泛的，通常是固定的类别，如产品类型(它们在用户的搜索中不会改变)，人们可以选择它来立即消除不相关的内容，并深入到可管理的数量的项目进行探索。</span></p>
+<p class="translated"><span>在电子商务中，过滤器通常是商店选择的高级产品系列。</span></p>
+<p class="translated">因为产品过滤器的基础如此广泛，所以它通常是购物者在网站主页上看到的第一件东西。例如，购物者可以使用家得宝顶级过滤菜单上的过滤器，包括家居装饰、家具&amp;厨具和DIY项目&amp;创意:</p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-17228" src="../Images/95e4fef13a1a533069fad1453adfb0d4.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/01/image4-4-720x116.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image4-4-320x52.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image4-4-768x124.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image4-4.png 1403w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/01/image4-4-720x116.png"/></p>
+<p class="translated"><span>一家销售服装的网上商店可以让购物者开始缩小服装类型的搜索范围，衬衫、裤子、鞋子和配饰都是可能的类别。当服装类型过滤器被应用时，比如说，只应用于衬衫，访问者会看到一个只显示衬衫的结果页面。</span></p>
+<p class="translated"><span>下面是Lacoste的高级店面过滤菜单的样子:</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-17226" src="../Images/18ac3aaea69c531b686b1f3e45f07c08.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/01/image3-4-720x346.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image3-4-320x154.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image3-4-768x369.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image3-4.png 1310w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/01/image3-4-720x346.png"/></p>
+<p class="translated"><span>点击Men会显示服装、鞋子、配饰、包包&amp;皮具和运动等过滤器，下面是较低级别的过滤器，如t恤过滤器。</span></p>
+<p class="translated"><span>较低级别的过滤选项也可以出现在搜索结果页面本身，因为一旦在搜索栏中输入搜索词，使用不同的方面来进一步指定它们的参数通常是快速将它们带到正确的产品详细信息页面的必要条件。</span></p>
+<h3 class="translated"><a id="facets" class="anchor" href="#facets" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>刻面</span></h3>
+<p class="translated"><span> Facets是在线购物者的主要工具，他们可以使用它来完善搜索结果，发现符合其特定购买需求的商品。分面搜索是一种以有针对性的方式聚焦于产品和搜索结果的方法，这在使用广泛的过滤器时是不可行或不可能的。</span></p>
+<h4 class="translated"><span>刻面反映产品特性</span></h4>
+<p class="translated"><span>搜索者可以使用刻面，也称为刻面过滤器，通过同时指定多个</span>  <span>特定特征(选择多个刻面)来细化搜索。这使得他们的产品选项更加精细，以确保他们能够快速准确地找到他们需要的东西——而不仅仅是大致了解产品，并对过于耗时的搜索过程感到沮丧。</span></p>
+<p class="translated"><span>与过滤器不同，刻面经常在类别内变化，以反映它们所用于的产品类型。例如，当搜索一条牛仔裤时，你可能会看到尺寸、剪裁、洗涤和价格范围等方面的类型。但是如果你在Lacoste网站上搜索太阳镜，你会看到不同的搜索建议，比如性别和颜色。</span></p>
+<p class="translated"><span>或者，举例来说，如果你在L.L.Bean网站上寻找一件女式毛衣，你会在侧边栏中看到尺寸范围(如小号)和该范围内的尺寸的复选框:</span> <span> <br/> </span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-17232" src="../Images/b74655be93dd92730b50386cb81630de.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/01/image6-5-278x400.png 278w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image6-5-124x178.png 124w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image6-5.png 466w" sizes="(max-width: 278px) 100vw, 278px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/01/image6-5-278x400.png"/></p>
+<p class="translated"><span>以下是facets如何让顾客指定鞋子颜色(此处为蓝色和黑色)、尺码(6)和场合(休闲)。</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-full wp-image-17230" src="../Images/d553f44f56733fb2b7be93df80814a41.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/01/image5-4.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image5-4-320x134.png 320w" sizes="(max-width: 720px) 100vw, 720px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/01/image5-4.png"/></p>
+<p class="translated"><span>总之，当谈到网站搜索时，过滤器和方面是引导潜在买家以最快的方式找到产品列表上最佳搜索结果的关键类型，确保了出色的购物体验和最大化收入的承诺。</span></p>
+<p class="translated"><span>以下是这两个搜索增强特性的主要区别:</span></p>
+<p> </p>
+<table>
+<tbody>
+<tr>
+<th class="translated">过滤</th>
+<th class="translated">面状</th>
+</tr>
+<tr>
+<td class="translated">搜索工具自动从一个大的类别开始，排除所有其他类别</td>
+<td class="translated">用户选择特定的属性进行搜索</td>
+</tr>
+<tr>
+<td class="translated">涵盖广泛的属性(例如，服装类型)</td>
+<td class="translated">应用多个特定属性(例如，面料、颜色)</td>
+</tr>
+<tr>
+<td class="translated">有时在搜索过程中对用户可见</td>
+<td class="translated">在搜索过程中始终对用户可见</td>
+</tr>
+<tr>
+<td class="translated">不要随着查询和搜索结果的变化而变化</td>
+<td class="translated">随着查询和搜索结果的变化而适当变化</td>
+</tr>
+</tbody>
+</table>
+<h2 class="translated"><a id="which-is-right-for-your-site-filters-facets-or-both" class="anchor" href="#which-is-right-for-your-site-filters-facets-or-both" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a></h2>
+<p class="translated"><span>现在你知道了过滤器和方面是如何工作的，你认为这个功能会有助于改善你的电子商务搜索体验吗？</span></p>
+<p class="translated"><span>如果你的网站只提供几十个页面的内容，那么数量有限的、适用于所有SKU的宽泛过滤器可能就足够了。</span></p>
+<p class="translated">如果你的目录跨越了许多过滤器和成百上千的产品页面，那么facets会有很大的不同。方面也非常适合用于列出多个产品规格的产品目录，例如，在B2B网站上。</p>
+<h2 class="translated"><a id="shopify-default-search-features-are-bare-bones" class="anchor" href="#shopify-default-search-features-are-bare-bones" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span> Shopify默认搜索功能都是裸机</span></h2>
+<p class="translated"><span/><a href="https://www.shopify.com/"><span>Shopify</span></a><span>搜索优惠什么？</span></p>
+<p class="translated"><span>简而言之，Shopify已经将高级搜索选项推迟到其庞大的应用生态系统中。其开箱即用的搜索体验很初级，仅通过</span> <a href="https://help.shopify.com/en/manual/products/collections"> <span>集合</span> </a> <span>和</span> <a href="https://help.shopify.com/en/manual/shopify-admin/productivity-tools/using-tags"> <span>标签</span> </a> <span>提供过滤可用性的基本支持。它默认返回基于搜索查询的精确结果。</span></p>
+<p class="translated"><span>例如，这里有一个查询“鞋”的默认Shopify商店搜索结果页面:</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-17222" src="../Images/8802cc4e44fa43b67229fcb317e7192c.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/01/image1-4-462x400.png 462w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image1-4-205x178.png 205w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image1-4-768x665.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image1-4.png 1019w" sizes="(max-width: 462px) 100vw, 462px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/01/image1-4-462x400.png"/></p>
+<p class="translated"><span>如你所见，结果过于简单:不支持过滤或刻面。你也得不到一些高级功能，如打字错误容忍、基于意图的查询和内嵌建议，而这些正是许多在线购物者现在完全期待的。</span></p>
+<p class="translated"><span>归结起来就是:为了创造无缝的用户搜索体验并提高您的Shopify转化率，您需要一个搜索解决方案，为您的业务用例提供正确的过滤和分面。通过Algolia，一个新成立的</span> <a href="https://www.algolia.com/blog/algolia/increased-revenue-for-merchants-algolia-is-now-a-shopify-plus-certified-partner/"> <span> Shopify加上认证合作伙伴</span> </a> <span>，您可以大大改善您的搜索和导航。</span></p>
+<p class="translated"><span>这里有一个Algolia增强的“鞋子”搜索页面:</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-17238" src="../Images/5dd8e380a47648ae14ba6822a6bcd7a5.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/01/image9-1-390x400.png 390w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image9-1-174x178.png 174w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image9-1-768x787.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image9-1.png 1242w" sizes="(max-width: 390px) 100vw, 390px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/01/image9-1-390x400.png"/></p>
+<p class="translated"><span>如您所见，已经根据商店的产品数据在左侧空白处生成了相关的过滤器和方面。供应商和类型是过滤器，而在它们下面，颜色、价格和大小作为面出现。</span></p>
+<p class="translated"><span>Shopify和Algolia的集成意味着您可以跳过创建和维护结构来实现多面导航。</span></p>
+<p class="translated"><span>这些集成功能的一个例子是根据您商店的产品颜色属性数据生成颜色样本。</span></p>
+<p class="translated">最初，您可能想要检查和配置搜索栏中的可用过滤器。需要加滤镜吗？如果适用，您可以添加一个颜色过滤器，并将其与其他属性一起按正确的顺序放置:<img loading="lazy" class="aligncenter size-large wp-image-17293" src="../Images/165f9fdc611025886854660693295674.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2020/03/10-configuration-facets-4a0f57ed-720x312.jpeg 720w, https://blog-api.algolia.com/wp-content/uploads/2020/03/10-configuration-facets-4a0f57ed-320x139.jpeg 320w, https://blog-api.algolia.com/wp-content/uploads/2020/03/10-configuration-facets-4a0f57ed-768x333.jpeg 768w, https://blog-api.algolia.com/wp-content/uploads/2020/03/10-configuration-facets-4a0f57ed-1536x666.jpeg 1536w, https://blog-api.algolia.com/wp-content/uploads/2020/03/10-configuration-facets-4a0f57ed.jpeg 1868w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2020/03/10-configuration-facets-4a0f57ed-720x312.jpeg"/>  <span>此外，作为商店所有者或支持团队成员，您可以访问一个搜索界面构建器，该构建器只需在Shopify网站上做很少或不需要编程更改。您可以基于某些查询设置</span> <a href="https://www.algolia.com/doc/guides/managing-results/rules/detecting-intent/how-to/applying-a-custom-filter-for-a-specific-query/"> <span>自定义过滤器</span> </a> <span>(例如，通过计算人们可以作为搜索词输入的同义词)。</span></p>
+<p class="translated"><span>做出更改后，您可以在商店收藏页面上看到导航界面的外观，例如:</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-17236" src="../Images/67c9f2c4ae3b12d00e62e7a347fbe8b5.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/01/image8-2-595x400.png 595w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image8-2-265x178.png 265w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image8-2-768x517.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/01/image8-2.png 1360w" sizes="(max-width: 595px) 100vw, 595px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/01/image8-2-595x400.png"/></p>
+<h2 class="translated"><a id="next-steps-with-filters-and-facets" class="anchor" href="#next-steps-with-filters-and-facets" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>下一步用滤镜和刻面</span></h2>
+<p class="translated"><span>准备好</span> <a href="https://www.algolia.com/search-solutions/shopify/"> <span>打造稳健的搜索体验</span> </a> <span>和</span> <a href="https://www.algolia.com/blog/ecommerce/improve-shopify-conversions-with-search/"> <span>提高你的Shopify转化率</span> </a> <span>？</span></p>
+<p class="translated"><span>为了打造从第一次接触搜索框到结账的无缝购物者搜索体验，你需要一款能够提供过滤和分类工具的搜索应用，这些工具非常适合你的商业案例。</span></p>
+<p class="translated"><span> Algolia在此帮助您进行Shopify搜索&amp;探索。通过使用我们强大的基于API的产品，超过1，500家Shopify商家已经创建了引人注目的搜索和发现体验，看到了搜索使用率的增加，并提高了他们的转化率和收入。</span></p>
+<p class="translated"><span>当您将Algolia连接到您的Shopify商店时，您也可以快速设置专业搜索过滤器和方面来优化您的电子商务网站搜索引擎功能，通过智能搜索功能增强您的客户体验。</span></p>
+<p class="translated">开始研究你用滤镜和刻面的可能性。 <a href="https://www.algolia.com/contactus/"> <span>联系我们</span> </a> <span>进行个性化演示。</span></p>
+<p class="translated"><span>或者继续操作</span> <a href="https://www.algolia.com/doc/integration/shopify/getting-started/quick-start/?client=ruby"> <span>开始修改</span> </a> <span>你的过滤器和刻面</span></p>
+<ol>
+<li aria-level="1" class="translated"><span>进入</span> <a href="https://apps.shopify.com/"> <span> Shopify应用商店</span> </a> <span>。</span></li>
+<li aria-level="1" class="translated"><span>搜索并选择</span> <a href="https://apps.shopify.com/algolia-search?search_id=c7003b6a-0673-4f01-adc8-16ca746ceaae&amp;surface_detail=algolia&amp;surface_inter_position=1&amp;surface_intra_position=4&amp;surface_type=search"> <span> Algolia搜索和发现</span> </a> <span> app。</span></li>
+<li aria-level="1" class="translated"><span>点击</span> <b>添加app。</b></li>
+<li aria-level="1" class="translated"><span>登录。</span></li>
+<li aria-level="1" class="translated"><span>在您的Shopify admin中，点击</span> <b>安装app。</b> <span>在设置过程中，Algolia会将您的产品和元数据编入索引，以创建相关的模式、方面、过滤器和管道。</span></li>
+<li aria-level="1" class="translated"><span>使用该应用程序创建项目集合并自定义过滤器。</span></li>
+</ol>
+<h3 class="translated"><a id="for-more-information" class="anchor" href="#for-more-information" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>了解更多信息</span></h3>
+<p class="translated"><a href="https://www.algolia.com/doc/integration/shopify/troubleshooting/faq/?client=ruby"> <span>常见问题:Algolia与Shopify </span> </a></p>
+</div></div>    
+</body>
+</html>

@@ -1,0 +1,217 @@
+<html>
+<head>
+<title>How I re-created r/place with Algolia | Algolia | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">我如何用Algolia | Algolia \n重新创建r/place</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/how-i-recreated-r-place-with-algolia/#0001-01-01">https://www.algolia.com/blog/engineering/how-i-recreated-r-place-with-algolia/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">你可能听说过r/place，一个由Reddit在四月的第一周创建的合作像素艺术项目。</p>
+<p class="translated">如果你不知道r/place是什么，这是Reddit在2017年推出的一项实验:由数十万用户同时制作的合作创建的像素艺术画布。今年四月，他们又做了一次，这次用了更大的画布。</p>
+<blockquote><p class="translated">了解Reddit如何构建r/place</p>
+<p class="translated"><a href="https://www.redditinc.com/blog/how-we-built-rplace/">https://www.redditinc.com/blog/how-we-built-rplace/</a></p></blockquote>
+<p class="translated">我亲自参加了这个项目。也许你也是！我在这里和那里放置了一些像素，非常喜欢。</p>
+<p class="translated">这也让我开始思考。我想知道我是否可以利用Algolia的能力及其快速索引/浏览功能来创建一个受r/place启发的实时实验。</p>
+<h2 class="translated"><a id="from-idea-to-first-draft" class="anchor" href="#from-idea-to-first-draft" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>从构思，到初稿</strong></h2>
+<p class="translated">最初的想法是创建一个索引，包含几百条<a href="https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/in-depth/what-is-in-a-record/">记录</a> &amp;，每行呈现一些点击，使用CSS grid来放置它们。</p>
+<p class="translated">每条记录是一个像素，每条记录包含以下属性:</p>
+<pre><code>{ &#13;
+  "objectID": 0, &#13;
+  "id": 0,&#13;
+  "bg_color": "#FFF", &#13;
+}</code></pre>
+<p class="translated">我使用了<a href="https://www.npmjs.com/package/algoliasearch"> <code>algoliasearch</code>包</a>，来呈现我页面上的每一条记录。</p>
+<p class="translated">这个想法非常简单:每个记录(或点击)是一个div，每个div是一个像素。div的背景色是点击的<code>bg_color</code>值。</p>
+<p class="translated">当你点击那个div时，它发送一个<code>index.saveObject()</code>到Algolia，并用你选择的颜色替换<code>bg_color</code>属性。</p>
+<p class="translated">基本上，它是这样工作的:</p>
+<pre><code>&lt;main className="canvas"&gt;&#13;
+  {allHits.map((hit) =&gt; { &#13;
+     return ( &#13;
+      &lt;div &#13;
+        data-cell-id={hit.id}&#13;
+        key={hit.objectID}&#13;
+        onClick={(e) =&gt; handleClick(e, hit)} &#13;
+        style={{ &#13;
+          background: hit.bg_color, &#13;
+        }} /&gt; &#13;
+      ); &#13;
+    })} &#13;
+&lt;/main&gt;</code></pre>
+<p class="translated">而在JS这边:</p>
+<pre><code>const handleClick = (e, hit) =&gt; { &#13;
+  e.target.style.background = pickedColor;&#13;
+  index.saveObject({ &#13;
+    objectID: hit.objectID,&#13;
+    bg_color: pickedColor,&#13;
+    id: hit.id, &#13;
+  });&#13;
+};</code></pre>
+<p class="translated">对于调色板，我创建了一个简单的<code>Palette</code>组件:</p>
+<pre><code>// import colors from "constant/colors" which is an array of colors &#13;
+&lt;div&gt;&#13;
+ {colors.map((color) =&gt; ( &#13;
+   &lt;button &#13;
+      key={color}&#13;
+      onClick={(e) =&gt; { e.preventDefault(); setPickedColor(color); }} &#13;
+      data-color={color} &#13;
+      style={{ &#13;
+        background: color, &#13;
+        appearance: "none", &#13;
+      }} /&gt; &#13;
+  ))}&#13;
+&lt;/div&gt;</code></pre>
+<p class="translated">因为Algolia根据它的默认排序算法(<a href="https://www.algolia.com/doc/guides/managing-results/must-do/custom-ranking/#algolias-ranking-strategy" target="_blank" rel="noopener">排序公式</a>)对结果进行排序，所以我必须进入我的索引设置，删除排序配置中的所有内容，以防止点击被“随机”呈现，并使用ID属性和升序排序将像素按从1到x的正确顺序排列。</p>
+<figure id="attachment_15305" aria-describedby="caption-attachment-15305" class="wp-caption alignnone"><img loading="lazy" class="wp-image-15305 size-full" src="../Images/0f5c7283281efcc513a370b33a883522.png" alt="Algolia's ranking and sorting index settings" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-16.59.03.png 1834w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-16.59.03-228x178.png 228w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-16.59.03-512x400.png 512w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-16.59.03-768x600.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-16.59.03-1536x1201.png 1536w" sizes="(max-width: 1834px) 100vw, 1834px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-16.59.03.png"/><figcaption id="caption-attachment-15305" class="wp-caption-text">Algolia’s ranking and sorting index settings</figcaption></figure>
+<p class="translated">现在基础已经就绪，是时候点击一下，看看它会如何渲染了。这是我生成的第一批截图之一。我很高兴看到这个想法仍然存在，并且正在发挥作用！</p>
+<figure id="attachment_15307" aria-describedby="caption-attachment-15307" class="wp-caption alignnone"><img loading="lazy" class="wp-image-15307 size-large" src="../Images/03a9d1b529ccb696aace351361f03da1.png" alt="First screenshot I did of the rendered canvas" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/06/IMG_1909.JPG-317x400.jpg 317w, https://blog-api.algolia.com/wp-content/uploads/2022/06/IMG_1909.JPG-141x178.jpg 141w, https://blog-api.algolia.com/wp-content/uploads/2022/06/IMG_1909.JPG-768x968.jpg 768w, https://blog-api.algolia.com/wp-content/uploads/2022/06/IMG_1909.JPG.jpg 1134w" sizes="(max-width: 317px) 100vw, 317px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/06/IMG_1909.JPG-317x400.jpg"/><figcaption id="caption-attachment-15307" class="wp-caption-text">First screenshot I did of the rendered canvas</figcaption></figure>
+<p class="translated">我需要提到的是，我计划让它实时工作，这意味着当其他人参与时，当你在画布上时，你将能够看到像素被着色。</p>
+<p class="translated">为了实现这一点，也为了避免等待服务器对像素着色的响应，我需要使用所谓的"<strong><em/></strong>"</p>
+<blockquote><p class="translated"><em> <strong>乐观UI </strong> </em>是一种模式，您可以使用它来模拟突变的结果，甚至在收到来自服务器的响应之前更新UI。</p></blockquote>
+<p class="translated">来自:<a href="https://www.apollographql.com/docs/react/v2/performance/optimistic-ui/">apollographql.com</a></p>
+<h2 class="translated"><a id="" class="anchor" href="#" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a></h2>
+<h2 class="translated"><a id="let%e2%80%99s-dive-deeper" class="anchor" href="#let%e2%80%99s-dive-deeper" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>让我们潜得更深！</h2>
+<p class="translated">既然我对自己想要什么以及如何实现有了一个基本的想法，我决定用<a href="https://vercel.com/"> Vercel </a>来托管它。我已经在使用一个<a href="https://nextjs.org/"> NextJS </a>应用，这是我选择的框架，而且我有一个Vercel Pro账户。Vercel最后非常有用！稍后我会解释原因。</p>
+<p class="translated">然后我更深入，从几百条记录到一千条；一幅1000像素的画布，可以开始“着色”我和几个同事聊了一下，他们就在我收拾自己乱七八糟的代码的时候开始玩了。</p>
+<p class="translated">画布现在看起来像这样:</p>
+<figure id="attachment_15309" aria-describedby="caption-attachment-15309" class="wp-caption alignnone"><img loading="lazy" class="wp-image-15309 size-large" src="../Images/a6b53ffded16a329f7c4fa05f9324045.png" alt="The canvas when people started trying it" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-22-at-18.46.55-367x400.png 367w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-22-at-18.46.55-163x178.png 163w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-22-at-18.46.55-768x838.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-22-at-18.46.55-1408x1536.png 1408w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-22-at-18.46.55.png 1426w" sizes="(max-width: 367px) 100vw, 367px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-22-at-18.46.55-367x400.png"/><figcaption id="caption-attachment-15309" class="wp-caption-text">The canvas when people started trying it</figcaption></figure>
+<p> </p>
+<p class="translated">我认为添加边框是个好主意，这样你可以看到你点击的地方，这也清楚地表明“<em>像素</em>”并不完全是正方形。对于无边框版本来说，这很容易猜到，但这使得它更加清晰。这是我最终解决的问题，在未来的迭代中使像素平方。</p>
+<p class="translated">这就是事情变得有趣的地方:我的同事开始发送改进想法和修复“错误”的方法，这些错误实际上是Algolia的功能。例如:</p>
+<figure id="attachment_15311" aria-describedby="caption-attachment-15311" class="wp-caption alignnone"><img loading="lazy" class="wp-image-15311 size-full" src="../Images/c28186df8be89059454c3064caf415f8.png" alt="On this gif we can see that clicking on a color will fetch the cached state of the canvas" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/06/cache-bug-feature-1.gif"/><figcaption id="caption-attachment-15311" class="wp-caption-text">On this gif we can see that clicking on a color will fetch the cached state of the canvas</figcaption></figure>
+<p class="translated">当你点击时，颜色被应用；然后，当您选择另一种颜色时，先前单击的像素会恢复为其先前的颜色。这是因为Algolia的响应是缓存的，单击调色板会触发组件更新，所以它会显示缓存的响应。</p>
+<p class="translated">为了解决这个问题，我的同事<a href="https://twitter.com/frontstuff_io">莎拉·达扬</a>建议使用Algolia提供的<code>NullCache</code>方法，如下所示:</p>
+<pre><code class="language-jsx">import { createNullCache } from "@algolia/cache-common";&#13;
+import algoliasearch from "algoliasearch";&#13;
+&#13;
+export const searchClient = algoliasearch(&#13;
+  process.env.NEXT_PUBLIC_ALGOLIA_APP_ID!,&#13;
+  process.env.NEXT_PUBLIC_ALGOLIA_BROWSE_API_KEY!,&#13;
+  {&#13;
+    responsesCache: createNullCache(),&#13;
+    requestsCache: createNullCache(),&#13;
+  }&#13;
+);&#13;
+</code></pre>
+<p class="translated"><em> <code>NullCache</code>表示不会缓存请求和响应。每个方法调用都会发出一个API请求。<a href="https://www.algolia.com/doc/api-client/getting-started/customize/javascript/?client=javascript#caching-requests-and-responses">阅读更多</a> </em></p>
+<h2 class="translated"><a id="" class="anchor" href="#" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a></h2>
+<h2 class="translated"><a id="scaling-up-the-canvas" class="anchor" href="#scaling-up-the-canvas" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>放大画布</strong></h2>
+<p class="translated">接下来，我在索引中添加了一些点击，并将画布放大到包含<strong> 4020 </strong>像素的网格。我把链接发给更多的朋友，他们开始玩它。</p>
+<figure id="attachment_15313" aria-describedby="caption-attachment-15313" class="wp-caption alignnone"><img loading="lazy" class="wp-image-15313 size-full" src="../Images/f7b94ecb6cd14e528929136bde77f31c.png" alt="The canvas after some talented folks started drawing in it" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-16.40.12.png 1618w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-16.40.12-184x178.png 184w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-16.40.12-413x400.png 413w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-16.40.12-768x744.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-16.40.12-1536x1489.png 1536w" sizes="(max-width: 1618px) 100vw, 1618px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-16.40.12.png"/><figcaption id="caption-attachment-15313" class="wp-caption-text">The canvas after some talented folks started drawing in it ⚡️</figcaption></figure>
+<p class="translated">这给了我足够的反馈来改进应用程序的代码。</p>
+<p class="translated">我还使用CSS将光标颜色替换为用户选择的颜色，这样他们就可以看到将要应用的颜色。</p>
+<p class="translated">为了实现这一点，我将这部分CSS添加到我的主页面组件中，这样它就可以使用<code>pickedColor</code>状态:</p>
+<pre><code class="language-jsx">const css = `&#13;
+  html,body,button { &#13;
+     cursor: url("data:image/svg+xml,%3Csvg &#13;
+			xmlns='&lt;https://www.w3.org/2000/svg&gt;' &#13;
+			viewBox='0 0 48 48' width='32' height='32' &#13;
+			style='transform: translate(10px, 10px); &#13;
+			enable-background:new 0 0 19.9 30.8' &#13;
+			xml:space='preserve'%3E%3Cpath d='...' fill='${pickedColor.replace(&#13;
+       "#",&#13;
+       "%23"&#13;
+     )}'/%3E%3Cpath d='...'/%3E%3C/svg%3E")10 10, auto} &#13;
+     `;&#13;
+</code></pre>
+<p> </p>
+<figure class="wp-caption alignnone"><img loading="lazy" src="../Images/a0e9bf8d00b55762ba0c100fc0355cb7.png" alt="The cursor color changing on click" data-original-src="https://res.cloudinary.com/hilnmyskv/video/upload/v1655372717/Algolia_com_Blog_assets/Featured_images/how-i-recreated-rplace-with-algolia/cursor-color-1.gif"/><figcaption class="wp-caption-text">The cursor color changing on click</figcaption></figure>
+<h2 class="translated"><a id="implementing-the-user-counter" class="anchor" href="#implementing-the-user-counter" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> I <strong>实现用户计数器</strong></h2>
+<p class="translated">我认为实现一个用户计数器来显示有多少人同时在画布上是一个好主意。</p>
+<p class="translated">对于用户计数器，我用<a href="https://socket.io"> socket.io </a>做了一个项目，托管在Heroku上，用<code>io.sockets.on('connection', (socket) =&gt; { ... })</code>的方法统计用户数。每当用户连接时，就会向客户端发送一条<code>socket.emit('user_connected')</code>消息。这将向我显示同时连接到画布的用户数量。为了保持最新的用户数量，我设置它在用户断线时发送一条<code>socket.emit('user_disconnected')</code>消息。</p>
+<p class="translated">设计非常简单，但我不需要更多的东西:</p>
+<figure id="attachment_15359" aria-describedby="caption-attachment-15359" class="wp-caption alignnone"><img loading="lazy" class="wp-image-15359 size-medium" src="../Images/468acf71dfedda0f13372d90c0a8fba7.png" alt="The pretty basic user counter" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-06-16-at-11.49.13-320x64.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-06-16-at-11.49.13.png 498w" sizes="(max-width: 320px) 100vw, 320px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-06-16-at-11.49.13-320x64.png"/><figcaption id="caption-attachment-15359" class="wp-caption-text">The pretty basic user counter</figcaption></figure>
+<h2 class="translated"><a id="" class="anchor" href="#" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a></h2>
+<h2 class="translated"><a id="first-drawings" class="anchor" href="#first-drawings" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a>T22】第一张图纸</h2>
+<p class="translated">在这一点上，画布上出现了一些图形，但是有一个重要的问题:<strong>索引API键被公开</strong>，这将允许人们破解它，并使用批处理请求更改像素的颜色。</p>
+<p class="translated">为了解决这个问题，我决定使用<a href="https://nextjs.org/docs/api-routes/introduction"> NextJS API routes </a>来处理请求，并对我的API密匙保密。还记得我说过NextJS最终非常有用吗😊？</p>
+<p class="translated">缺点是索引时间略有增加，但对我来说，这没什么，因为它只有几秒钟，而且那个项目是一个实验，一个概念的证明。</p>
+<p class="translated">所以将API调用延迟几秒钟是完全没问题的。另外，还记得乐观的UI方法吗？这给用户留下了快速的印象，所以一切都很好。现在，每当用户点击一个像素时，这个函数被调用:</p>
+<pre><code class="language-jsx">const handleClick = async (e, hit) =&gt; {&#13;
+    // if the color of the clicked element is the same as the color of the current hit&#13;
+    // Do nothing&#13;
+    if (&#13;
+      e.target.style.background !== hexToRgb(pickedColor!)&#13;
+    ) {&#13;
+      e.target.style.background = pickedColor || "";&#13;
+      await fetch(`/api/indexData`, {&#13;
+        method: "POST",&#13;
+        body: JSON.stringify({&#13;
+          objectID: hit.objectID,&#13;
+          bg_color: pickedColor,&#13;
+          id: hit.id,&#13;
+        }),&#13;
+      });&#13;
+    }&#13;
+  };&#13;
+</code></pre>
+<p class="translated">并且在API routes文件夹内移动这个索引代码，<code>api/indexData</code>允许我在API端点内执行我的函数，安全地保存我的敏感数据。</p>
+<p class="translated">正如您所看到的，单击已经具有相同颜色的像素不会有任何作用，因为更新具有完全相同的<code>background_color</code>值的记录是没有意义的，所以这一步消除了一些索引操作。</p>
+<h2 class="translated"><a id="" class="anchor" href="#" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg>T7】</a></h2>
+<h2 class="translated"><a id="making-the-canvas-interactive" class="anchor" href="#making-the-canvas-interactive" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>制作互动画布</strong></h2>
+<p class="translated">现在是有趣的部分:让画布互动。如前所述，当有人点击一个像素时，一个<code>index.saveObject()</code>呼叫就会被发送到Algolia。</p>
+<p class="translated">我希望协作体验能够实时发生，所以我需要稍微突破一下极限。<a href="https://www.algolia.com/doc/guides/building-search-ui/ui-and-ux-patterns/pagination/react/#pagination-limitations">出于性能考虑，Algolia的默认分页设置为<strong>1000次点击</strong> </a>，而<a href="https://www.algolia.com/doc/api-reference/api-parameters/hitsPerPage/#usage-notes">的点击上限为<strong>每页1000次</strong></a>，因此我需要找到一种方法，在不分页的情况下一次性获得所有记录。</p>
+<figure id="attachment_15319" aria-describedby="caption-attachment-15319" class="wp-caption alignnone"><img loading="lazy" class="wp-image-15319 size-large" src="../Images/fecc1e4bd787ca9c837f50bf39c57f3c.png" alt="Pagination &amp; Hits per page settings of Algolia" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-17.05.58-720x266.png 720w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-17.05.58-320x118.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-17.05.58-768x284.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-17.05.58-1536x568.png 1536w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-17.05.58.png 1844w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-17.05.58-720x266.png"/><figcaption id="caption-attachment-15319" class="wp-caption-text">Pagination &amp; Hits per page settings of Algolia</figcaption></figure>
+<figure id="attachment_15321" aria-describedby="caption-attachment-15321" class="wp-caption alignnone"><img loading="lazy" class="wp-image-15321 size-full" src="../Images/0e4a6117a7c0569f7e707450c77e1c1e.png" alt="Error message stating that 50000 is too big for the hitsPerPage" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-17.06.54.png 706w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-17.06.54-320x128.png 320w" sizes="(max-width: 706px) 100vw, 706px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-17.06.54.png"/><figcaption id="caption-attachment-15321" class="wp-caption-text">Error message stating that 50000 is too big for the hitsPerPage</figcaption></figure>
+<p class="translated">这就是Algolia的浏览方法派上用场的地方。我每隔几毫秒运行一次查询(准确地说是<strong> 600毫秒</strong>，它浏览了整个索引，并将所有命中结果放入一个数组中。<br/>代码如下:</p>
+<pre><code class="language-jsx"> useEffect(() =&gt; {&#13;
+	  const id = setInterval(() =&gt; {&#13;
+	    let hits = [];&#13;
+	    index&#13;
+	      .browseObjects({&#13;
+	        query: "",&#13;
+	        batch: (batch) =&gt; {&#13;
+	          hits = hits.concat(batch);&#13;
+	        },&#13;
+	      })&#13;
+	      .then(() =&gt; {&#13;
+	        setAllHits(hits);&#13;
+	      });&#13;
+	  }, 600);&#13;
+	&#13;
+	  return () =&gt; {&#13;
+	    clearInterval(id);&#13;
+	    setIsLoading(false);&#13;
+	  };&#13;
+}, [allHits, shouldFetch]);&#13;
+</code></pre>
+<p class="translated">那工作得很好！令人惊讶的是，Algolia每隔<strong> 600毫秒</strong>一次更新数千个项目，而不会冻结甚至变慢。</p>
+<h2 class="translated"><a id="much-more-space" class="anchor" href="#much-more-space" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>多了很多空间</strong></h2>
+<p class="translated">是时候把它变得更大了。</p>
+<p class="translated">我的朋友凯文·格兰杰提出了一种方法，将画布从之前的4020像素放大到四倍，这就是我们最终完成这幅画布的原因。我们还修改了每行的像素数量，最终得到了一个<strong>16080</strong>像素的画布！</p>
+<p class="translated">这是最终的结果:</p>
+<p class="translated"><img loading="lazy" class="alignnone size-full wp-image-15323" src="../Images/81d4e9fc7b1f093b4100f0cffba6b13b.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-11-at-18.42.27.png 1694w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-11-at-18.42.27-184x178.png 184w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-11-at-18.42.27-413x400.png 413w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-11-at-18.42.27-768x744.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-11-at-18.42.27-1536x1489.png 1536w" sizes="(max-width: 1694px) 100vw, 1694px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-11-at-18.42.27.png"/></p>
+<h2 class="translated"><a id="even-bigger" class="anchor" href="#even-bigger" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>甚至更大的</strong></h2>
+<p class="translated">当人们开始使用画布时，我认为把它做得更大会更好，这样可以画更多的东西，人们也有空间释放他们的创造力。我只对公司人员开放。最多的时候，大约有18个T2人同时使用它，这导致了一场小的像素战争。但这对我来说还不够。</p>
+<p class="translated">因此，我将空间增加了一倍多，从<strong>的16080次</strong>点击增加到包含<strong>的36180次</strong>点击的最终大小，以允许更多的绘图并增加实验的趣味性。</p>
+<figure id="attachment_15325" aria-describedby="caption-attachment-15325" class="wp-caption alignnone"><img loading="lazy" class="size-full wp-image-15325" src="../Images/33efec680db72ca6018fb661e6384369.png" alt="Final canvas form with the grid shown" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-06-08-at-09.41.03.png 1220w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-06-08-at-09.41.03-178x178.png 178w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-06-08-at-09.41.03-401x400.png 401w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-06-08-at-09.41.03-150x150.png 150w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-06-08-at-09.41.03-768x767.png 768w" sizes="(max-width: 1220px) 100vw, 1220px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-06-08-at-09.41.03.png"/><figcaption id="caption-attachment-15325" class="wp-caption-text">Final canvas form with the grid shown</figcaption></figure>
+<p class="translated">看到人们共同创造像素艺术真的很有趣。这是我为了捕捉历史而制作的一个画布探索者的录音。这描绘了最初几天的活动:</p>
+<figure class="wp-caption alignnone"><img loading="lazy" class="size-full" src="../Images/87f54e190af4dd33007e3827cd6e39b3.png" alt="How I recreated r/place with Algolia" data-original-src="https://res.cloudinary.com/hilnmyskv/image/upload/v1655282418/Algolia_com_Blog_assets/Featured_images/how-i-recreated-rplace-with-algolia/ezgif.com-gif-maker_2_1.gif"/><figcaption class="wp-caption-text">How I recreated r/place with Algolia</figcaption></figure>
+<p> </p>
+<h2 class="translated"><a id="how-i-built-the-canvas-explorer-that-allows-me-to-replay-the-whole-canvas-history" class="anchor" href="#how-i-built-the-canvas-explorer-that-allows-me-to-replay-the-whole-canvas-history" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>我是如何构建画布浏览器的，它允许我重放整个画布历史。</strong></h2>
+<p class="translated">每隔10分钟，Heroku上托管的节点脚本将以与每600毫秒刷新画布时相同的方式查询索引，这意味着它使用Algolia browse方法并将所有命中连接在一个颜色数组中。</p>
+<p class="translated">颜色保存在仅包含三个属性的新对象中:</p>
+<pre><code class="language-jsx">{&#13;
+    "objectID": "unix timestamp",&#13;
+    timestamp: unixTimestamp,&#13;
+    snapshot: [...]&#13;
+}&#13;
+</code></pre>
+<p class="translated">该快照是代表<strong> 36，180 </strong>种颜色的值的数组。然后在Algolia索引中对其进行索引，使用<code>timestamp</code>属性进行排序，从而使<span class="Y2IQFc" lang="en">历史保持正确的方向。</span></p>
+<figure id="attachment_15327" aria-describedby="caption-attachment-15327" class="wp-caption alignnone"><img loading="lazy" class="wp-image-15327 size-large" src="../Images/71bccc26953a0a9bcc76d30ee2e72ddd.png" alt="All the attributes inside one of the explorer's hit" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-18.19.36-720x195.png 720w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-18.19.36-320x87.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-18.19.36-768x208.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-18.19.36.png 1158w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/06/Screenshot-2022-04-26-at-18.19.36-720x195.png"/><figcaption id="caption-attachment-15327" class="wp-caption-text">All the attributes inside one of the explorer’s hit</figcaption></figure>
+<p class="translated">起初，我使用的是全色值，例如:</p>
+<pre><code class="language-jsx">snapshot: ['#FFFFFF','#FFF000','#FFF000'...]&#13;
+</code></pre>
+<p class="translated">但是我受到了Algolia的限制，因为最终的记录大小太大了(<a href="https://support.algolia.com/hc/en-us/articles/4406981897617-Is-there-a-size-limit-for-my-index-records-/">记录大小限制</a>)，而且由于性能原因，不能被索引。</p>
+<p class="translated">因此，需要将颜色从十六进制的<strong> 6位数字</strong>减少到十六进制的<strong> 3位数字</strong>，并且我还删除了<code>#</code>符号，从而产生了一个更小的数组，从而改善了hit的整体大小。</p>
+<p class="translated">所以这个:</p>
+<pre><code class="language-jsx">snapshot: ['#FFFFFF','#FFF000','#FFF000'...]&#13;
+</code></pre>
+<p class="translated">变成了这样:</p>
+<pre><code class="language-jsx">snapshot: ['FFF','FE0','FE0'...]&#13;
+</code></pre>
+<p class="translated">现在我有了一切工作，并能够从头开始播放画布的演变。我喜欢从事这个有趣、有创意的项目，在这个过程中我学到了很多东西。我也喜欢它被公司如此热烈地接受的方式。</p>
+<p class="translated">希望你喜欢这本书；如果你想了解更多，不要犹豫，在Twitter 上ping我<a href="https://twitter.com/lukyvj">！</a></p>
+<p class="translated"><strong> <a href="https://github.com/LukyVj/rplace-algolia" target="_blank" rel="noopener">这里</a>，你会找到该项目的Github资源库。</strong></p>
+<figure id="attachment_15329" aria-describedby="caption-attachment-15329" class="wp-caption alignnone"><img loading="lazy" class="size-full wp-image-15329" src="../Images/51e4699845aab996ef7782b7207355ad.png" alt="State of the canvas on April 22, 2022 " srcset="https://blog-api.algolia.com/wp-content/uploads/2022/06/canvas-3-1.jpg 1602w, https://blog-api.algolia.com/wp-content/uploads/2022/06/canvas-3-1-178x178.jpg 178w, https://blog-api.algolia.com/wp-content/uploads/2022/06/canvas-3-1-400x400.jpg 400w, https://blog-api.algolia.com/wp-content/uploads/2022/06/canvas-3-1-150x150.jpg 150w, https://blog-api.algolia.com/wp-content/uploads/2022/06/canvas-3-1-768x768.jpg 768w, https://blog-api.algolia.com/wp-content/uploads/2022/06/canvas-3-1-1536x1536.jpg 1536w" sizes="(max-width: 1602px) 100vw, 1602px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/06/canvas-3-1.jpg"/><figcaption id="caption-attachment-15329" class="wp-caption-text">State of the canvas on April 22, 2022</figcaption></figure>
+</div></div>    
+</body>
+</html>

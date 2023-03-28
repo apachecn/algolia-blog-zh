@@ -1,0 +1,90 @@
+<html>
+<head>
+<title>Add OAuth2 authentication to AWS S3 / Cloudfront with Okta &amp; Lambda@Edge | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">通过Okta &amp; Lambda@Edge \n向AWS S3 / Cloudfront添加OAuth2身份验证</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/adding-oauth2-authentication-to-an-aws-s3-static-bucket-with-okta/#0001-01-01">https://www.algolia.com/blog/engineering/adding-oauth2-authentication-to-an-aws-s3-static-bucket-with-okta/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">我们的团队最近实现了一个内部静态网站，允许员工下载技术报告。由于我们是AWS(亚马逊网络服务)的重度用户，我们自然决定将其托管在AWS S3上，它提供了一个专门的功能来构建静态网站(<a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html"> S3静态网站托管</a>)。</p>
+<p class="translated">然而，很快我们就遇到了一个问题:AWS S3不提供任何本地的、开箱即用的认证/授权过程。因为我们的网站将只供内部使用，所以我们需要某种授权机制来防止未经授权的用户访问我们的网站和报告。</p>
+<p class="translated">我们需要找到一个解决方案来保护我们在AWS S3的内部静态网站。</p>
+<h2 class="translated"><a id="discovering-the-solution-with-amazon-cloudfront-and-lambdaedge" class="anchor" href="#discovering-the-solution-with-amazon-cloudfront-and-lambdaedge" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>用亚马逊CloudFront和Lambda@Edge发现解决方案</h2>
+<p class="translated">我们使用<a href="https://www.okta.com/"> Okta </a>进行所有身份和用户管理，因此无论我们找到什么解决方案，都必须使用Okta插件。Okta有几个认证/授权流程，所有这些流程都需要应用程序执行后端检查，比如验证Okta返回的响应/令牌是否合法。</p>
+<p class="translated">因此，我们需要找到一种方法，在一个静态网站上进行这些检查/操作，该网站使用我们无法控制的后端。就在那时，我们了解到了<a href="https://aws.amazon.com/lambda/edge/"> AWS Lambda@Edge </a>，它允许您在亚马逊Cloudfront的请求和响应的不同阶段运行<a href="https://aws.amazon.com/lambda/"> Lambda函数</a>:</p>
+<p class="translated"><img loading="lazy" class="alignnone wp-image-14411" src="../Images/61b4f5078c10d56094881a1ece2548ad.png" alt="cloudfront events that trigger lambda functions" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/03/cloudfront-events-that-trigger-lambda-functions-320x114.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/03/cloudfront-events-that-trigger-lambda-functions.png 545w" sizes="(max-width: 612px) 100vw, 612px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/03/cloudfront-events-that-trigger-lambda-functions-320x114.png"/></p>
+<p class="translated">如图所示，我们可以在四个不同的阶段触发Lambda函数:</p>
+<ul>
+<li class="translated">当请求进入Amazon Cloudfront ( <code>viewer-request</code>)时</li>
+<li class="translated">当请求发送到原点(<code>origin-request</code>)时</li>
+<li class="translated">当响应从原点返回时(<code>origin-response</code></li>
+<li class="translated">当亚马逊Cloudfront ( <code>viewer-response</code>)返回响应时</li>
+</ul>
+<p class="translated">我们看到了最初问题的解决方案:<strong>在<code>viewer-request</code>阶段</strong>触发一个Lambda来检查用户是否被授权。</p>
+<p class="translated">有两个条件:</p>
+<ol>
+<li class="translated">如果用户得到授权，则让请求继续，并返回受限制的内容以进行安全的内容传递</li>
+<li class="translated">如果用户未经授权，则发送HTTP响应，将他们重定向到登录页面</li>
+</ol>
+<h2 class="translated"><a id="" class="anchor" href="#" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a>T11】</h2>
+<h2 class="translated"><a id="implementing-the-lambdaedge-function" class="anchor" href="#implementing-the-lambdaedge-function" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>实现Lambda@Edge功能</h2>
+<p class="translated">我们将在这里讨论我们面临的关键因素和主要问题。完整的代码可在<a href="https://github.com/GuiTeK/aws-s3-oauth2-okta">这里</a>获得。请随意在您的项目中使用它！</p>
+<h3 class="translated"><a id="lambdaedge-restrictions-and-caveats" class="anchor" href="#lambdaedge-restrictions-and-caveats" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a>λ@ Edge限制和注意事项</h3>
+<p class="translated">在开发解决方案时，我们遇到了Lambda@Edge的一些限制和警告。</p>
+<h4 class="translated">1–环境变量</h4>
+<p class="translated">Lambda@Edge函数<strong>不能使用环境变量</strong>。这意味着我们需要找到另一种方法在我们的函数中进行数据传输。我们在Node.js代码中选择了<strong> SSM参数</strong>和<strong>模板化参数名</strong>(我们在部署Lambda函数时使用<a href="https://www.terraform.io/"> Terraform </a>来呈现模板)。</p>
+<h4 class="translated">2–Lambda封装大小限制</h4>
+<p class="translated">对于查看器事件(提醒:我们使用<code>viewer-request</code>事件)，Lambda包最多可以<strong>1mb</strong>。考虑到一个MB包含了你的Lambda函数的<em>所有依赖关系</em>(当然除了运行时/标准库)，这个MB是很小的。</p>
+<p class="translated">这就是为什么<strong>我们不得不在Node.js </strong>中重写我们的Lambda，而不是原来的Python，因为Python包及其API和其他依赖项超过了1 MB的限制。</p>
+<h4 class="translated">3–λ区域</h4>
+<p class="translated">Lambda@Edge函数<strong>只能在<code>us-east-1</code>区域</strong>中创建。这不是一个大问题，但这意味着您需要:</p>
+<ul>
+<li class="translated">在该地区提供您的AWS资源，使事情变得更容易</li>
+<li class="translated">在Terraform中，如果你想要保护的桶不在<code>us-east-1</code>中，你需要有一个单独的AWS <code>provider</code>来访问它</li>
+</ul>
+<h4 class="translated">4–Lambda角色权限</h4>
+<p class="translated">与Lambda@Edge函数<strong>相关联的IAM执行角色除了通常的<code>lambda.amazonaws.com</code>之外，还必须允许主体服务<code>edgelambda.amazonaws.com</code> </strong>。请参见<a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-edge-permissions.html">AWS–设置Lambda@Edge的IAM权限和角色</a>。</p>
+<h3 class="translated"><a id="authorization-mechanism-with-okta" class="anchor" href="#authorization-mechanism-with-okta" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>授权机制同Okta</h3>
+<p class="translated">一旦我们管理了上面的限制和警告，我们就把重点放在了授权上。</p>
+<p class="translated">Okta提供了几种认证和授权用户的方法。我们决定使用行业标准的授权协议<a href="https://oauth.net/2/"> <strong> OAuth2 </strong> </a>。</p>
+<p class="translated"><strong>注意:</strong> Okta实现了<strong> OpenID Connect (OIDC)标准，</strong>在OAuth2之上增加了一个瘦认证层(这就是下文提到的ID令牌的目的)。我们的解决方案也可以使用纯OAuth2，只需很少的修改(删除代码中使用的ID标记)。</p>
+<p class="translated">OAuth2本身提供了几个<em>授权流</em>，这取决于使用它的应用程序的种类。在我们的例子中，我们需要<a href="https://developer.okta.com/docs/guides/implement-grant-type/authcode/main/">授权代码流</a>。</p>
+<p class="translated">下面是取自<a href="https://developer.okta.com/docs/guides/implement-grant-type/authcode/main/">developer.okta.com</a>的完整授权代码流程图，展示了它是如何工作的:</p>
+<p class="translated"><img loading="lazy" class="alignnone wp-image-14415" src="../Images/1bc38f53dc0eff9feca868b6db290766.png" alt="oauth authentication/authorization code grant flow." srcset="https://blog-api.algolia.com/wp-content/uploads/2022/03/oauth-auth-code-grant-flow-320x146.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/03/oauth-auth-code-grant-flow-720x328.png 720w, https://blog-api.algolia.com/wp-content/uploads/2022/03/oauth-auth-code-grant-flow-768x350.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/03/oauth-auth-code-grant-flow.png 926w" sizes="(max-width: 631px) 100vw, 631px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/03/oauth-auth-code-grant-flow-320x146.png"/></p>
+<p data-pm-slice="1 1 []" class="translated">总结一下流程:</p>
+<ul>
+<li class="translated">我们的Lambda函数将用户重定向到Okta，提示他们登录</li>
+<li class="translated">Okta用<em>代码</em>将用户重定向到我们的网站/Lambda功能</li>
+<li class="translated">我们的Lambda函数检查代码是否合法，并通过向Okta发送请求来交换访问和ID令牌</li>
+<li class="translated">根据Okta返回的结果，我们:<ul>
+<li class="translated">允许或拒绝访问受限制的内容</li>
+<li class="translated">如果允许访问，将访问和ID标记保存在cookie中，以避免在每个页面上重新授权用户</li>
+</ul>
+</li>
+</ul>
+<h3 class="translated"><a id="using-json-web-tokens-to-store-authorization-result" class="anchor" href="#using-json-web-tokens-to-store-authorization-result" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>使用JSON Web令牌存储授权结果</h3>
+<p class="translated">到目前为止，我们有一个有效的授权流程；然而，我们需要检查每个请求上的access/ID令牌(恶意用户可以伪造无效的cookie或令牌)。检查令牌意味着向Okta发送请求，并在用户访问的每一页上等待响应<strong>，这<strong>显著降低了Cloudfront CDN的延迟和加载时间</strong>，显然是次优的。</strong></p>
+<p class="translated"><strong>注意:</strong>虽然Okta令牌的本地验证在理论上是可能的<em/>，但是在撰写本文时<a href="https://github.com/okta/okta-jwt-verifier-js">Okta</a>提供的SDK在获取用于检查令牌的密钥时使用了<em> LRU </em>(内存中)缓存。因为我们使用的是AWS Lambda，并且程序的内存/状态不会在调用之间保存，所以SDK对我们来说是无用的:它仍然会为每个用户请求向Okta发送一个HTTP请求，以检索JWKs (JSON Web Keys)。更糟糕的是，每分钟有10个JWK请求的限制，如果每分钟超过10个请求，我们的解决方案就会停止工作。</p>
+<p class="translated">为了解决这个问题，我们决定使用<a href="https://jwt.io/introduction"> <strong> JSON Web令牌</strong> </a>，就像我们对<a href="https://www.algolia.com/blog/engineering/api-keys-vs-json-web-tokens/">管理应用程序</a>所做的那样。初始授权过程是相同的，只是我们创建了一个包含这些令牌的JWT，然后将JWT保存到cookie中，而不是将访问/ID令牌保存到cookie中。</p>
+<p class="translated">因为JWT是加密签名的:</p>
+<ul>
+<li class="translated">恶意参与者无法伪造(他们需要用于签名的私钥)</li>
+<li class="translated">每个请求所需的检查步骤都很快:我们用一个很长的I/O开销很大的HTTP请求来计算一个快速的加密检查。</li>
+</ul>
+<h4 class="translated">关于JWT到期和续期的说明</h4>
+<p class="translated">JWT具有<strong>相对较短的预定义到期时间</strong>，以避免有效的JWT包含到期或撤销的访问/ID令牌。另一种选择是定期检查访问/ID令牌，并在需要时撤销相关的JWT，但这样我们将需要一个撤销机制，这使得事情变得更加复杂。</p>
+<p class="translated">最后，如上所述，Okta提供的令牌有过期时间。有可能<strong>使用刷新令牌</strong>透明地更新它们(因此当令牌过期时，用户不必重新登录)，但我们没有实现这一点。</p>
+<h2 class="translated"><a id="conclusion" class="anchor" href="#conclusion" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>结论</h2>
+<p class="translated">虽然通过Okta(或任何其他OAuth2提供者)将OAuth2身份验证添加到S3静态桶中是可能的，但这肯定不是简单的。</p>
+<p class="translated">它需要使用Lambda@Edge在AWS和OAuth2提供者(在我们的例子中是Okta)之间编写一个中间件。我们必须自己做以下事情:</p>
+<ol>
+<li class="translated">验证用户身份验证</li>
+<li class="translated">还记得用户认证吗</li>
+<li class="translated">刷新用户身份验证(在我们的解决方案中没有实现)</li>
+<li class="translated">撤销用户身份验证(TTL实现了，但TTL结束前的撤销没有实现)</li>
+</ol>
+<p class="translated">最后，必须创建一堆AWS资源来将所有东西粘在一起并使其工作。</p>
+<p class="translated">所有这些努力都是值得的，因为它起作用了，我们的网站现在更安全了。</p>
+<p class="translated">你可以在这里找到Lambda@Edge以及基础设施(Terraform)的代码:<a href="https://github.com/GuiTeK/aws-s3-oauth2-okta">https://github.com/GuiTeK/aws-s3-oauth2-okta</a>。</p>
+</div></div>    
+</body>
+</html>

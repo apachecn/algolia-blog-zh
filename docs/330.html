@@ -1,0 +1,686 @@
+<html>
+<head>
+<title>The anatomy of high-performance recommender systems, Part II - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">高性能推荐系统剖析，第二部分</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-2/#0001-01-01">https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-2/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><h1 class="translated"><span>为您的推荐系统处理公共数据源</span></h1>
+<p class="translated"><span>在本系列</span>  <span>的第一篇</span> <a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-1/"> <span>中，我们谈到了一个高性能推荐系统的关键组件:<strong> (1)数据源</strong>、<a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-3/"> (2)特征库</a>、(3) <a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-iv/">机器学习模型</a>、(4) <a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-v/">预测&amp;行动</a>、(6)结果、(7)评估和(8) AI伦理。</span></a></p>
+<p class="translated"><span>在这篇文章中，我们将深入探讨你的协同过滤推荐系统所需的公共数据源。至少，推荐引擎的输入包括用户、项目和评级:</span></p>
+<table>
+<tbody>
+<tr>
+<td class="translated"><b>用户/物品</b></td>
+<td class="translated"><b> U1 </b></td>
+<td class="translated"><b> U2 </b></td>
+<td class="translated"><b> U3 </b></td>
+<td class="translated"><b> U4 </b></td>
+<td class="translated"><b> U5 </b></td>
+</tr>
+<tr>
+<td class="translated"><b> I1 </b></td>
+<td class="translated"><span> 1 </span></td>
+<td class="translated"><span> ❓ </span></td>
+<td class="translated"><span> 3 </span></td>
+<td class="translated"><span> 4 </span></td>
+<td class="translated"><span> ❓ </span></td>
+</tr>
+<tr>
+<td class="translated"><b> I2 </b></td>
+<td class="translated"><span> 3 </span></td>
+<td class="translated"><span> ❓ </span></td>
+<td class="translated"><span> ❓ </span></td>
+<td class="translated"><span> 2 </span></td>
+<td class="translated"><span> 3 </span></td>
+</tr>
+<tr>
+<td class="translated"><b> I3 </b></td>
+<td class="translated"><span> 2 </span></td>
+<td class="translated"><span> 5 </span></td>
+<td class="translated"><span> 3 </span></td>
+<td class="translated"><span> ❓ </span></td>
+<td class="translated"><span> ❓ </span></td>
+</tr>
+<tr>
+<td class="translated"><b> I4 </b></td>
+<td class="translated"><span> ❓ </span></td>
+<td class="translated"><span> 4 </span></td>
+<td class="translated"><span> 1 </span></td>
+<td class="translated"><span> ❓ </span></td>
+<td class="translated"><span> ❓ </span></td>
+</tr>
+<tr>
+<td class="translated"><b> I5 </b></td>
+<td class="translated"><span> 5 </span></td>
+<td class="translated"><span> ❓ </span></td>
+<td class="translated"><span> 2 </span></td>
+<td class="translated"><span> ❓ </span></td>
+<td class="translated"><span> 5 </span></td>
+</tr>
+</tbody>
+</table>
+<p class="translated"><span>对于一个协同过滤系统，有三种类型的推荐系统数据集是你必须准备的:</span> <span> <br/> </span></p>
+<ol>
+<li>
+</li></ol>
+<p class="translated"><b> 1。项目数据集</b> <span> <br/> </span> <span>从您的内部电子商务平台或您的CMS平台(如Shopify、Magento或WooCommerce)导出数据。包括产品目录(项目)以及价格、SKU类型或可用性等信息。</span></p>
+<p class="translated"><b> 2。用户数据集</b> <span> <br/> </span> <span>关于用户的元数据可能包括年龄、性别或忠诚会员等信息，这些信息对于推荐系统来说是重要的信号。</span></p>
+<p class="translated"><b> 3。互动数据集</b> <b> <br/> </b> <span>谷歌分析(或任何第三方分析平台)通常被认为是用户互动信息的良好来源，如位置或设备(手机、平板电脑、台式机)、页面浏览量、网站停留时间和转化率。</span></p>
+<p> </p>
+<h2 class="translated"><a id="how-to-prepare-the-items-dataset" class="anchor" href="#how-to-prepare-the-items-dataset" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>如何准备物品数据集</span></h2>
+<p class="translated"><span>在将</span> <i> <span>项目数据集</span> </i> <span>发送到推荐引擎之前，您需要从一个或多个来源提取数据，并以推荐引擎能够识别的方式对其进行格式化。</span></p>
+<p class="translated"><span>让我们考虑一个简单的场景，您已经在使用Algolia搜索您的电子商务，并且您正在使用</span> <a href="https://community.algolia.com/places/api-clients.html"> <span> Algolia API客户端</span> </a> <span>之一发送您的产品目录。JSON可能是这样的:</span></p>
+<pre><code>[&#13;
+  {&#13;
+    "item_id": "0000031852",&#13;
+    "title": "CeraVe Moisturizing Cream",&#13;
+    "description": "Developed with dermatologists, CeraVe Moisturizing Cream has a unique formula that provides 24-hour hydration and helps restore the protective skin barrier with three essential ceramides (1,3,6-II). This rich, non-greasy, fast-absorbing formula is ideal for sensitive skin on both the face and body.",&#13;
+    "price": 16.08,&#13;
+    "image": "../images/0000031852.jpg",&#13;
+    "categories": [&#13;
+      "Beauty &amp; Personal Care",&#13;
+      "Body Creams"&#13;
+    ],&#13;
+    "availability": "in stock"&#13;
+  },&#13;
+  {&#13;
+    "item_id": "0000042941",&#13;
+    "title": "REVLON One-Step Hair Dryer And Volumizer Hot Air Brush, Black, Packaging May Vary",&#13;
+    "description": "The Revlon One-Step Hair Dryer and Volumizer is a Hot Air Brush to deliver gorgeous volume and brilliant shine in a single step. The unique oval brush design smooth hair while the rounded edges quickly create volume at the root and beautifully full-bodied bends at the ends in a single pass, for salon blowouts at home.",&#13;
+    "price": 41.88,&#13;
+    "image": "../images/0000042941.jpg",&#13;
+    "categories": [&#13;
+      "Beauty &amp; Personal Care",&#13;
+      "Hot-Air Hair Brushes"&#13;
+    ],&#13;
+    "availability": "in stock"&#13;
+  },&#13;
+  {&#13;
+    "item_id": "0000053422",&#13;
+    "title": "Maybelline Lash Sensational Washable Mascara",&#13;
+    "description": "Get a sensational full-fan effect with Maybelline New York’s fan favorite Lash Sensational Washable Mascara! Lashes grow in more than one layer. This volumizing mascara can unfold layer upon layer of lashes thanks to its exclusive brush with ten layers of bristle.",&#13;
+    "price": 6.49,&#13;
+    "image": "../images/0000053422.jpg",&#13;
+    "categories": [&#13;
+      "Beauty &amp; Personal Care",&#13;
+      "Makeup",&#13;
+      "Mascara"&#13;
+    ],&#13;
+    "availability": "out of stock"&#13;
+  }&#13;
+]&#13;
+</code></pre>
+<p class="translated">很明显，你不需要包含所有的东西——你应该对数据集中的内容有所选择，只收集对构建你的推荐系统有用的信息。例如，如果推荐引擎不是为了处理图像而构建的，那么您应该简单地忽略<i><span>【image】</span></i><span>元数据。</span></p>
+<p class="translated"><span>另一个选择是从您的Shopify、Magento或WooCommerce商店导出CSV格式的产品目录。下面是他们每个人都需要的步骤:</span></p>
+<p> </p>
+<p class="translated"><b>从Shopify导出产品</b></p>
+<ol>
+<li class="translated"><span>从您的Shopify管理员，转到</span> <b>产品&gt;所有产品</b> <span>。注意:如果您只想导出部分产品，那么您可以过滤产品列表，以查看和选择要导出的特定产品。</span>T41】</li>
+<li class="translated">点击<b>导出</b>。从对话框中选择您要导出的产品:当前页面<b/>(产品的)<b>【所有产品】</b><b>选定产品</b>(您已选择的)<b>当前搜索</b>(与您的搜索和过滤器匹配的产品)。</li>
+<li class="translated"><span>选择您想要导出的CSV文件类型–使用</span> <b>普通CSV文件</b> <span>。</span></li>
+<li class="translated"><span>点击</span> <b>导出产品</b> <span>。</span></li>
+<li class="translated">你最终会得到一个类似于这个  <span>的CSV文件</span> <a href="https://help.shopify.com/csv/product_template.csv" target="_blank" rel="noopener"> <span>，你可以下载下来检查。</span></a></li>
+</ol>
+<p> </p>
+<p class="translated"><b>从Magento出口产品</b></p>
+<p class="translated"><span>对于Magento 2，数据导出是一个异步操作，它在后台执行，因此您可以继续在管理中工作，而无需等待操作完成。以下是步骤:</span></p>
+<ol>
+<li class="translated">在管理侧栏上，转到<strong>系统&gt;数据传输&gt;导出</strong>。</li>
+<li class="translated">在导出设置部分，将<strong>实体类型</strong>设置为“产品”。<img loading="lazy" class="aligncenter size-large wp-image-11661" src="../Images/cf8933dcbbd1c08c51a5062d00851427.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/image6-2-720x162.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image6-2-320x72.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image6-2-768x173.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image6-2.png 1304w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/image6-2-720x162.png"/></li>
+<li class="translated">接受默认的<strong>导出文件格式</strong>CSV。</li>
+<li class="translated">默认情况下，实体属性部分按字母顺序列出所有可用的属性。您应该选择要包括在导出中的特定属性。<img loading="lazy" class="aligncenter size-large wp-image-11668" src="../Images/35f3bd902e2729a06aadda367004369e.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/image14-720x210.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image14-320x93.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image14-768x224.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image14.png 1162w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/image14-720x210.png"/></li>
+<li class="translated"><span>向下滚动，点击页面右下角的</span> <b>继续</b> <span>。默认情况下，所有导出的文件都位于</span><i><span>&lt;Magento-root-directory&gt;/var/export</span></i><span>文件夹中。如果启用远程存储模块，所有导出的文件都位于</span> <i> <span> &lt;远程存储根目录&gt; /import_export/export文件夹</span> </i> <span>。</span></li>
+</ol>
+<p> </p>
+<p class="translated"><b>从WooCommerce出口产品</b></p>
+<p class="translated"><span> WooCommerce有一个内置的产品CSV导入器和导出器，您可以按照下面的步骤来使用:</span></p>
+<ol>
+<li class="translated">转到:<strong> WooCommerce &gt;产品</strong>。</li>
+<li class="translated">选择顶部的<strong>导出</strong>。将显示导出产品屏幕。<img loading="lazy" class="aligncenter size-large wp-image-11658" src="../Images/9e950caf906b870439019656978c1b21.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/image3-549x400.png 549w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image3-244x178.png 244w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image3-768x559.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image3.png 1398w" sizes="(max-width: 549px) 100vw, 549px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/image3-549x400.png"/></li>
+<li class="translated">选择导出所有列、导出所有产品或导出所有类别。或者使用下拉菜单选择要导出的列、产品或类别。</li>
+<li class="translated">如果您想为您的推荐系统添加更多元数据，请勾选<strong>导出自定义元数据</strong>。</li>
+<li class="translated">选择<strong>生成CSV </strong>并等待导出完成。</li>
+</ol>
+<p class="translated"><span>最后但同样重要的是，您可能已经在使用Google Merchant Center，在这种情况下，您已经在</span> <a href="https://support.google.com/merchants/answer/7052112?hl=en" target="_blank" rel="noopener"> <span>拥有一个产品提要</span> </a> <span>，您可以在您的推荐系统中重用它。</span></p>
+<p> </p>
+<h2 class="translated"><a id="how-to-prepare-the-users-dataset" class="anchor" href="#how-to-prepare-the-users-dataset" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>如何准备用户数据集</span></h2>
+<p class="translated"><span>虽然</span> <i> <span>条目数据集</span> </i> <span>更容易生成或导出，但当涉及到使用</span> <i> <span>用户</span> </i> <i> <span>数据集、</span> </i> <span>时，事情变得有点复杂，主要是由于隐私限制而不是技术限制。显然，从机器学习的角度来看，用户的元数据越多越好。然而，这并不总是可能的，您必须在如何处理用户数据(例如，从用户处收集的或关于用户的信息，包括设备信息)方面保持透明。</span></p>
+<p class="translated"><span>2006年，</span><a href="https://www.wired.com/2010/03/netflix-cancels-contest/" target="_blank" rel="noopener"><span/></a><span>披露了近50万客户的不充分匿名信息。在</span> <a href="https://en.wikipedia.org/wiki/Netflix_Prize" target="_blank" rel="noopener"> <span>网飞的100万美元竞赛</span> </a> <span>期间，为了改进其推荐系统，一些研究人员能够重新识别用户。它显然侵犯了用户的隐私，诉讼结束时网飞支付了900万美元来解决诉讼。</span></p>
+<p class="translated"><span>在欧盟，许多个人数据被视为敏感数据，并受到特定处理条件的限制。当讨论个人身份信息(PII)时，我们需要区分已认证、未认证或匿名用户。</span></p>
+<p class="translated"><span>这里我想强调一个细微差别——根据</span> <a href="https://ico.org.uk/for-organisations/guide-to-data-protection/guide-to-the-general-data-protection-regulation-gdpr/what-is-personal-data/what-is-personal-data/" target="_blank" rel="noopener"> <span>欧盟法规</span> </a> <span>，匿名化是创建匿名信息的过程，即“与已识别或可识别的自然人无关的信息”或“以数据主体不可识别或不再可识别的方式匿名的个人数据”。虽然我们认为未经认证的用户是匿名的，但值得注意的是，确保100%匿名是很难实现的。</span></p>
+<table>
+<tbody>
+<tr>
+<td class="translated"><b>未认证/匿名</b></td>
+<td class="translated"><b>已认证</b></td>
+</tr>
+<tr>
+<td class="translated"><i> <span> cookie_id </span> </i></td>
+<td class="translated"><i> <span>用户标识</span> </i></td>
+</tr>
+<tr>
+<td class="translated"><i> <span> session_id </span> </i></td>
+<td class="translated"><i> <span>名和姓</span> </i></td>
+</tr>
+<tr>
+<td class="translated"><i>装置<span>装置</span>装置</i></td>
+<td class="translated"><i> <span>家庭住址</span> </i></td>
+</tr>
+<tr>
+<td class="translated"><i> <span>国家</span> </i></td>
+<td class="translated"><i> <span>电子邮件地址</span> </i></td>
+</tr>
+<tr>
+<td class="translated"><i> <span>城市</span> </i></td>
+<td class="translated"><i> <span>电话号码</span> </i></td>
+</tr>
+<tr>
+<td rowspan="7"/>
+<td class="translated"><i> <span>护照号码</span> </i></td>
+</tr>
+<tr>
+<td class="translated"><i> <span>驾驶证号码</span> </i></td>
+</tr>
+<tr>
+<td class="translated"><i> <span>社会保障号</span> </i></td>
+</tr>
+<tr>
+<td class="translated"><i> <span>一张脸的照片</span> </i></td>
+</tr>
+<tr>
+<td class="translated"><i> <span>信用卡号</span> </i></td>
+</tr>
+<tr>
+<td class="translated"><i> <span>账号用户名</span> </i></td>
+</tr>
+<tr>
+<td class="translated"><i> <span>指纹</span> </i></td>
+</tr>
+</tbody>
+</table>
+<p class="translated"><span>在这个阶段需要做出一个重要的设计决策:</span> <i> <span>你应该为经过认证的用户还是未经认证的用户构建你的推荐系统？</span> </i> <span>如果你选择认证用户，你有更多的元数据可以支配，理论上，你的推荐系统可能会更准确，但缺点是看到推荐的用户数量会非常非常少。</span></p>
+<p class="translated"><span>另一方面，用匿名用户元数据构建推荐系统只会为你的推荐带来更广泛的受众，即使准确度可能没有那么高。</span></p>
+<p class="translated">这是在实施推荐模型的早期阶段需要做出的妥协。当然，在后期阶段，如果投资回报值得的话，可以考虑混合方法。</p>
+<p> </p>
+<p class="translated"><b>从Google Analytics导出未经认证的用户</b></p>
+<p class="translated"><span/><a href="https://support.google.com/analytics/answer/6339208?hl=en" target="_blank" rel="noopener"><span>用户浏览器报告</span> </a> <span>让您隔离和检查个人，而不是聚合用户行为。个人用户行为与客户端ID(已验证)或用户ID(匿名)相关联。</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-11665" src="../Images/cc97f12d8796a2601e4d6c38af6b0c96.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/image11-1-720x322.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image11-1-320x143.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image11-1-768x344.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image11-1.png 1309w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/image11-1-720x322.png"/></p>
+<p class="translated"><span>对于每个客户端或用户ID，您会看到以下数据:</span> <span> <br/> </span></p>
+<table>
+<tbody>
+<tr>
+<td><b>User Data </b>
+<p class="translated"><span>(在上面的屏幕图像中点击客户端Id时可见)</span></p></td>
+<td class="translated"><b>互动数据</b></td>
+</tr>
+<tr>
+<td>
+ 
+<ul>
+<li aria-level="1" class="translated"><span>设备类别</span></li>
+<li aria-level="1" class="translated"><span>设备平台</span></li>
+<li aria-level="1" class="translated"><span>采集日期</span></li>
+<li aria-level="1" class="translated"><span>频道</span></li>
+<li aria-level="1" class="translated"><span>源/媒体</span></li>
+<li aria-level="1" class="translated"><span>战役</span></li>
+</ul>
+</td>
+<td>
+ 
+<ul>
+<li aria-level="1" class="translated"><span>上次查看日期(用户上次启动会话的时间)</span></li>
+<li aria-level="1" class="translated"><span>会话</span></li>
+<li aria-level="1" class="translated"><span>平均值。会话持续时间</span></li>
+<li aria-level="1" class="translated"><span>跳出率</span></li>
+<li aria-level="1" class="translated"><span>收入</span></li>
+<li aria-level="1" class="translated"><span>交易</span></li>
+<li aria-level="1" class="translated"><span>目标转化率</span></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="translated"><span>此外，当您基于人口统计、技术和行为信息的任意组合对用户浏览器报告进行细分时，您会有一个与该细分相关联的所有id的列表，您可以导出这些id。请注意，2019年发布的谷歌分析4 (GA4)引入了一些重要的细微差别——用户浏览器是分析部分可用的技术之一。</span></p>
+<p class="translated"><span>然而，仪表板中的导出功能仅限于您可以获得的几个列/维度，这对于我们的</span> <i> <span>用户数据集来说并不真正有用。</span>T55<span>T57】</span></i></p>
+<p class="translated"><span>解决方案是使用谷歌分析报告API v4。但是有一个警告:默认版本不从用户浏览器报告中导出任何客户端id，您必须通过创建定制维度来使这些id可用。这允许分析API在客户端ID或会话级别导出数据，而不是仅返回聚合数据。从谷歌分析管理面板的</span> <span>进入</span> <b>管理</b> <span>部分。在</span> <b>属性</b> <span>部分，转到</span> <b>自定义定义&gt;自定义尺寸</b> <span>。增加以下维度:</span></p>
+<ul>
+<li class="translated"><b> ClientID与用户范围</b><span><br/></span><span><br/></span><span>从</span> <b>自定义定义</b> <span>部分，转到</span> <b>自定义维度</b> <span>部分，点击</span><b>+新建自定义维度</b> <span>按钮。添加名称</span><i><span>【ClientID】</span></i><span>并选择用户范围。<img loading="lazy" class="aligncenter wp-image-11656 size-full" src="../Images/f9ed8f72f4e905f26c4a7037ef9cf7c6.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/image1.jpg 500w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image1-230x178.jpg 230w" sizes="(max-width: 500px) 100vw, 500px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/image1.jpg"/>T44】</span></li>
+</ul>
+<p> </p>
+<ul>
+<li class="translated"><b> SessionID与会话范围</b><b><br/></b><b><br/></b><span>从</span> <b>自定义定义</b> <span>部分，转到</span> <b>自定义尺寸</b> <span>部分，点击</span><b>+新建自定义尺寸</b> <span>按钮。添加名称</span><i><span>【Session id】</span></i><span>并选择会话范围。<img loading="lazy" class="aligncenter size-full wp-image-11660" src="../Images/954dfbe82ccd37de641c0b8f9979dd09.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/image5.jpg 500w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image5-230x178.jpg 230w" sizes="(max-width: 500px) 100vw, 500px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/image5.jpg"/>T73】</span></li>
+</ul>
+<p> </p>
+<ul>
+<li class="translated"><b>(可选)带有用户范围的UserID。</b> <span> <br/> </span> <span> <br/> </span> <span>从</span> <b>自定义定义</b> <span>部分，转到</span> <b>自定义尺寸</b> <span>部分，点击</span><b>+新建自定义尺寸</b> <span>按钮。添加名称</span> <i> <span>【用户id】</span></i><span>并选择用户范围。这个自定义维度将包含来自CMS的用户id。它应该只在将GA连接到其他平台时使用，如Shopify、Magento或WooCommerce。<img loading="lazy" class="aligncenter size-full wp-image-11669" src="../Images/c9ad41ac489d082e088b2fb41e4d45b8.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/image15.jpg 500w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image15-230x178.jpg 230w" sizes="(max-width: 500px) 100vw, 500px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/image15.jpg"/> </span></li>
+</ul>
+<p> </p>
+<p class="translated">添加完所有维度后，您的表将类似于下图。</p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-11664" src="../Images/b7f817e3a52fa9d23d4c874d399aa72f.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/image10-720x174.jpg 720w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image10-320x77.jpg 320w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image10-768x185.jpg 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image10.jpg 1400w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/image10-720x174.jpg"/></p>
+<p class="translated"><span>接下来，您需要设置客户端ID和会话ID跟踪。如果Google Analytics tracker直接包含在您网站的源代码中，您可以通过修改现有代码来添加自定义维度值。</span></p>
+<p class="translated"><span>复制下面的脚本，将视图id(应该是类似于</span><i><span>UI-xxxxx-01</span></i><span>)替换为与您的网站对应的视图id。此外，用步骤1中创建的实际维度索引替换“维度1”、“维度2”和(可选)“维度3”。你可以阅读更多关于</span> <a href="https://www.simoahava.com/analytics/add-clientid-to-custom-dimension-gtag-js/" target="_blank" rel="noopener"> <span>用gtag.js </span> </a> <span>添加客户ID到自定义维度。</span></p>
+<pre class="lang:js decode:true ">&lt;!-- Global site tag (gtag.js) - Google Analytics --&gt;&#13;
+&lt;script async src="https://www.googletagmanager.com/gtag/js?id=UA-XXXXXXXX-Y"&gt;&lt;/script&gt;&#13;
+&lt;script&gt;&#13;
+    window.dataLayer = window.dataLayer || [];&#13;
+    function gtag() { dataLayer.push(arguments); }&#13;
+    gtag('js', new Date());&#13;
+&#13;
+    // Maps 'dimension1' to client id, 'dimension2' to session id and 'dimension3' to user id.&#13;
+    gtag("config", "UA-XXXXXXXX-Y", {&#13;
+        custom_map: {&#13;
+            dimension1: "clientId",&#13;
+            dimension2: "sessionId",&#13;
+            dimension3: "userId", // Remove this line if you're not using the UserID custom dimension &#13;
+        }&#13;
+    });&#13;
+&#13;
+    // Sends an event that sets the dimensions&#13;
+    gtag("event", "custom_set_dimensions", {&#13;
+        sessionId: new Date().getTime() + "." + Math.random().toString(36).substring(5)&#13;
+&#13;
+        // Remove following line if you're not using the UserID custom dimension&#13;
+        userId: '## Replace with User ID from your CMS ##'&#13;
+    });&#13;
+&lt;/script&gt;&#13;
+</pre>
+<p class="translated"><span>最后一部分包括创建可用于验证Google Analytics报告API和访问数据的API凭证。参见</span> <a href="https://developers.google.com/analytics/devguides/reporting/core/v4/quickstart/service-py"> <span>关于如何访问分析报告API </span> </a> <span>的谷歌文档。</span></p>
+<p class="translated"><span>您可以使用下面的Python脚本为您的协同过滤推荐系统创建一个匿名的</span> <i> <span>用户数据集</span> </i> <span>。该脚本使用Google Analytics数据创建一个dataframe，并将其保存为csv文件。</span></p>
+<pre class="lang:python decode:true ">from apiclient.discovery import build&#13;
+from oauth2client.service_account import ServiceAccountCredentials&#13;
+import pandas as pd&#13;
+&#13;
+SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']&#13;
+KEY_FILE_LOCATION = '&lt;REPLACE_WITH_JSON_FILE&gt;'&#13;
+VIEW_ID = '&lt;REPLACE_WITH_VIEW_ID&gt;'&#13;
+CUSTOM_DIMENSION_USER = '&lt;REPLACE_WITH_CUSTOM_DIMENSION_INDEX, ex. ga:dimension1&gt;'&#13;
+&#13;
+def initialize_analyticsreporting():&#13;
+  """Initializes an Analytics Reporting API V4 service object.&#13;
+&#13;
+  Returns:&#13;
+    An authorized Analytics Reporting API V4 service object.&#13;
+  """&#13;
+  credentials = ServiceAccountCredentials.from_json_keyfile_name(&#13;
+      KEY_FILE_LOCATION, SCOPES)&#13;
+&#13;
+  # Build the service object.&#13;
+  analytics = build('analyticsreporting', 'v4', credentials=credentials)&#13;
+&#13;
+  return analytics&#13;
+&#13;
+&#13;
+def get_report(analytics):&#13;
+  """Queries the Analytics Reporting API V4.&#13;
+  The API returns a maximum of 100,000 rows per request. If you have more data, you have to implement pagination:&#13;
+  - https://developers.google.com/analytics/devguides/reporting/core/v4/basics#pagination&#13;
+  - https://developers.google.com/analytics/devguides/reporting/core/v4/rest/v4/reports/batchGet#ReportRequest.FIELDS.page_size&#13;
+  &#13;
+  Args:&#13;
+    analytics: An authorized Analytics Reporting API V4 service object.&#13;
+  Returns:&#13;
+    The Analytics Reporting API V4 response.&#13;
+  """&#13;
+  return analytics.reports().batchGet(&#13;
+      body={&#13;
+        'reportRequests': [&#13;
+        {&#13;
+          'viewId': VIEW_ID,&#13;
+          'dateRanges': [{'startDate': '7daysAgo', 'endDate': 'today'}],&#13;
+          'metrics': [{'expression': 'ga:sessions'}],&#13;
+          'dimensions': [{'name': CUSTOM_DIMENSION_USER}, {'name': 'ga:country'}, {'name': 'ga:deviceCategory'}],&#13;
+          'pageSize': 10000&#13;
+        }]&#13;
+      }&#13;
+  ).execute()&#13;
+&#13;
+&#13;
+def parse_response(response):&#13;
+  """Parses the Analytics Reporting API V4 response and returns it in a Pandas dataframe.&#13;
+&#13;
+  Args:&#13;
+    response: An Analytics Reporting API V4 response.&#13;
+  Returns:&#13;
+    Pandas dataframe with the data.&#13;
+  """&#13;
+  df = pd.DataFrame() &#13;
+  &#13;
+  for report in response.get('reports', []):&#13;
+    columnHeader = report.get('columnHeader', {})&#13;
+    dimensionHeaders = columnHeader.get('dimensions', [])&#13;
+    metricHeaders = columnHeader.get('metricHeader', {}).get('metricHeaderEntries', [])&#13;
+&#13;
+    for row in report.get('data', {}).get('rows', []):&#13;
+      dimensions = row.get('dimensions', [])&#13;
+      dateRangeValues = row.get('metrics', [])&#13;
+&#13;
+      entry = {}&#13;
+      for header, dimension in zip(dimensionHeaders, dimensions):&#13;
+        entry[header] = dimension&#13;
+&#13;
+      for i, values in enumerate(dateRangeValues):&#13;
+        &#13;
+        for metricHeader, value in zip(metricHeaders, values.get('values')):&#13;
+          entry[metricHeader.get('name')] = value&#13;
+          &#13;
+        df = df.append(entry, ignore_index=True)&#13;
+    return df&#13;
+&#13;
+&#13;
+def main():&#13;
+  analytics = initialize_analyticsreporting()&#13;
+  response = get_report(analytics)&#13;
+  df = parse_response(response)&#13;
+  print(df.count())&#13;
+  print(df.head(10))&#13;
+  df.to_csv("data.csv")&#13;
+&#13;
+if __name__ == '__main__':&#13;
+  main()&#13;
+sample_read_ga_data.py&#13;
+Displaying sample_read_ga_data.py.</pre>
+<p> </p>
+<p class="translated"><b> <br/>从Shopify </b>导出客户</p>
+<p class="translated"><span>您可以通过以下快速步骤导出所有客户及其详细信息的CSV文件:</span></p>
+<ol>
+<li aria-level="1" class="translated"><span>从你的</span> <b> Shopify admin </b> <span>，转到</span> <b>客户</b> <span>。</span></li>
+<li aria-level="1" class="translated"><span>点击</span> <b>导出</b> <span>。</span></li>
+<li aria-level="1" class="translated"><span>点击</span> <b>所有客户</b> <span>导出您店铺的所有客户。</span></li>
+<li aria-level="1" class="translated"><span>选择</span> <b>普通CSV文件</b> <span>格式。</span></li>
+<li aria-level="1" class="translated"><span>点击</span> <b>导出客户</b> <span>。</span></li>
+</ol>
+<p class="translated"><span>正如您可以从</span> <a href="https://help.shopify.com/csv/customer_template.csv"> <span>这个模板</span> </a> <span>中看到的，有很多列您实际上并不需要——例如，在您的</span> <i> <span>用户数据集</span> </i> <span>中包含全名或电子邮件地址作为推荐系统的输入是没有意义的。</span></p>
+<p> </p>
+<p class="translated"><b>从Magento导出客户</b></p>
+<p class="translated"><span>类似于从Magento 2中导出产品，您可以将</span> <b>实体类型</b> <span>设置为</span> <b>【客户主文件】</b> <span>，您将获得一个客户列表，您可以在您的推荐系统中进一步清理和使用该列表。</span></p>
+<p> </p>
+<p class="translated"><b>从WooCommerce导出客户</b></p>
+<p class="translated"><b/> <span>从WooCommerce手动导出客户:</span></p>
+<ol>
+<li aria-level="1" class="translated"><span>进入</span> <b> WooCommerce &gt;出口</b> <span>。<img loading="lazy" class="aligncenter size-large wp-image-11662" src="../Images/e2637eae4411689538bf094bfe8f3d22.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/image8-1-712x400.png 712w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image8-1-317x178.png 317w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image8-1-768x432.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image8-1.png 950w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/image8-1-712x400.png"/>T76】</span></li>
+<li aria-level="1" class="translated"><span>在</span> <b>手动导出</b> <span>选项卡上，更新以下设置:</span><ol>
+<li aria-level="2" class="translated"><b>输出类型</b> <span>:选择以CSV格式导出文件。</span></li>
+<li aria-level="2" class="translated"><b>导出类型</b> <span>:选择要导出的客户。</span></li>
+<li aria-level="2" class="translated"><b>格式</b> <span>:选择一种</span> <a href="https://docs.woocommerce.com/document/ordercustomer-csv-export/#formats-predefined" target="_blank" rel="noopener"> <b>预定义的</b> </a> <span>或</span> <a href="https://docs.woocommerce.com/document/ordercustomer-csv-export/#formats-custom" target="_blank" rel="noopener"> <b>自定义的</b> </a> <span>格式。</span></li>
+<li aria-level="2" class="translated"><b>文件名</b>T109】:输入本次导出生成文件的名称。</li>
+<li aria-level="2" class="translated"><b>标记为导出</b> <span>:启用，确保导出的数据不包括在以后的导出中。</span> <a href="https://docs.woocommerce.com/document/ordercustomer-csv-export/#mark-exported" target="_blank" rel="noopener"> <b>点击此处了解有关此设置的更多信息。</b>T118】</a></li>
+<li aria-level="2" class="translated"><b>批量处理</b> <span>:仅当您的站点</span> <b>不支持</b><span/><a href="https://docs.woocommerce.com/document/ordercustomer-csv-export/#faq-loopback" target="_blank" rel="noopener"><b>后台处理</b> </a> <span>时启用。</span></li>
+</ol>
+</li>
+</ol>
+<p class="translated"><span> 3。点击</span> <b>导出</b> <span>。</span></p>
+<p> </p>
+<h2 class="translated"><a id="how-to-prepare-the-interactions-dataset" class="anchor" href="#how-to-prepare-the-interactions-dataset" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>如何准备交互数据集</span></h2>
+<p class="translated"><span>数据集拼图的最后一块是生成</span> <i> <span>交互数据集。</span> </i> <span>根据Builtwith.com的数据，有近3000万个网站在使用谷歌分析，因此，为我们使用谷歌分析报告API v4的推荐系统介绍导出</span> <i> <span>用户行为</span> </i> <span>的最佳方式是有意义的。</span></p>
+<p class="translated"><span>我们已经介绍了用户数据集部分的大部分流程，您可以使用相同的Python脚本来导出将进入推荐系统的关键事件。如果你想添加额外的列，你可以看看</span> <a href="https://ga-dev-tools.appspot.com/dimensions-metrics-explorer/" target="_blank" rel="noopener"> <span>维度&amp;度量浏览器</span> </a> <span>。</span></p>
+<pre class="lang:python decode:true ">from apiclient.discovery import build&#13;
+from oauth2client.service_account import ServiceAccountCredentials&#13;
+import pandas as pd&#13;
+&#13;
+SCOPES = ['https://www.googleapis.com/auth/analytics.readonly']&#13;
+KEY_FILE_LOCATION = '&lt;REPLACE_WITH_JSON_FILE&gt;'&#13;
+VIEW_ID = '&lt;REPLACE_WITH_VIEW_ID&gt;'&#13;
+CUSTOM_DIMENSION_USER = '&lt;REPLACE_WITH_CUSTOM_DIMENSION_INDEX, ex. ga:dimension1&gt;'&#13;
+CUSTOM_DIMENSION_SESSION = '&lt;REPLACE_WITH_CUSTOM_DIMENSION_INDEX, ex. ga:dimension2&gt;'&#13;
+&#13;
+def initialize_analyticsreporting():&#13;
+  """Initializes an Analytics Reporting API V4 service object.&#13;
+&#13;
+  Returns:&#13;
+    An authorized Analytics Reporting API V4 service object.&#13;
+  """&#13;
+  credentials = ServiceAccountCredentials.from_json_keyfile_name(&#13;
+      KEY_FILE_LOCATION, SCOPES)&#13;
+&#13;
+  # Build the service object.&#13;
+  analytics = build('analyticsreporting', 'v4', credentials=credentials)&#13;
+&#13;
+  return analytics&#13;
+&#13;
+&#13;
+def get_report(analytics):&#13;
+  """Queries the Analytics Reporting API V4.&#13;
+  The API returns a maximum of 100,000 rows per request. If you have more data, you have to implement pagination:&#13;
+  - https://developers.google.com/analytics/devguides/reporting/core/v4/basics#pagination&#13;
+  - https://developers.google.com/analytics/devguides/reporting/core/v4/rest/v4/reports/batchGet#ReportRequest.FIELDS.page_size&#13;
+  &#13;
+  Args:&#13;
+    analytics: An authorized Analytics Reporting API V4 service object.&#13;
+  Returns:&#13;
+    The Analytics Reporting API V4 response.&#13;
+  """&#13;
+  return analytics.reports().batchGet(&#13;
+      body={&#13;
+        'reportRequests': [&#13;
+        {&#13;
+          'viewId': VIEW_ID,&#13;
+          'dateRanges': [{'startDate': '7daysAgo', 'endDate': 'today'}],&#13;
+          'metrics': [&#13;
+                {'expression': 'ga:productListViews'},&#13;
+                {'expression': 'ga:productDetailViews'},&#13;
+                {'expression': 'ga:productAddsToCart'},&#13;
+                {'expression': 'ga:productCheckouts'},&#13;
+                {'expression': 'ga:itemQuantity'},&#13;
+                {'expression': 'ga:itemRevenue'}&#13;
+            ],&#13;
+          'dimensions': [&#13;
+              {'name': CUSTOM_DIMENSION_USER},&#13;
+              {'name': CUSTOM_DIMENSION_SESSION},&#13;
+              {'name': 'ga:productSku'}&#13;
+            ],&#13;
+          'pageSize': 10000&#13;
+        }]&#13;
+      }&#13;
+  ).execute()&#13;
+&#13;
+&#13;
+def parse_response(response):&#13;
+  """Parses the Analytics Reporting API V4 response and returns it in a Pandas dataframe.&#13;
+&#13;
+  Args:&#13;
+    response: An Analytics Reporting API V4 response.&#13;
+  Returns:&#13;
+    Pandas dataframe with the data.&#13;
+  """&#13;
+  df = pd.DataFrame() &#13;
+  &#13;
+  for report in response.get('reports', []):&#13;
+    columnHeader = report.get('columnHeader', {})&#13;
+    dimensionHeaders = columnHeader.get('dimensions', [])&#13;
+    metricHeaders = columnHeader.get('metricHeader', {}).get('metricHeaderEntries', [])&#13;
+&#13;
+    for row in report.get('data', {}).get('rows', []):&#13;
+      dimensions = row.get('dimensions', [])&#13;
+      dateRangeValues = row.get('metrics', [])&#13;
+&#13;
+      entry = {}&#13;
+      for header, dimension in zip(dimensionHeaders, dimensions):&#13;
+        entry[header] = dimension&#13;
+&#13;
+      for i, values in enumerate(dateRangeValues):&#13;
+        &#13;
+        for metricHeader, value in zip(metricHeaders, values.get('values')):&#13;
+          entry[metricHeader.get('name')] = value&#13;
+          &#13;
+        df = df.append(entry, ignore_index=True)&#13;
+    return df&#13;
+&#13;
+&#13;
+def main():&#13;
+  analytics = initialize_analyticsreporting()&#13;
+  response = get_report(analytics)&#13;
+  df = parse_response(response)&#13;
+  print(df.count())&#13;
+  print(df.head(10))&#13;
+  df.to_csv("interactions.csv")&#13;
+&#13;
+if __name__ == '__main__':&#13;
+  main()&#13;
+sample_read_ga_interactions.py&#13;
+Displaying sample_read_ga_interactions.py.</pre>
+<p> </p>
+<table>
+<tbody>
+<tr>
+<td class="translated"><b>事件</b></td>
+<td class="translated"><b>触发</b></td>
+<td class="translated"><b>参数</b></td>
+</tr>
+<tr>
+<td class="translated">添加_付款_信息</td>
+<td class="translated">当用户提交他们的支付信息时</td>
+<td class="translated">优惠券，货币，项目，付款类型，价值</td>
+</tr>
+<tr>
+<td class="translated">添加_运输_信息</td>
+<td class="translated">当用户提交他们的运输信息时</td>
+<td class="translated">优惠券，货币，项目，运输层，价值</td>
+</tr>
+<tr>
+<td class="translated">添加到购物车</td>
+<td class="translated">当用户向购物车添加商品时</td>
+<td class="translated">货币、项目、价值</td>
+</tr>
+<tr>
+<td class="translated">添加到愿望列表</td>
+<td class="translated">当用户向意愿列表添加项目时</td>
+<td class="translated">货币、项目、价值</td>
+</tr>
+<tr>
+<td class="translated">开始_结帐</td>
+<td class="translated">当用户开始结账时</td>
+<td class="translated">优惠券、货币、项目、价值</td>
+</tr>
+<tr>
+<td class="translated">生成_销售线索</td>
+<td class="translated">当用户提交表单或信息请求时</td>
+<td class="translated">价值，货币</td>
+</tr>
+<tr>
+<td class="translated">购买</td>
+<td class="translated">当用户完成购买时</td>
+<td class="translated">从属关系、优惠券、货币、项目、交易标识、运输、税收、价值(必需参数)</td>
+</tr>
+<tr>
+<td class="translated">退还</td>
+<td class="translated">当退款发出时</td>
+<td class="translated">从属关系，优惠券，货币，项目，交易标识，运输，税收，价值</td>
+</tr>
+<tr>
+<td class="translated">从购物车中删除</td>
+<td class="translated">当用户从购物车中移除商品时</td>
+<td class="translated">货币、项目、价值</td>
+</tr>
+<tr>
+<td class="translated">选择_项目</td>
+<td class="translated">当从列表中选择一个项目时</td>
+<td class="translated">项目，项目列表名称，项目列表标识</td>
+</tr>
+<tr>
+<td class="translated">选择_促销</td>
+<td class="translated">当用户选择促销时</td>
+<td class="translated">项目，促销标识，促销名称，创意名称，创意时段，位置标识</td>
+</tr>
+<tr>
+<td class="translated">查看_购物车</td>
+<td class="translated">当用户查看他们的购物车时</td>
+<td class="translated">货币、项目、价值</td>
+</tr>
+<tr>
+<td class="translated">查看_项目</td>
+<td class="translated">当用户查看项目时</td>
+<td class="translated">货币、项目、价值</td>
+</tr>
+<tr>
+<td class="translated">查看_项目_列表</td>
+<td class="translated">当用户看到商品/供应的列表时</td>
+<td class="translated">项目，项目列表名称，项目列表标识</td>
+</tr>
+<tr>
+<td class="translated">查看_促销</td>
+<td class="translated">当向用户显示促销时</td>
+<td class="translated">项目，促销标识，促销名称，创意名称，创意时段，位置标识</td>
+</tr>
+</tbody>
+</table>
+<p class="translated">零售和电子商务应用程序应记录下列事件。记录事件及其规定的参数确保了报告中最大的可用细节，并提高了协同过滤推荐系统的整体性能。</p>
+<p class="translated"><span>虽然更多的用户交互增加了推荐系统的准确性，但你可能会考虑尝试更少更基本的交互，比如产品详情页面浏览量(针对未经认证的用户)和/或订单(针对经过认证的用户)。这里的直觉是，推荐系统将能够仅基于隐含的评级来推荐相关项目，例如:产品详细页面视图和购买历史。</span></p>
+<p> </p>
+<p class="translated"><b>从Shopify导出订单</b></p>
+<p class="translated"><span>您可以导出订单及其交易历史，也可以仅导出订单的交易历史:</span></p>
+<ol>
+<li aria-level="1" class="translated"><span>从</span> <b>订单</b> <span>页面，点击</span> <b>导出</b> <span>。<img loading="lazy" class="aligncenter size-large wp-image-11659" src="../Images/1dba35f9f0b37a4c055422a11e77821a.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/image4-1-720x348.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image4-1-320x155.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image4-1-768x371.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image4-1.png 1353w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/image4-1-720x348.png"/> </span></li>
+<li aria-level="1" class="translated"><span>在</span> <b>出口订单</b> <span>窗口:</span><ul>
+<li aria-level="2" class="translated"><span>为您想要导出的订单选择选项。例如，如果您想按日期导出订单，则单击</span> <b>按日期导出</b> <span>订单，并设置您要导出的订单的开始和结束日期。</span></li>
+<li aria-level="2" class="translated"><span>下</span>下<b>导出为</b>下<span>，选择一种文件格式。</span></li>
+</ul>
+</li>
+<li aria-level="1" class="translated"><span>如果你想下载所有关于你的订单的信息，那么点击</span> <b>导出订单</b> <span>。如果您只想下载您的交易信息，则点击</span> <b>导出交易历史</b> <span>。</span></li>
+</ol>
+<p> </p>
+<p class="translated"><b>从Magento导出订单</b></p>
+<p class="translated"><b/> <span>在你的Magento 2后端，转到</span> <b>销售&gt;订单</b> <span>，点击</span> <b>出口</b> <span>下拉，勾选CSV。</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-11666" src="../Images/cf7a9b2825a99c8613878a160e8cc424.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/image12-720x291.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image12-320x129.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image12-768x310.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image12-1536x621.png 1536w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image12.png 1866w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/image12-720x291.png"/></p>
+<p> </p>
+<p class="translated"><b>从WooCommerce出口订单</b></p>
+<p class="translated"><span>您可以按照与</span> <a href="https://docs.google.com/document/d/1LXp6yRqxMeyM8il4GSJsPHCj6_bPOUj15ck7k3vz5mk/edit#add%20link%20later"> <span>导出客户</span> </a> <span>相同的步骤从WooCommerce导出订单，唯一不同的是选择</span> <b>导出类型</b> <span>的“订单”。</span><span><br/></span><span><br/></span><span>记住，对于你的协同过滤推荐系统的第一次迭代，你可能需要清理</span> <i> <span>交互数据集</span> </i> <span>导出直到它只包含:</span> <i> <span> UserId，Date，ProductIds。</span> </i></p>
+<p> </p>
+<h2 class="translated"><a id="putting-it-all-together" class="anchor" href="#putting-it-all-together" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>综合起来</span></h2>
+<p class="translated"><span>如果您达到了这一点，您应该有3个CSV文件，每个文件的结构如下:</span></p>
+<table>
+<tbody>
+<tr>
+<td colspan="6" class="translated"><b> <i>物品数据集</i> </b></td>
+</tr>
+<tr>
+<td class="translated"><i> <span> ItemId </span> </i></td>
+<td class="translated"><i> <span>标题</span> </i></td>
+<td class="translated"><i> <span>描述</span> </i></td>
+<td class="translated"><i> <span>价格</span> </i></td>
+<td colspan="2" class="translated"><i> <span>其他项目元数据(……)</span></i></td>
+</tr>
+</tbody>
+</table>
+<p> </p>
+<table>
+<tbody>
+<tr>
+<td colspan="5" class="translated"><b> <i>用户数据集</i> </b></td>
+</tr>
+<tr>
+<td class="translated"><i>T71】UserIdT73】</i></td>
+<td class="translated"><i> <span>国家</span> </i></td>
+<td class="translated"><i> <span>城市</span> </i></td>
+<td colspan="2" class="translated"><i> <span>其他用户元数据(……)</span></i></td>
+</tr>
+</tbody>
+</table>
+<p> </p>
+<table>
+<tbody>
+<tr>
+<td colspan="6" class="translated"><b> <i>交互数据集</i> </b></td>
+</tr>
+<tr>
+<td class="translated"><i> <span> ItemId </span> </i></td>
+<td class="translated"><i> <span> UserId </span> </i></td>
+<td class="translated"><i> <span>时间戳</span> </i></td>
+<td class="translated"><i> <span>事件类型</span> </i></td>
+<td colspan="2" class="translated"><i> <span>其他交互元数据(……)</span></i></td>
+</tr>
+</tbody>
+</table>
+<p class="translated"><span>请注意，如果您没有(或不想包含)任何用户元数据，完全可以忽略</span> <i> <span>用户数据集</span> </i> <span>。</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter wp-image-11682 size-large" src="../Images/e8306a8e48a6c5f76ae73b86156d5734.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/digram2_-The-Anatomy-of-a-Performant-Recommendation-Engine-2-640x400.png 640w, https://blog-api.algolia.com/wp-content/uploads/2021/04/digram2_-The-Anatomy-of-a-Performant-Recommendation-Engine-2-285x178.png 285w, https://blog-api.algolia.com/wp-content/uploads/2021/04/digram2_-The-Anatomy-of-a-Performant-Recommendation-Engine-2-768x480.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/digram2_-The-Anatomy-of-a-Performant-Recommendation-Engine-2-1536x960.png 1536w, https://blog-api.algolia.com/wp-content/uploads/2021/04/digram2_-The-Anatomy-of-a-Performant-Recommendation-Engine-2.png 1600w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/digram2_-The-Anatomy-of-a-Performant-Recommendation-Engine-2-640x400.png"/></p>
+<p class="translated"><span>互动是构建用户评级矩阵(URM)的基础。只需使用用户标识-项目标识对，您就可以创建第一个版本的URM /基线模型。其他特性可以一个一个地添加，同时在每一步测量模型的性能。</span></p>
+<p class="translated"><img loading="lazy" class="aligncenter size-large wp-image-11657" src="../Images/b41a7eb0e6015b26b94cc52849208427.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/image2-711x400.png 711w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image2-316x178.png 316w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image2-768x432.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image2-1536x864.png 1536w, https://blog-api.algolia.com/wp-content/uploads/2021/04/image2.png 1600w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/image2-711x400.png"/></p>
+<p> </p>
+<p class="translated"><span>从所有可用的数据集中，可以很容易地将数字或一次性编码的属性添加到模型中。其他的则需要额外的处理——例如应用自然语言处理从文本数据中提取嵌入内容，或者用计算机视觉处理产品图像。</span></p>
+<p class="translated">在本系列的下一篇博文中，我们将专注于为我们的协同过滤推荐系统准备数据集和探索特征工程，这是构建高性能机器学习模型的关键一步。</p>
+<p class="translated"><span>敬请期待！</span></p>
+<p class="translated"><span>还有，如果有问题:<a href="https://twitter.com/cborodescu" target="_blank" rel="noopener">https://twitter.com/cborodescu</a>T13】</span></p>
+<p> </p>
+</div></div>    
+</body>
+</html>

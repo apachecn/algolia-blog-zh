@@ -1,0 +1,295 @@
+<html>
+<head>
+<title>Algolia + MongoDB – Part 3: Data pipeline implementation | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">Algolia+MongoDB–第3部分:数据管道实现</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/supercharging-search-for-ecommerce-solutions-with-algolia-and-mongodb-data-pipeline-implementation/#0001-01-01">https://www.algolia.com/blog/engineering/supercharging-search-for-ecommerce-solutions-with-algolia-and-mongodb-data-pipeline-implementation/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated"><i data-stringify-type="italic">我们邀请Starschema的朋友写一个结合使用Algolia和MongoDB的例子。我们希望您喜欢这个由全栈工程师Soma Osvay撰写的四部分系列。</i></p>
+<p class="translated">如果你想回顾或跳过，以下是其他链接:</p>
+<p class="translated"><a href="https://www.algolia.com/blog/engineering/supercharging-search-for-ecommerce-solutions-with-algolia-and-mongodb-use-case-architecture-and-current-challenges/">第1部分——用例、架构和当前挑战</a></p>
+<p class="translated"><a href="https://www.algolia.com/blog/engineering/supercharging-search-for-ecommerce-solutions-with-algolia-and-mongodb-proposed-solution-and-design/">第2部分–建议的解决方案和设计</a></p>
+<p class="translated"><a href="https://www.algolia.com/blog/engineering/supercharging-search-for-ecommerce-solutions-with-algolia-and-mongodb-frontend-implementation-and-conclusion/">第4部分-前端实施和结论</a></p>
+<hr/>
+<p class="translated">在我开始之前，有一点需要注意:你可以在这里跟随实现<a href="https://colab.research.google.com/drive/1hO996af5PzI1piGdFlTyr1InhGJmUED0"/>。</p>
+<p class="translated">在上一篇文章中，我们分析了我们的数据管道架构，并留下了一个关于我们将如何运行Python脚本来加载Algolia索引的未决问题。有三种选择:</p>
+<ol>
+<li class="translated">编写嵌入ETL过程的Python脚本，同时更新Algolia索引和MongoDB。</li>
+<li class="translated">托管Python脚本，完全独立于我们现有的ETL工作流，将数据从Mongo拉到Algolia。</li>
+<li class="translated">在MongoDB更新之后，使用MongoDB触发器和函数来更新Algolia索引。</li>
+</ol>
+<p class="translated">在与我们的工程团队讨论后，我决定选择第一个选项，因为我们已经有了一个成熟的方法来运行当前的数据准备管道，在将数据加载到数据库之前，我们会使用大量现有的脚本来清理、聚合和格式化数据。在这里添加一个额外的脚本不会花费太多精力，所有的维护和监控工具都是现成的。在决定了架构步骤之后，我决定编写一个脚本，既执行到Algolia的初始数据加载，又保持索引最新，而不是为每个动作编写一个脚本。</p>
+<p class="translated">令人欣慰的是，Algolia通过公开一个<a href="https://www.algolia.com/doc/api-reference/api-methods/replace-all-objects/"> <code>replace_all_objects</code>方法</a>来支持这种用例，该方法实际上首先创建一个新的临时索引，然后在构建完成后将其与活动索引交换。这使得旧索引和刷新索引之间的转换几乎是即时的，没有任何停机时间或数据不一致。</p>
+<h2 class="translated"><a id="step-0-planning" class="anchor" href="#step-0-planning" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>第0步。规划</h2>
+<p class="translated">在开始实现我的Python脚本之前，我必须<a href="https://www.algolia.com/users/sign_up">注册一个免费的Algolia帐户</a>，并创建一个样本数据集，我可以使用<a href="https://www.mongodb.com/atlas/database"> MongoDB Atlas </a>来填充我的索引。</p>
+<p class="translated">我选择使用Atlas自带的默认AirBnB数据集，因为其格式和用例与我的现实生活数据非常相似。我还公开托管了样本数据集，供跟踪或想要试验的任何人使用:</p>
+<ul>
+<li class="translated"><strong>主机</strong> : <code>algolialistingstest.vswcm0y.mongodb.net</code></li>
+<li class="translated"><strong>用户名</strong> : <code>ReadOnly</code></li>
+<li class="translated"><strong>密码</strong> : <code>AlgoliaTest</code></li>
+<li class="translated"><strong>数据库</strong> : <code>sample_airbnb</code></li>
+<li class="translated"><strong>收藏</strong> : <code>listingsAndReviews</code></li>
+</ul>
+<p class="translated">我决定使用Jupyter笔记本来实现这个脚本，因为它让我能够独立地测试我的代码片段，用Markdown注释我的代码，反复试验和建模数据结构，并轻松地将创建的Python代码导出为脚本文件。它的功能非常多，交互性也很强，我通常很喜欢使用它。我把它放在<a href="https://colab.research.google.com/"> Google Collab </a>上，所以我可以很容易地分享代码，而不需要任何人安装一个内部Jupyter环境。你可以在这里找到实现的脚本。我们使用实现的脚本来:</p>
+<ol>
+<li class="translated">使用<a href="https://www.algolia.com/doc/api-client/getting-started/install/python/?client=python"> Algolia Python API </a>连接到Algolia，并验证连接。</li>
+<li class="translated">连接到MongoDB实例并检索样本数据。</li>
+<li class="translated">准备阿尔戈利亚指数。</li>
+<li class="translated">将数据集从MongoDB实例加载到Algolia中，并替换现有的索引。</li>
+</ol>
+<h2 class="translated"><a id="step-1-connect-to-algolia" class="anchor" href="#step-1-connect-to-algolia" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>第一步。连接到Algolia</h2>
+<p class="translated">第一步是生成API密钥:</p>
+<ol>
+<li class="translated"><a href="https://www.algolia.com/users/sign_up">注册</a>一个免费的Algolia账户，或者<a href="https://www.algolia.com/users/sign_in">登录</a>您现有的账户。</li>
+<li class="translated">登录后，将自动为您创建一个Algolia应用程序。您可以使用默认的未命名应用程序，也可以创建一个新的应用程序。</li>
+<li class="translated">转到您的应用程序的<a href="https://www.algolia.com/users/sign_in"> API密钥</a>部分，检索您的<strong>应用程序ID </strong>和<strong>管理API密钥</strong>。从下面的Python代码连接您的Algolia帐户时，您将需要使用这两个工具。</li>
+</ol>
+<p class="translated">我们需要先安装Algolia Python客户端，但之后，我们的连接代码看起来是这样的:</p>
+<pre><code class="language-python"># The Application ID of your Algolia Application&#13;
+algolia_app_id = "[your_algolia_app_id_here]"&#13;
+# The Admin API Key of your Algolia Application&#13;
+algolia_admin_key = "[your_algolia_admin_key_here]"&#13;
+&#13;
+# Define the Algolia Client and Index that we will use for this test&#13;
+from algoliasearch.search_client import SearchClient&#13;
+&#13;
+algolia_client = SearchClient.create(algolia_app_id, algolia_admin_key)&#13;
+algolia_index = algolia_client.init_index("test_index")&#13;
+&#13;
+# Test the index that we just created. We do this as part of the function, because these variables are not needed later&#13;
+def test_algolia_index(index):&#13;
+    # Clear the index, in case it contains any records&#13;
+    index.clear_objects()&#13;
+    # Create a sample record&#13;
+    record = {"objectID": 1, "name": "test_record"}&#13;
+    # Save it to the index&#13;
+    index.save_object(record).wait()&#13;
+    # Search the index for 'test_record'&#13;
+    search = index.search("test_record")&#13;
+    # Clear all items again to clear our test record&#13;
+    index.clear_objects()&#13;
+    # Verify that the first hit is our object&#13;
+    if len(search["hits"]) == 1 and search["hits"][0]["objectID"] == "1":&#13;
+        print("Algolia index test successful")&#13;
+    else:&#13;
+        raise Exception("Algolia test failed")&#13;
+&#13;
+# Call our test function&#13;
+test_algolia_index(algolia_index)&#13;
+</code></pre>
+<h2 class="translated"><a id="step-2-connect-to-mongo-and-get-data" class="anchor" href="#step-2-connect-to-mongo-and-get-data" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>第二步。连接到Mongo并获取数据</h2>
+<p class="translated">首先，安装Python MongoDB客户端<a href="https://www.mongodb.com/docs/drivers/pymongo/"> PyMongo </a>，然后使用<a href="https://colab.research.google.com/drive/1hO996af5PzI1piGdFlTyr1InhGJmUED0#scrollTo=kbzXuPteDSWn">这段代码</a>连接到我们的示例MongoDB数据库并读取示例数据。请注意，我们只获得5000个项目，这样我们就不会超出我们的免费层使用量:</p>
+<pre><code class="language-python"># Define MongoDB connection parameters. These are wrapped in a function to keep the global namespace clean&#13;
+# Change these values if you are not running your own MongoDB instance&#13;
+db_host = "algolialistingstest.vswcm0y.mongodb.net"&#13;
+db_name = "sample_airbnb"&#13;
+db_user = "ReadOnly"&#13;
+db_password = "AlgoliaTest"&#13;
+collection_name = "listingsAndReviews"&#13;
+&#13;
+connection_string = f"mongodb+srv://{db_user}:{db_password}@{db_host}/{db_name}?retryWrites=true&amp;w=majority"&#13;
+&#13;
+# Connect to MongoDB and get the MongoDB Database and Collection instances&#13;
+from pymongo import MongoClient&#13;
+&#13;
+# Create MongoDB Client&#13;
+mongo_client = MongoClient(connection_string)&#13;
+# Get database instance&#13;
+mongo_database = mongo_client[db_name]&#13;
+# Get collection instance&#13;
+mongo_collection = mongo_database[collection_name]&#13;
+# Retrieve the first 5000 records from collection items&#13;
+mongo_query = mongo_collection.find()&#13;
+initial_items = []&#13;
+for item in mongo_query:&#13;
+    if len(initial_items) &lt; 5000:&#13;
+        initial_items.append(item)&#13;
+</code></pre>
+<h2 class="translated"><a id="step-3-transform-our-data-into-a-form-that-suits-algolia" class="anchor" href="#step-3-transform-our-data-into-a-form-that-suits-algolia" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>第三步。将我们的数据转换成适合Algolia的形式</strong></h2>
+<p class="translated">我们的MongoDB样本数据集中的对象包含许多属性，其中一些与我们的Algolia索引无关。我们只保留搜索或排名所需的内容。</p>
+<ul>
+<li class="translated">属性将被保留，因为它也将是Algolia对象ID。</li>
+<li class="translated">这些属性将被保留用于搜索、刻面或显示:<code>name</code>、<code>space</code>、<code>description</code>、<code>neighborhood_overview</code>、<code>transit</code>、<code>property_type</code>、<code>address</code>、<code>accommodates</code>、<code>bedrooms</code>、<code>beds</code>、<code>number_of_reviews</code>、<code>bathrooms</code>、<code>price</code>、<code>weekly_price</code>、<code>security_deposit</code>、<code>cleaning_fee</code>、<code>images</code>。</li>
+<li class="translated">Airbnb条目上的<code>review_scores</code>属性将被转换为scores属性，该属性将包含给予该列表的星级数。</li>
+<li class="translated">一个<code>_geoloc</code>属性将根据原始地址对象中的字段添加到对象中。这将用于地理搜索。</li>
+<li class="translated">以下属性由于Algolia不需要，将被完全剥离:<code>summary</code>、<code>listings_url</code>、<code>notes</code>、<code>access</code>、<code>interaction</code>、<code>house_rules</code>、<code>room_type</code>、<code>bed_type</code>、<code>minimum_nights</code>、<code>maximum_nights</code>、<code>cancellation_policy</code>、<code>last_scraped</code>、<code>calendar_last_scraped</code>、<code>first_review</code>、<code>last_review</code>、<code>amenities</code>、<code>extra_people</code>、<code>guests_included</code>、<code>host</code>、<code>availability</code>、<code>review_scores</code>、<code>reviews</code>。</li>
+</ul>
+<p class="translated">这里是<a href="https://colab.research.google.com/drive/1hO996af5PzI1piGdFlTyr1InhGJmUED0#scrollTo=96FGwTeVErxx">这个转换代码</a>:</p>
+<pre><code class="language-python"># We define a function first that is able to strip long texts longer than 350 characters. This is done because the sample data has some records with very long descriptions, which is irrelevant to our use-case and takes up a lot of space to display&#13;
+def strip_long_text(obj, trailWithDot):&#13;
+    if isinstance(obj, str):&#13;
+        # Strip texts longer than 350 characters after the next full stop (.)&#13;
+        ret = obj[:350].rsplit(".", 1)[0]&#13;
+        if trailWithDot and len(ret) &gt; 0 and not ret.endswith("."):&#13;
+            ret = "."&#13;
+        return ret&#13;
+    else:&#13;
+        return obj&#13;
+&#13;
+# We define a function to validate number values coming from MongoDB. MongoDB stores numbers in Decimal128 format, which is not accepted by Algolia (only as string). This function:&#13;
+# 1. Converts numbers to float from Decimal128&#13;
+# 2. Introduces a maximum value for these numbers, as some values in MongoDB are outliers and incorrectly filled out and it gives range filters an unreal max value.&#13;
+def validate_number(num, maxValue):&#13;
+    if num is None:&#13;
+        return num&#13;
+    else:&#13;
+        val = float(str(num))&#13;
+        if val &gt; maxValue:&#13;
+            return maxValue&#13;
+        return val&#13;
+&#13;
+def prepare_algolia_object(mongo_object):&#13;
+    # Create an instance of the Algolia object to index, and set its objectID based on the _id of the mongo object&#13;
+    r = {}&#13;
+    r["objectID"] = mongo_object["_id"]&#13;
+    # prepare the string attributes&#13;
+    for string_property in [&#13;
+        ["name", True],&#13;
+        ["space", True],&#13;
+        ["description", True],&#13;
+        ["neighborhood_overview", True],&#13;
+        ["transit", True],&#13;
+        ["address", False],&#13;
+        ["property_type", False],&#13;
+    ]:&#13;
+        if string_property[0] in mongo_object:&#13;
+            r[string_property[0]] = strip_long_text(&#13;
+                mongo_object[string_property[0]], string_property[1]&#13;
+            )&#13;
+&#13;
+    # prepare the integer properties&#13;
+    for num_property in [&#13;
+        ["accommodates", 100],&#13;
+        ["bedrooms", 20],&#13;
+        ["beds", 100],&#13;
+        ["number_of_reviews", 1000000],&#13;
+        ["bathrooms", 100],&#13;
+        ["price", 1000],&#13;
+        ["weekly_price", 1000],&#13;
+        ["security_deposit", 1000],&#13;
+        ["cleaning_fee", 1000],&#13;
+    ]:&#13;
+        if num_property[0] in mongo_object:&#13;
+            r[num_property[0]] = validate_number(&#13;
+                mongo_object[num_property[0]], num_property[1]&#13;
+            )&#13;
+&#13;
+    # prepare the Sortable attributes (except for scores rating)&#13;
+&#13;
+    # set rating if any&#13;
+    if (&#13;
+        "review_scores" in mongo_object&#13;
+        and "review_scores_rating" in mongo_object["review_scores"]&#13;
+    ):&#13;
+        stars = round(mongo_object["review_scores"]["review_scores_rating"] / 20, 0)&#13;
+        r["scores"] = {&#13;
+            "stars": stars,&#13;
+            "has_one": stars &gt;= 1,&#13;
+            "has_two": stars &gt;= 2,&#13;
+            "has_three": stars &gt;= 3,&#13;
+            "has_four": stars &gt;= 4,&#13;
+            "has_five": stars &gt;= 5,&#13;
+        }&#13;
+    # set images&#13;
+    if "images" in mongo_object:&#13;
+        r["images"] = mongo_object["images"]&#13;
+    # set GeoLocation if any&#13;
+    if "address" in mongo_object:&#13;
+        if "location" in mongo_object["address"]:&#13;
+            if mongo_object["address"]["location"]["type"] == "Point":&#13;
+                r["_geoloc"] = {&#13;
+                    "lng": mongo_object["address"]["location"]["coordinates"][0],&#13;
+                    "lat": mongo_object["address"]["location"]["coordinates"][1],&#13;
+                }&#13;
+    return r&#13;
+</code></pre>
+<h2 class="translated"><a id="step-4-define-our-index-properties" class="anchor" href="#step-4-define-our-index-properties" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>第四步。定义我们的索引属性</strong></h2>
+<p class="translated">现在让我们告诉Algolia如何处理我们赋予它的属性。我们将设置<code>[attributesToRetrieve](&lt;https://www.algolia.com/doc/api-reference/api-parameters/attributesToRetrieve/&gt;)</code>，Algolia将在我们的UI中显示的每个搜索结果返回的属性，为这些属性的数组:<code>summary</code>、<code>description</code>、<code>space</code>、<code>neighborhood</code>、<code>transit</code>、<code>address</code>、<code>number_of_reviews</code>、<code>scores</code>、<code>price</code>、<code>cleaning_fee</code>、<code>property_type</code>、<code>accommodates</code>、<code>bedrooms</code>、<code>beds</code>、<code>bathrooms</code>、<code>security_deposit</code>、<code>images/picture_url</code>、<code>_geoloc</code>。我们的<code>[attributesForFaceting](&lt;https://www.algolia.com/doc/api-reference/api-parameters/attributesForFaceting/&gt;)</code>数组将包含<code>property_type</code>、<code>address/country</code>、<code>scores/stars</code>、<code>price</code>和<code>cleaning_fee</code>。</p>
+<p class="translated">我们还将设置<code>[searchableAttributes](&lt;https://www.algolia.com/doc/api-reference/api-parameters/searchableAttributes/&gt;)</code>，这是计算查询时要考虑的属性。Algolia不会浪费时间在这个列表之外寻找潜在的搜索匹配，因此它加快了查询速度，并让我们从最高到最低设置优先级顺序:</p>
+<ol>
+<li class="translated">(最高优先级属性)<code>name</code>、<code>address/street</code>、<code>address/suburb</code></li>
+<li class="translated"><code>address/market</code>，<code>address/country</code></li>
+<li class="translated"><code>description</code>(这将是一个<a href="https://www.algolia.com/doc/api-reference/api-parameters/searchableAttributes/#modifiers">无序属性</a>)</li>
+<li class="translated"><code>space</code>(另一个无序属性)</li>
+<li class="translated"><code>neighborhood_overview</code>(另一个无序属性)</li>
+<li class="translated">(最低优先级)<code>transit</code></li>
+</ol>
+<p class="translated">我们还将更新索引的默认<a href="https://www.algolia.com/doc/api-reference/api-parameters/ranking/">排名逻辑</a>:</p>
+<ol>
+<li class="translated">(第一要务)<code>geo</code>–就近提供搜索结果是我们的首要任务</li>
+<li class="translated"><code>typo</code></li>
+<li class="translated"><code>words</code></li>
+<li class="translated"><code>filters</code></li>
+<li class="translated"><code>proximity</code></li>
+<li class="translated"><code>attribute</code></li>
+<li class="translated"><code>exact</code></li>
+<li class="translated">(最不优先)<code>custom</code></li>
+</ol>
+<p class="translated">我们还更新了我们的索引，以<a href="https://www.algolia.com/doc/api-reference/api-parameters/ignorePlurals/">忽略复数</a>(你可能不会想太多，但是当它像你的用户不期望的那样工作时，你的用户肯定会想的)。你可以在<a href="https://www.algolia.com/doc/api-reference/api-parameters/">官方Algolia API参考页面</a>上找到其他很棒的资源和设置。下面是我们为这个编写的<a href="https://colab.research.google.com/drive/1hO996af5PzI1piGdFlTyr1InhGJmUED0#scrollTo=PGPsY-RyEw61">代码:</a></p>
+<pre><code class="language-python">algolia_index.set_settings(&#13;
+    {&#13;
+        "searchableAttributes": [&#13;
+            "name,address.street,address.suburb",&#13;
+            "address.market,address.country",&#13;
+            "unordered(description)",&#13;
+            "unordered(space)",&#13;
+            "unordered(neighborhood_overview)",&#13;
+            "transit",&#13;
+        ],&#13;
+        "attributesForFaceting": [&#13;
+            "property_type",&#13;
+            "searchable(address.country)",&#13;
+            "scores.stars",&#13;
+            "price",&#13;
+            "cleaning_fee",&#13;
+        ],&#13;
+        "attributesToRetrieve": [&#13;
+            "images.picture_url",&#13;
+            "summary",&#13;
+            "description",&#13;
+            "space",&#13;
+            "neighborhood",&#13;
+            "transit",&#13;
+            "address",&#13;
+            "number_of_reviews",&#13;
+            "scores",&#13;
+            "price",&#13;
+            "cleaning_fee",&#13;
+            "property_type",&#13;
+            "accommodates",&#13;
+            "bedrooms",&#13;
+            "beds",&#13;
+            "bathrooms",&#13;
+            "security_deposit",&#13;
+            "_geoloc",&#13;
+        ],&#13;
+        "ranking": [&#13;
+            "geo",&#13;
+            "typo",&#13;
+            "words",&#13;
+            "filters",&#13;
+            "proximity",&#13;
+            "attribute",&#13;
+            "exact",&#13;
+            "custom",&#13;
+        ],&#13;
+        "ignorePlurals": True,&#13;
+    }&#13;
+)&#13;
+</code></pre>
+<h2 class="translated"><a id="step-5-load-the-dataset-into-algolia-from-mongodb" class="anchor" href="#step-5-load-the-dataset-into-algolia-from-mongodb" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>第五步。将数据集从MongoDB加载到Algolia</h2>
+<p class="translated"><a href="https://colab.research.google.com/drive/1hO996af5PzI1piGdFlTyr1InhGJmUED0#scrollTo=4dSgOI0-FNC4">这段简短的代码</a>将数据集加载到Algolia索引中，替换现有的索引，因此没有过时的记录。</p>
+<pre><code class="language-python"># Prepare the Algolia objects&#13;
+algolia_objects = list(map(prepare_algolia_object, initial_items))&#13;
+algolia_index.replace_all_objects(algolia_objects, {"safe": True}).wait()&#13;
+</code></pre>
+<h2 class="translated"><a id="script-evaluation-performance" class="anchor" href="#script-evaluation-performance" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>剧本评价&amp;表演</h2>
+<p class="translated">总的来说，我发现从Python加载Algolia索引是一项非常简单的任务，尽管我的Python技能有些生疏。实际上，我的大部分时间都花在了准备AirBnB列表对象上，并把它们转化成我在Algolia想要的东西。如果我使用我们自己的数据集，这可能会简单得多，因为不需要太多的转换。</p>
+<p class="translated">我了解到Algolia公开了一个很棒的Python API——它比我预期的更容易使用，并且包含很棒的<a href="https://www.algolia.com/doc/api-client/getting-started/install/python/?client=python">文档</a>,一步一步地指导我完成整个过程。准备和加载索引所需的代码很少，对我来说很直观。它在加载索引时表现也很好:加载和替换5000条记录的整个索引只需要不到5秒钟，即使是在资源有限的云托管服务器上运行。当我在我们的一些高速服务器上用快速互联网连接运行它时，只需要大约2秒钟。我们的生产数据集要大得多(大约40k条记录)，但是我们准备列表数据的标准管道每天都要运行一个多小时，所以我确信我们的整体性能不会受到Algolia的影响。到目前为止，它的简单性和速度远远超过了任何缺点。</p>
+<p class="translated">【T2<img loading="lazy" class="wp-image-13777" src="../Images/7665551c18b687f25dcadc15cb213b7d.png" alt="" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/01/CodeX@2x.png"/></p>
+<p class="translated">在本系列的第一篇文章<a href="https://www.algolia.com/blog/engineering/supercharging-search-for-ecommerce-solutions-with-algolia-and-mongodb-use-case-architecture-and-current-challenges/">中，我谈到了我们的用例、架构以及我们面临的搜索挑战。</a></p>
+<p class="translated">在本系列的第二篇文章中，我介绍了PoC的设计规范，并讨论了实现的可能性。</p>
+<p class="translated">在本系列的第四篇文章<a href="https://www.algolia.com/blog/engineering/supercharging-search-for-ecommerce-solutions-with-algolia-and-mongodb-frontend-implementation-and-conclusion/">中，我将实现一个示例前端，这样我们就可以从用户的角度评估产品，如果开发人员选择这个选项，就可以给他们一个先发制人的机会。</a></p>
+</div></div>    
+</body>
+</html>

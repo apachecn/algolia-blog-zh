@@ -1,0 +1,668 @@
+<html>
+<head>
+<title>How to use Algolia as a game engine debugging tool in Rust | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">如何在Rust \n中使用Algolia作为游戏引擎调试工具</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/algolia-as-rust-game-engine-debugging-tool/#0001-01-01">https://www.algolia.com/blog/engineering/algolia-as-rust-game-engine-debugging-tool/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">我们邀请我们在Starschema的朋友写一个结合Rust使用Algolia的例子。他们提出了一个非常独特的用例，我们希望它能启发你以不同的方式使用Algolia。喝一杯饮料，享受高级开发人员久拉·拉斯洛的这篇文章吧！</p>
+<hr/>
+<p class="translated">大多数现代软件的数据驱动本质意味着调试也发生在两个不同的层次上:调试代码和调试代码使用的数据。虽然现代ide提供了大量的代码调试工具，但它们通常只包含非常基本的数据调试工具(最常用的是显示当前范围内变量的内容)。</p>
+<p class="translated">ide不能提供更高层次的数据调试服务，因为它们不知道你的数据的更高层次的结构。</p>
+<h2 class="translated"><a id="example-scenario" class="anchor" href="#example-scenario" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>举例场景</h2>
+<p class="translated">我们将使用的例子设想了一个小的游戏引擎开发团队作为一个更大的团队的一部分为游戏引擎(在Rust中)开发内容。挑战在于调试来自QA的案例。</p>
+<p class="translated">如果我们假设单元测试捕捉到了最直接的错误(如打字错误、基本逻辑问题等)，这些QA问题通常源于这样一个事实，即由内容团队创建的数据与单元测试测试的场景有很大的不同，并且要复杂得多。调试通常涉及大量日志和运行期间创建的数据的运行后整理。</p>
+<p class="translated">CD Project Red使用的一种缓解这种痛苦的解决方案，在“<a href="https://www.youtube.com/watch?v=p8CMYD_5gE8">The Witcher 3:Optimizing Content Pipelines for Open-World Games</a>”GDC talk中进行了解释，就是为构建期间使用的每个实体建立一个可搜索的数据库。对于产品范围的问题，这是一个很好的解决方案(通常是针对内容开发人员的)，但是对于我们的“专注于核心代码开发的小团队”场景，这可能不是最好的解决方案:</p>
+<ul>
+<li class="translated">它们需要所有其他团队的合作(以及产品范围的构建系统修改)</li>
+<li class="translated">数据库需要维护</li>
+<li class="translated">“所有的数据”对于这些调试会话来说通常是多余的(排序会消耗更多的时间)</li>
+<li class="translated">不支持通过修改单个测试运行的数据来进行调试(因为整个数据库假设一个单一的、一致的输入数据集)</li>
+</ul>
+<h3 class="translated"><a id="what-do-we-want" class="anchor" href="#what-do-we-want" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>我们想要什么？</h3>
+<p class="translated">拥有一个数据库的想法感觉不错，但是我们有更多的要求:</p>
+<ul>
+<li class="translated">我们希望从运行时数据(而不是构建时间)构建数据库</li>
+<li class="translated">我们想要多个并行的数据库(因为团队可能正在处理许多问题)</li>
+<li class="translated">实体数据是自由格式的——因为我们可能会在调试期间改变结构，所以我们不希望预先指定模式</li>
+<li class="translated">我们不想浪费时间维护数据库</li>
+<li class="translated">我们想要快速搜索能力<code>*</code></li>
+</ul>
+<p class="translated"><code>*</code> <em>关于“快速搜索”的一些注意事项:最常见的跟踪任务之一是跨多个实体匹配地址或id，我们不希望为每个实体类型运行多个SQL查询，因为将相同的id复制粘贴到9个不同的查询，然后将结果复制粘贴到单个文本编辑器窗口进行检查，这既缓慢又缺乏动力。</em></p>
+<h3 class="translated"><a id="algolia" class="anchor" href="#algolia" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>阿果</h3>
+<p class="translated">当查看<a href="https://www.algolia.com/"> Algolia </a>时，我们看到它符合我们的DB标准:</p>
+<ul>
+<li class="translated">支持多个数据库</li>
+<li class="translated">数据是自由形式的</li>
+<li class="translated">无需维护</li>
+<li class="translated">有很好的搜索能力</li>
+<li class="translated">可以为搜索构建简单的自定义用户界面</li>
+</ul>
+<p class="translated">考虑到这一点，我们可以创建一个列表，列出将数据传输到Algolia所需的代码:</p>
+<ul>
+<li class="translated">我们需要一种简单的方法来标记Algolia序列化的数据(我们可以使用JSON序列化来达到这个目的)</li>
+<li class="translated">创建一个可以向Algolia发送序列化数据的库(最好是通过一个简单的调用)</li>
+<li class="translated">实现库的简单配置</li>
+</ul>
+<h2 class="translated"><a id="sending-data-to-algolia" class="anchor" href="#sending-data-to-algolia" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>发送数据给阿哥利亚</h2>
+<h3 class="translated"><a id="where-do-we-send-it-and-how" class="anchor" href="#where-do-we-send-it-and-how" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>我们把它送到哪里，怎么送？</h3>
+<p class="translated">Algolia确实提供了关于如何使用REST API的<a href="https://www.algolia.com/doc/api-reference/rest-api/">文档</a>，但是，目前可用的库都不能用于Rust(没有C或C++版本可以包装),所以我们必须利用用于生成客户端本身的<a href="https://github.com/algolia/api-clients-automation"> API客户端自动化</a>库。</p>
+<p class="translated">作为基线，让我们看看提供的<a href="https://api-clients-automation.netlify.app/docs/clients/guides/send-data-to-algolia"> JavaScript客户端示例:</a></p>
+<pre><code class="language-jsx">// for the default version&#13;
+import { algoliasearch } from 'algoliasearch';&#13;
+// you can also import the lite version, with search only methods&#13;
+// import { liteClient } from 'algoliasearch/lite';&#13;
+const client = algoliasearch('&lt;YOUR_APP_ID&gt;', '&lt;YOUR_API_KEY&gt;');&#13;
+&#13;
+// The records retrieved by any of your data sources&#13;
+const recordsFromDataSource = [&#13;
+  { name: 'Tom Cruise' },&#13;
+  { name: 'Scarlett Johansson' },&#13;
+];&#13;
+// Here we construct the request to be sent to Algolia with the `batch` method&#13;
+const requests: BatchOperation[] = recordsFromDataSource.map((record) =&gt; {&#13;
+  return {&#13;
+    // `batch` allows you to do many Algolia operations, but here we want to index our record.&#13;
+    action: 'addObject',&#13;
+    body: record,&#13;
+  };&#13;
+});&#13;
+const { taskID } = await client.batch({&#13;
+  indexName: '&lt;YOUR_INDEX_NAME&gt;',&#13;
+  batchWriteParams: {&#13;
+    requests,&#13;
+  },&#13;
+});&#13;
+// Wait for indexing to be finished&#13;
+await client.waitForTask({ indexName: '&lt;YOUR_INDEX_NAME&gt;', taskID });&#13;
+console.log('Ready to search!');&#13;
+</code></pre>
+<p class="translated">所以这个过程看起来相当简单:</p>
+<ul>
+<li class="translated">使用<code>APP_ID</code>和<code>API_KEY</code>为Algolia提供认证</li>
+<li class="translated">打包我们想要发送的数据(见<a href="https://github.com/algolia/api-clients-automation/blob/main/specs/search/paths/objects/batch.yml">本规范部分</a></li>
+<li class="translated">将请求发送到Algolia</li>
+<li class="translated">我们可以跳过等待索引完成(因为我们在核心代码中，我们希望避免长时间的等待)</li>
+</ul>
+<p class="translated">直接使用REST API的一个缺点是，如果你没有使用官方API客户端，Algolia不提供SLA<a href="https://www.algolia.com/policies/sla/">T21。</a></p>
+<h3 class="translated"><a id="authentication" class="anchor" href="#authentication" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>认证</h3>
+<p class="translated">为了弄清楚认证是如何处理的，让我们跟踪一下<code>algoliasearch(...)</code>构造函数调用:</p>
+<ul>
+<li class="translated">在<code>clients/algoliasearch-client-javascript/packages/algoliasearch/builds/browser.ts</code>中，我们看到默认的认证选项是<code>WithinQueryParameters</code>，并且是硬编码的——我们将使用它</li>
+<li class="translated">稍后我们看到<code>clients/algoliasearch-client-javascript/packages/client-search/src/searchClient.ts</code>中的<code>createSearchClient()</code>实际上是在构建大部分<code>algoliaclient</code>对象(包括我们关心的部分)</li>
+<li class="translated">这将使用<code>clients/algoliasearch-client-javascript/packages/client-common/src/createAuth.ts</code>中的<code>createAuth()</code>创建认证:</li>
+</ul>
+<pre><code class="language-jsx">const credentials = {&#13;
+  'x-algolia-api-key': apiKey,&#13;
+  'x-algolia-application-id': appId,&#13;
+};&#13;
+&#13;
+return {&#13;
+  headers(): Headers {&#13;
+    return authMode === 'WithinHeaders' ? credentials : {};&#13;
+  },&#13;
+&#13;
+  queryParameters(): QueryParameters {&#13;
+    return authMode === 'WithinQueryParameters' ? credentials : {};&#13;
+  },&#13;
+};&#13;
+</code></pre>
+<p class="translated">这清楚地表明，我们必须将<code>x-algolia-api-key</code>和<code>x-algolia-application-id</code>添加到用于认证的查询参数中。</p>
+<h3 class="translated"><a id="the-hosts" class="anchor" href="#the-hosts" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>东道主</h3>
+<p class="translated">目标主机列表来自<code>searchClient.ts</code>中的<code>getDefaultHosts()</code>函数，我们看到它有<code>read</code>、<code>write</code>和<code>readwrite</code>主机:</p>
+<pre><code class="language-jsx">function getDefaultHosts(appId: string): Host[] {&#13;
+  return (&#13;
+    [&#13;
+      {&#13;
+        url: `${appId}-dsn.algolia.net`,&#13;
+        accept: 'read',&#13;
+        protocol: 'https',&#13;
+      },&#13;
+      {&#13;
+        url: `${appId}.algolia.net`,&#13;
+        accept: 'write',&#13;
+        protocol: 'https',&#13;
+      },&#13;
+    ] as Host[]&#13;
+  ).concat(&#13;
+    shuffle([&#13;
+      {&#13;
+        url: `${appId}-1.algolianet.com`,&#13;
+        accept: 'readWrite',&#13;
+        protocol: 'https',&#13;
+      },&#13;
+      {&#13;
+        url: `${appId}-2.algolianet.com`,&#13;
+        accept: 'readWrite',&#13;
+        protocol: 'https',&#13;
+      },&#13;
+      {&#13;
+        url: `${appId}-3.algolianet.com`,&#13;
+        accept: 'readWrite',&#13;
+        protocol: 'https',&#13;
+      },&#13;
+    ])&#13;
+  );&#13;
+}&#13;
+</code></pre>
+<p class="translated">当检查Transporter <code>request()</code>方法时，我们可以看到<code>read</code>主机用于<code>GET</code>请求，而<code>write</code>主机用于其他所有事情。</p>
+<p class="translated">由于调试不是关键任务，我们将忽略完全成熟的Algolia客户端使用的重试逻辑。</p>
+<h3 class="translated"><a id="creating-the-request" class="anchor" href="#creating-the-request" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>创建请求</h3>
+<p class="translated">我们还可以在<code>.batch()</code>中看到<code>searchClient.ts</code>中的请求结构:</p>
+<pre><code class="language-jsx">batch( { indexName, batchWriteParams }: ...) {&#13;
+    // ...&#13;
+    const requestPath = '/1/indexes/{indexName}/batch'.replace( '{indexName}', encodeURIComponent(indexName));&#13;
+    // ...&#13;
+    const headers: Headers = {};&#13;
+    const queryParameters: QueryParameters = {};&#13;
+&#13;
+    const request: Request = {&#13;
+        method: 'POST',&#13;
+        path: requestPath,&#13;
+        queryParameters,&#13;
+        headers,&#13;
+        data: batchWriteParams,&#13;
+    };&#13;
+&#13;
+    return transporter.request(request, requestOptions);&#13;
+},&#13;
+</code></pre>
+<p class="translated">我们可以看到请求的路径是<code>/1/indexes/&lt;INDEX&gt;/batch</code>，这个请求看起来像一个标准的<code>POST</code>请求。</p>
+<p class="translated">当跟踪初始化它的<code>createTransporter()</code>调用时，我们看到它添加了一个带有<code>Algolia for JavaScript (&lt;VERSION&gt;)</code>值的<code>x-algolia-agent</code>查询参数。</p>
+<h3 class="translated"><a id="reality-check" class="anchor" href="#reality-check" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>真人检查</h3>
+<p class="translated">解决了大部分细节后，我们想使用官方的Algolia Client SDK for Javascript创建一个快速测试，以检查我们关于发送数据的假设是否正确。使用<a href="https://www.algolia.com/doc/api-client/getting-started/install/javascript/?client=javascript"> Javascript客户端文档</a>，很容易将一个简单的HTML文件放在一起，向Algolia发出批量上传请求:</p>
+<pre><code class="language-html">&lt;html&gt;&#13;
+    &lt;head&gt;&#13;
+        &lt;!-- load the Algolia JS library --&gt;&#13;
+        &lt;script src="&lt;https://cdn.jsdelivr.net/npm/algoliasearch@4.5.1/dist/algoliasearch.umd.js&gt;"&gt;&lt;/script&gt;&#13;
+    &lt;/head&gt;&#13;
+    &lt;body&gt;&#13;
+        &lt;script&gt;&#13;
+            // Connect and authenticate with your Algolia app&#13;
+            const client = algoliasearch('&lt;APP CODE&gt;', '&lt;ADMIN API TOKEN&gt;')&#13;
+&#13;
+            // Create a new index and add a record&#13;
+            const index = client.initIndex('&lt;INDEX&gt;')&#13;
+            const record = { objectID: 1, name: 'test_record' }&#13;
+            index.saveObject(record).wait()&#13;
+&#13;
+            // Search the index and print the results&#13;
+            index&#13;
+                .search('test_record')&#13;
+                .then(({ hits }) =&gt; console.log(hits[0]))&#13;
+        &lt;/script&gt;&#13;
+    &lt;/body&gt;&#13;
+&lt;/html&gt;&#13;
+</code></pre>
+<p class="translated"><img loading="lazy" class="aligncenter size-full wp-image-15962" src="../Images/7ed4f9652e79e63b8389b29eda07edf7.png" alt="Chrome devtools network inspector tab screenshot" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/08/inspector-shot-1.png 1413w, https://blog-api.algolia.com/wp-content/uploads/2022/08/inspector-shot-1-185x178.png 185w, https://blog-api.algolia.com/wp-content/uploads/2022/08/inspector-shot-1-416x400.png 416w, https://blog-api.algolia.com/wp-content/uploads/2022/08/inspector-shot-1-768x739.png 768w" sizes="(max-width: 1413px) 100vw, 1413px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/08/inspector-shot-1.png"/></p>
+<p class="translated">当在浏览器中运行时，我们可以看到它在工作，但是，我们看到的一个区别是<code>x-algolia-api-key</code>和<code>x-algolia-application-id</code>认证密钥是在头中发送的，而不是在查询字符串中。我们将记下这一点并使用它，而不是将它们作为查询参数传递。</p>
+<p class="translated"><img loading="lazy" class="aligncenter size-full wp-image-15964" src="../Images/6f87e8409ab2430b1f4aeb13c04cdf7e.png" alt="Chrome devtools payload inspector screenshot showing formdata" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/08/inspector-shot-2.png 1083w, https://blog-api.algolia.com/wp-content/uploads/2022/08/inspector-shot-2-320x81.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/08/inspector-shot-2-720x181.png 720w, https://blog-api.algolia.com/wp-content/uploads/2022/08/inspector-shot-2-768x194.png 768w" sizes="(max-width: 1083px) 100vw, 1083px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/08/inspector-shot-2.png"/></p>
+<p class="translated">另一个值得注意的地方是，请求的内容类型(尽管有JSON主体)是<code>application/x-www-form-urlencoded</code>，而不是<code>application/json</code>(正如人们猜测的那样)或<code>text/plain</code>(作为传输的默认内容类型)。我们认为这是一种暗示，在遇到问题之前，可以忽略内容类型。</p>
+<h2 class="translated"><a id="rust-pieces" class="anchor" href="#rust-pieces" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>锈件</h2>
+<h3 class="translated"><a id="marking-the-data-for-serialization" class="anchor" href="#marking-the-data-for-serialization" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>标记用于序列化的数据</h3>
+<p class="translated">为了处理序列化，我们将使用<a href="https://serde.rs/"> SerDe </a>库。</p>
+<blockquote><p class="translated">SerDe是一个有效和通用地序列化和反序列化Rust数据结构的框架。</p></blockquote>
+<p class="translated">这要求我们的结构实现<code>Serialize</code>特征(对于大多数结构来说)，我们只需要给它们的定义添加一个<code>Serialize</code>派生:</p>
+<pre><code class="language-rust">// A vector of 3 floats.&#13;
+//&#13;
+// The serialized form will look like `{"x":14.1,"y": 86.2,"z":14.3}`&#13;
+#[derive(Serialize)]&#13;
+struct Float3 {&#13;
+    x: f32,&#13;
+    y: f32,&#13;
+    z: f32,&#13;
+}&#13;
+</code></pre>
+<p class="translated">我们在JavaScript客户端SDK的示例代码中看到的一个额外的位是<code>objectID</code>字段。引用<a href="https://www.algolia.com/doc/api-client/methods/indexing/"> Algolia索引文档</a>:</p>
+<blockquote><p class="translated">索引中的每个对象(记录)最终都需要一个惟一的ID，称为objectID。您可以自己创建objectID，并在索引时发送它。如果您没有发送objectID，Algolia会为您生成它。</p>
+<p class="translated">无论是发送的还是生成的，一旦添加了记录，它就会有一个唯一的标识符，称为objectID。</p></blockquote>
+<p class="translated">对于我们的应用程序来说，自动生成惟一的ID是理想的，但是在现实中，当向批处理摄取端点发送数据时，所有对象都必须有一个objectID字段，我们可以使用SerDe来<a href="https://serde.rs/field-attrs.html">重命名/转换/重新排列字段</a>。</p>
+<pre><code class="language-rust">// create a string key from the integer and add a prefix for unique id&#13;
+fn particle_emitter_object_id&lt;S&gt;(id: &amp;i32, s: S) -&gt; Result&lt;S::Ok, S::Error&gt;&#13;
+where&#13;
+    S: Serializer,&#13;
+{&#13;
+    s.serialize_str(format!("particle_emitter_{}", id))&#13;
+}&#13;
+&#13;
+// An example entity that  a customized objectID for serialization&#13;
+// The `rename_all` is used to transform underscored_name_format to camelCaseNameFormat&#13;
+#[derive(Serialize, Deserialized, Debug)]&#13;
+#[serde(rename_all = "camelCase")]&#13;
+struct ParticleEmitterEntity {&#13;
+  // serialize this field as `objectID`, but transform it using the `particle_emitter_object_id` field&#13;
+  #[serde(rename = "objectID", serialize_with="particle_emitter_object_id")]&#13;
+  id: i32,&#13;
+  // nested objects are automatically serialzied&#13;
+  root_position : Float3,&#13;
+  // ...&#13;
+}&#13;
+</code></pre>
+<h3 class="translated"><a id="sending-the-data" class="anchor" href="#sending-the-data" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>发送数据</h3>
+<p class="translated">我们将使用<a href="https://crates.io/crates/reqwest"> Reqwest </a>板条箱进行HTTP传输:</p>
+<pre><code class="language-rust">[dependencies]&#13;
+reqwest = { version = "0.11", features = ["blocking", "json"] }&#13;
+urlencoding = { version = "2.1" }&#13;
+</code></pre>
+<pre><code class="language-rust">use urlencoding;&#13;
+&#13;
+fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {&#13;
+&#13;
+  // The credentials data&#13;
+  const APP_ID: &amp;str = "&lt;APP ID&gt;";&#13;
+  const INDEX_NAME: &amp;str = "&lt;INDEX NAME&gt;";&#13;
+  const API_KEY: &amp;str = "&lt;ADMIN API KEY&gt;";&#13;
+  const ALGOLIA_AGENT: &amp;str = "Algolia DataSender for Rust Dev (0.0.1)";&#13;
+&#13;
+  // build the URI for the batch&#13;
+  let host = format!("{}.algolia.net", APP_ID.to_lowercase());&#13;
+  // The index name can have non-url-friendly characters&#13;
+  let path = format!("/1/indexes/{}/batch", urlencoding::encode(INDEX_NAME));&#13;
+  let uri = format!("https://{}{}", host, path);&#13;
+  let uri_with_client = format!("{}?x-algolia-agent={}", uri, ALGOLIA_AGENT);&#13;
+&#13;
+  // The batch data needs to be in the proper batch request format.&#13;
+  // &lt;SERIALIZATION CODE GOES HERE&gt;&#13;
+  // let data = ....&#13;
+&#13;
+  // The `blocking` client waits for the request to complete&#13;
+  let client = reqwest::blocking::Client::new();&#13;
+  let res = client&#13;
+      .post(uri_with_client)&#13;
+      .header("x-algolia-api-key", API_KEY)&#13;
+      .header("x-algolia-application-id", APP_ID)&#13;
+      .body(data)&#13;
+      .send()?;&#13;
+&#13;
+  Ok(())&#13;
+}&#13;
+</code></pre>
+<h3 class="translated"><a id="pre-serialization" class="anchor" href="#pre-serialization" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>预序列化</h3>
+<p class="translated">因为我们的目标是能够向Algolia发送任意类型，所以我们并不真正关心底层对象，只关心数据。这很有帮助，因为如果我们想在一个缓冲区中存储实际的对象，我们将很难管理Rust中的对象生存期(并且我们必须做的类型魔术将是密集和不可穿透的)。解决方案是在对象到达时将它们序列化到一个共享缓冲区中，并在成批发送对象时从预先序列化的格式开始工作。</p>
+<p class="translated">Serde序列化不适合组合预先序列化的数据，所以我们将以非信任的方式进行:我们通过字符串操作而不是类型安全的序列化代码来组合数据。</p>
+<pre><code class="language-rust">[dependencies]&#13;
+serde = { version = "1.0", features = ["derive"] }&#13;
+serde_json = { version = "1.0" }&#13;
+</code></pre>
+<pre><code class="language-rust">use serde::Serialize;&#13;
+&#13;
+// ...&#13;
+&#13;
+// The data we'll send for testing&#13;
+#[derive(Serialize, Debug)]&#13;
+struct Float3 {&#13;
+    #[serde(rename="objectID")]&#13;
+    object_id: String,&#13;
+    x: f32,&#13;
+    y: f32,&#13;
+    z: f32,&#13;
+}&#13;
+&#13;
+// RECREATE THE REQUESTS STRUCTURE&#13;
+// -------------------------------&#13;
+&#13;
+// {"requests":[{"action":"updateObject","body":{"objectID":1,"name":"test_record"}}]}&#13;
+&#13;
+// convert a pre-serialized JSON object into a request object for a batch request&#13;
+fn build_batch_request_entry(data: &amp;String) -&gt; String {&#13;
+    format!("{{\\\\"action\\\\":\\\\"updateObject\\\\",\\\\"body\\\\":{}}}", data)&#13;
+}&#13;
+&#13;
+// wrap the individual requests into a batch&#13;
+fn wrap_batch_request_entry(rows: &amp;Vec&lt;String&gt;) -&gt; String {&#13;
+    format!("{{\\\\"requests\\\\":[{}]}}", rows.join(","))&#13;
+}&#13;
+&#13;
+// Create some raw data we'll send for testing&#13;
+let raw_data = vec![&#13;
+    serde_json::to_string(&amp;Float3 {&#13;
+        object_id: String::from("point1"),&#13;
+        x: 0.1,&#13;
+        y: 0.2,&#13;
+        z: 0.3,&#13;
+    })&#13;
+    .unwrap(),&#13;
+    serde_json::to_string(&amp;Float3 {&#13;
+        object_id: String::from("point2"),&#13;
+        x: 1.1,&#13;
+        y: 1.2,&#13;
+        z: 1.3,&#13;
+    })&#13;
+    .unwrap(),&#13;
+];&#13;
+&#13;
+// transform the list of raw data objects to individual `updateObject` requests,&#13;
+// then collect and wrap them in the `requests` array for the batch Algolia request&#13;
+let data = wrap_batch_request_entry(&amp;raw_data.iter().map(build_batch_request_entry).collect());&#13;
+</code></pre>
+<p class="translated">使用这些预先包装的数据，我们可以将它们组合成一个向Algolia indices提交数据的工作示例，您可以在<a href="https://gist.github.com/makvoid/8f88fd81e9ec4fb21ce471543a0a8152"> example1.rs </a>中找到该示例。</p>
+<h3 class="translated"><a id="wrapping-up-into-a-neat-api" class="anchor" href="#wrapping-up-into-a-neat-api" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>包装成一个整洁的API</h3>
+<p class="translated">既然传输和数据编码已经准备好了，我们可以把它包装成一个简洁的API:</p>
+<pre><code class="language-rust">// Allows sending serializable data to Algolia indices&#13;
+pub struct AlgoliaSender {&#13;
+    /// ...&#13;
+}&#13;
+&#13;
+impl AlgoliaSender {&#13;
+&#13;
+  // create a new sender with the given credentials and index&#13;
+  pub fn new(app_id: &amp;str, api_key: &amp;str, index_name: &amp;str) -&gt; Self { }&#13;
+&#13;
+  // adds a new serializable item to the list to be sent on the next send_items() call&#13;
+  pub fn add_item&lt;T&gt;(&amp;mut self, v: &amp;T) where T: Serialize {}&#13;
+&#13;
+  // Send the items to the default index&#13;
+  pub fn send_items(&amp;mut self) {}&#13;
+&#13;
+  // Sends items to the ingestion endpoint in a batch job to a specified index&#13;
+  pub fn send_items_to_index(&amp;mut self, index_name: &amp;str) {}&#13;
+}&#13;
+</code></pre>
+<p class="translated">然后可以这样使用:</p>
+<pre><code class="language-rust">// create a sender&#13;
+let mut sender = AlgoliaSender::new(APP_ID, API_KEY, INDEX_NAME);&#13;
+&#13;
+// add some items to send&#13;
+sender.add_item(&amp;Float3 {&#13;
+    object_id: String::from("point3"),&#13;
+    x: 0.1,&#13;
+    y: 0.2,&#13;
+    z: 0.3,&#13;
+});&#13;
+sender.add_item(&amp;Float3 {&#13;
+    object_id: String::from("point4"),&#13;
+    x: 1.1,&#13;
+    y: 1.2,&#13;
+    z: 1.3,&#13;
+});&#13;
+&#13;
+// send the items in a request (so batch split points can be controlled)&#13;
+sender.send_items();&#13;
+</code></pre>
+<p class="translated">关于此步骤的完整代码，请参见<a href="https://gist.github.com/makvoid/a76bcfcf516ac4f336e273f2dc7faa06">示例2.rs </a>。</p>
+<h3 class="translated"><a id="adding-individual-object-ids" class="anchor" href="#adding-individual-object-ids" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>添加单个对象id</h3>
+<p class="translated">由于我们并不真的想将<code>objectID</code>字段添加到我们的内部数据结构中，我们必须添加一些额外的逻辑来为我们生成这些字段。</p>
+<p class="translated">首先，让我们为这些id创建一个生成器:</p>
+<pre><code class="language-rust">// Generates unique IDs to use as ObjectIds.&#13;
+//&#13;
+// This implementation combines a prefix with an incremental index.&#13;
+pub struct IdGenerator {&#13;
+    prefix: String,&#13;
+    idx: i32,&#13;
+}&#13;
+&#13;
+impl IdGenerator {&#13;
+    // Creates a new IdGenerator with the given prefix&#13;
+    pub fn new(prefix: String) -&gt; Self {&#13;
+        IdGenerator { prefix: prefix, idx: 0 }&#13;
+    }&#13;
+&#13;
+    // Creates a new IdGenerator with the current epoch time as prefix&#13;
+    pub fn new_from_time() -&gt; Self {&#13;
+        let now = SystemTime::now();&#13;
+        let prefix = format!("{:?}", now.duration_since(std::time::UNIX_EPOCH).unwrap_or_default());&#13;
+        Self::new(prefix)&#13;
+    }&#13;
+&#13;
+    // Returns a new integer id and increments the internal counter&#13;
+    pub fn next_i32(&amp;mut self) -&gt; i32 {&#13;
+        let idx = self.idx;&#13;
+        self.idx += 1;&#13;
+        idx&#13;
+    }&#13;
+&#13;
+    // Returns a concatenated string id and increments the internal counter&#13;
+    pub fn next_string(&amp;mut self) -&gt; String {&#13;
+        let next_id = self.next_i32();&#13;
+        format!("{}_{}", self.prefix.as_str(), next_id)&#13;
+    }&#13;
+}&#13;
+</code></pre>
+<p class="translated">然后我们可以进行难看的字符串操作，将生成的objectID注入到已经序列化的对象中。这假设我们发送的所有东西都是一个对象，而不是一个数组或原始值Algolia期望对象，这对我们来说正好。我们使用<code>filter_map()</code>来跳过太短的条目(很可能是无效的JSON)。</p>
+<pre><code class="language-rust">// converts a pre-serialized JSON object into a request object for a batch request using DANGEROUS STRING MAGIC&#13;
+fn build_batch_request_entry(id: &amp;String, data: &amp;String) -&gt; Option&lt;String&gt; {&#13;
+    if data.len() &lt;= 2 {&#13;
+        return None;&#13;
+    }&#13;
+&#13;
+    // Skip the opening curly brace and inject our objectID into the already serialized object&#13;
+    let remaining_data:String = data.chars().skip(1).collect();&#13;
+    Some(format!("{{\\\\"action\\\\":\\\\"updateObject\\\\",\\\\"body\\\\":{{\\\\"objectID\\\\":\\\\"{}\\\\",{}}}", id, remaining_data))&#13;
+}&#13;
+ // Wrap all pre-serialized data with an object id and the `updateObject` request, then collect into a batch request&#13;
+let data = wrap_batch_request_entry(&#13;
+    &amp;self&#13;
+        .data_buffer&#13;
+        .iter()&#13;
+        .filter_map(|entry: &amp;String| -&gt; Option&lt;String&gt; { build_batch_request_entry(&amp;self.id_generator.next_string(), entry) })&#13;
+        .collect(),&#13;
+);&#13;
+</code></pre>
+<p class="translated">这一步的完整代码可以在<a href="https://gist.github.com/makvoid/c6c65034d95abe53f745429b3b027cb9"> example3.rs </a>中找到。</p>
+<h3 class="translated"><a id="exposing-to-c-c" class="anchor" href="#exposing-to-c-c" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>向C / C++公开</h3>
+<p class="translated">由于我们的库分为两个不同的部分:将对象序列化为JSON和发送数据，我们实际上可以将Rust库暴露给C / C++代码，以便轻松地从这些语言获取数据。如果他们能提供JSON序列化的数据，我们就可以发送。</p>
+<p class="translated">我们的目标是拥有一个带有构造函数和析构函数的API来模拟Rust端的公共API。以下是这些函数的第一稿，强力实现:</p>
+<pre><code class="language-rust">[dependencies]&#13;
+libc = "0.2"&#13;
+</code></pre>
+<pre><code class="language-rust">// We need to support adding pre-serialized data directly&#13;
+impl AlgoliaSender {&#13;
+    //...&#13;
+&#13;
+    // adds an already serialized value to be sent&#13;
+    pub fn add_raw_item(&amp;mut self, data: &amp;str) {&#13;
+        self.data_buffer.push(String::from(data));&#13;
+    }&#13;
+&#13;
+    // ...&#13;
+}&#13;
+&#13;
+// C API&#13;
+// -----&#13;
+&#13;
+// Constructor for the AlgoliaSender struct from C.&#13;
+// Returns nullptr if any of the parameters are empty.&#13;
+#[no_mangle]&#13;
+pub unsafe extern "C" fn algolia_sender_new(app_id: *const libc::c_char, api_key: *const libc::c_char, index_name: *const libc::c_char) -&gt; *mut AlgoliaSender {&#13;
+&#13;
+    // rustify all parameters&#13;
+    let app_id_str: &amp;str = std::ffi::CStr::from_ptr(app_id).to_str().unwrap_or("");&#13;
+    let api_key_str: &amp;str = std::ffi::CStr::from_ptr(api_key).to_str().unwrap_or("");&#13;
+    let index_name_str: &amp;str = std::ffi::CStr::from_ptr(index_name).to_str().unwrap_or("");&#13;
+&#13;
+    // check these parameters&#13;
+    if app_id_str.is_empty() || api_key_str.is_empty() || index_name_str.is_empty() {&#13;
+        return std::ptr::null_mut();&#13;
+    }&#13;
+&#13;
+    // create a new sender and Box it, and use `Box::into_raw()` to get a pointer that outlives this function call&#13;
+    let struct_instance = AlgoliaSender::new(app_id_str, api_key_str, index_name_str);&#13;
+    let boxed = Box::new(struct_instance);&#13;
+    Box::into_raw(boxed)&#13;
+}&#13;
+&#13;
+// Destructor for the AlgoliaSender struct from C&#13;
+#[no_mangle]&#13;
+pub unsafe extern "C" fn algolia_sender_destroy(struct_instance: *mut AlgoliaSender) {&#13;
+    // let the Rust lifetime take over and destroy the instance after the function is done&#13;
+    Box::from_raw(struct_instance);&#13;
+}&#13;
+&#13;
+// Adds an item to be sent to the target sender&#13;
+#[no_mangle]&#13;
+pub unsafe extern "C" fn algolia_sender_add_item(a: *mut AlgoliaSender, data: *const libc::c_char) {&#13;
+    // convert data&#13;
+    let data_str = match std::ffi::CStr::from_ptr(data).to_str() {&#13;
+        Err(_) =&gt; return,&#13;
+        Ok(s) =&gt; String::from(s),&#13;
+    };&#13;
+&#13;
+    // attempt to add it&#13;
+    match a.as_mut() {&#13;
+        None =&gt; return,&#13;
+        Some(sender) =&gt; sender.add_raw_item(data_str),&#13;
+    };&#13;
+&#13;
+}&#13;
+&#13;
+// Trigger the sending of items&#13;
+#[no_mangle]&#13;
+pub unsafe extern "C" fn algolia_sender_send_items(a: *mut AlgoliaSender) {&#13;
+    // attempt to send the items&#13;
+    match a.as_mut() {&#13;
+        None =&gt; return,&#13;
+        Some(sender) =&gt; sender.send_items(),&#13;
+    };&#13;
+}&#13;
+</code></pre>
+<p class="translated">这一步的完整源代码可以在<a href="https://gist.github.com/makvoid/406c0a8167c01942c9c147ed10a823a8"> example4.rs </a>中找到。</p>
+<h2 class="translated"><a id="sample-use-case" class="anchor" href="#sample-use-case" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>示例用例</h2>
+<p class="translated">我们的例子相当简单:</p>
+<ul>
+<li class="translated">内容团队通过放置对象和编写程序性内容生成规则来创建地图</li>
+<li class="translated">我们希望保留一个包含所有对象(包括过程对象)的可搜索数据库</li>
+<li class="translated">我们希望能够通过任何属性找到对象，并在浏览器中显示该对象的已知属性</li>
+<li class="translated">从浏览器搜索中，我们希望能够在内部编辑器工具中快速转到该对象进行评估(使用带有自定义协议的链接)</li>
+</ul>
+<p class="translated">我们想要发送的数据结构如下所示:</p>
+<pre><code class="language-rust">#[derive(Serialize)]&#13;
+pub enum EntityCategory {&#13;
+  StaticEntity,&#13;
+  ...&#13;
+}&#13;
+&#13;
+#[derive(Serialize)]&#13;
+pub struct PlacedEntity {&#13;
+  // The root position of the object -- we'll use these coordinates to create the link to open the editor&#13;
+  root: Float3,&#13;
+&#13;
+  // we'll use this as an example of adding selectable categories to the search UI.&#13;
+  category: EntityCategory,&#13;
+  // other properties&#13;
+  // ...&#13;
+}&#13;
+</code></pre>
+<p class="translated">类别枚举以整数的形式存储，但幸运的是，默认情况下<a href="https://serde.rs/enum-representations.html"> SerDe将枚举表示为“外部标记的”</a>，因此它们应该以字符串而不是整数的形式到达Algolia。我们将使用这个类别属性在UI上添加一个“类别选择器”。</p>
+<p class="translated">为了能够跟踪静态和过程对象，我们可以在对象创建后使用库将对象数据发送给Algolia。对于这个例子，我们假设一个<code>ObjectContainer::place_entity()</code>用于放置单个对象，在添加一批对象后调用<code>ObjectContainer::placement_done()</code>。</p>
+<pre><code class="language-rust">// ...&#13;
+impl ObjectContainer {&#13;
+  pub fn new() -&gt; Self {&#13;
+    Self {&#13;
+      //...&#13;
+      algolia_sender: AlgoliaSender::new( /* ... */),&#13;
+    }&#13;
+  }&#13;
+  // ...&#13;
+  pub fn place_entity(&amp;mut self, e: &amp;PlacedEntity) {&#13;
+    // ...&#13;
+    self.algolia_sender.add_item(e);&#13;
+    // ...&#13;
+  }&#13;
+  // ...&#13;
+  pub fn placement_done(&amp;mut self) {&#13;
+    // ...&#13;
+    self.algolia_sender.send_items();&#13;
+    // ...&#13;
+  }&#13;
+}&#13;
+</code></pre>
+<h3 class="translated"><a id="marking-the-data-as-searchable" class="anchor" href="#marking-the-data-as-searchable" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>将数据标记为可搜索</h3>
+<p class="translated">根据文档，要为搜索UI设置数据，我们必须告诉Algolia要搜索哪些属性才能获得更好的结果:</p>
+<blockquote><p class="translated">创建索引时，默认情况下，所有记录中的所有属性都是可搜索的。默认情况下，所有属性都是可搜索的，这使您可以从一开始就执行搜索，而无需进行任何配置。然而，如果您想让您的搜索更相关，并消除干扰，您只需将有意义的属性设置为可搜索的。</p></blockquote>
+<p class="translated">对于我们的用例，这种“search all”行为很好，但如果我们想要一种更细粒度的方法，我们可以使用现有的<a href="https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/how-to/setting-searchable-attributes/#using-the-api"> Algolia API客户端</a>或<a href="https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/how-to/setting-searchable-attributes/#using-the-algolia-dashboard"> Algolia仪表板</a> ( <em>注意:嵌套属性(子对象)<a href="https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/how-to/creating-and-using-nested-attributes/#where-you-can-use-nested-attributes">不能从仪表板添加，只能从API </a> </em>)。</p>
+<p class="translated"><img loading="lazy" class="aligncenter size-full wp-image-15966" src="../Images/62ac1351baf750d8373b5afe880ce0fc.png" alt="Algolia Dashboard index screenshot" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/08/ingested-data.png 1659w, https://blog-api.algolia.com/wp-content/uploads/2022/08/ingested-data-234x178.png 234w, https://blog-api.algolia.com/wp-content/uploads/2022/08/ingested-data-526x400.png 526w, https://blog-api.algolia.com/wp-content/uploads/2022/08/ingested-data-768x584.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/08/ingested-data-1536x1168.png 1536w" sizes="(max-width: 1659px) 100vw, 1659px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/08/ingested-data.png"/></p>
+<h2 class="translated"><a id="the-search-ui" class="anchor" href="#the-search-ui" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>搜索UI</h2>
+<p class="translated">Algolia InstantSearch提供了一种非常简单的方法来为浏览器构建自定义用户界面，让我们可以搜索我们的数据。我们将简单地复制<a href="https://www.algolia.com/doc/guides/building-search-ui/getting-started/js/"> InstantSearch入门指南</a>并根据我们的需要进行修改。</p>
+<p class="translated">我们可以保留大部分布局和HTML:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;&#13;
+&lt;html lang="en"&gt;&#13;
+  &lt;!-- exact same &lt;head&gt; as in the demo --&gt;&#13;
+  &lt;body&gt;&#13;
+    &lt;div class="ais-InstantSearch"&gt;&#13;
+      &lt;div class="left-panel"&gt;&#13;
+        &lt;div id="clear-refinements"&gt;&lt;/div&gt;&#13;
+        &lt;!-- the only real change is renaming this from "Brands" to "Categories" --&gt;&#13;
+        &lt;h2&gt;Categories&lt;/h2&gt;&#13;
+        &lt;div id="category-list"&gt;&lt;/div&gt;&#13;
+      &lt;/div&gt;&#13;
+      &lt;!-- exact same &lt;div class="right-panel"&gt; as the in the demo --&gt;&#13;
+    &lt;/div&gt;&#13;
+    &lt;!-- same &lt;script&gt; tags as in the demo --&gt;&#13;
+  &lt;/body&gt;&#13;
+&lt;/html&gt;&#13;
+</code></pre>
+<p class="translated">Javascript也几乎与演示相同，除了设置类别列表而不是品牌列表，并更改显示的点击以包含我们的属性。</p>
+<p class="translated">这里唯一不同寻常的地方是对hits进行了定制，包括一个自定义URL，它可以打开一个外部编辑器，作为Algolia与外部应用程序交互的演示:</p>
+<pre><code class="language-html">&lt;a href="editor:goto:x:{{root.x}}:y:{{root.y}}:z:{{root.z}}"&gt;Open in editor&lt;/a&gt;&#13;
+</code></pre>
+<pre><code class="language-jsx">/* global instantsearch algoliasearch */&#13;
+&#13;
+const search = // ...same as the demo&#13;
+&#13;
+search.addWidgets([&#13;
+  instantsearch.widgets.searchBox({&#13;
+    container: '#searchbox',&#13;
+  }),&#13;
+  instantsearch.widgets.clearRefinements({&#13;
+    container: '#clear-refinements',&#13;
+  }),&#13;
+  // categories instead of brands&#13;
+  instantsearch.widgets.refinementList({&#13;
+    container: '#category-list',&#13;
+    attribute: 'category',&#13;
+  }),&#13;
+  // customize the hit display&#13;
+  instantsearch.widgets.hits({&#13;
+    container: '#hits',&#13;
+    templates: {&#13;
+      item: `&#13;
+        &lt;div&gt;&#13;
+&#13;
+          &lt;a href="editor:goto:x:{{root.x}}:y:{{root.y}}:z:{{root.z}}"&gt;Open in editor&lt;/a&gt;&#13;
+          &lt;dl&gt;&#13;
+            &lt;!-- The attributes we're interested in --&gt;&#13;
+            &lt;dt&gt;Category&lt;/dt&gt;&#13;
+            &lt;dd&gt;{{#helpers.highlight}}{ "attribute": "category" }{{/helpers.highlight}}&lt;/dd&gt;&#13;
+&#13;
+            &lt;!-- ... other attributes --&gt;&#13;
+&#13;
+          &lt;/dl&gt;&#13;
+        &lt;/div&gt;&#13;
+      `,&#13;
+    },&#13;
+  }),&#13;
+  instantsearch.widgets.pagination({&#13;
+    container: '#pagination',&#13;
+  }),&#13;
+]);&#13;
+&#13;
+search.start();&#13;
+</code></pre>
+<p class="translated">只需几行修改，我们的基本搜索UI就准备好了:我们可以搜索对象，按类别过滤它们，并在外部编辑器中打开对象:</p>
+<p class="translated"><img loading="lazy" class="aligncenter size-full wp-image-15968" src="../Images/752f7b229acef0b97c50f15c456702bc.png" alt="Text editor and basic front-end split-screen screenshot" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/08/basic-frontend.png 2560w, https://blog-api.algolia.com/wp-content/uploads/2022/08/basic-frontend-320x165.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/08/basic-frontend-720x371.png 720w, https://blog-api.algolia.com/wp-content/uploads/2022/08/basic-frontend-768x396.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/08/basic-frontend-1536x792.png 1536w, https://blog-api.algolia.com/wp-content/uploads/2022/08/basic-frontend-2048x1056.png 2048w" sizes="(max-width: 2560px) 100vw, 2560px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/08/basic-frontend.png"/></p>
+<h1 class="translated"><a id="potential-further-steps" class="anchor" href="#potential-further-steps" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>势更进一步</h1>
+<h3 class="translated"><a id="async-sending-of-data" class="anchor" href="#async-sending-of-data" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>异步发送数据</h3>
+<p class="translated"><a href="https://tokio.rs/"> Tokio </a> create为Reqwest提供异步支持，可用于实现数据的异步发送。使用异步包装器会使调用从C / C++导出的函数变得复杂，并且会扰乱其他运行代码的CPU内核分配。</p>
+<h3 class="translated"><a id="retry-logic" class="anchor" href="#retry-logic" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>重试逻辑</h3>
+<p class="translated">所有Algolia客户端都实现了重试失败的请求(并在不同的目标服务器上重试)。在将数据传输转移到异步处理之后，将重试逻辑作为一个单独的层添加是相对容易的。</p>
+<h3 class="translated"><a id="less-string-manipulation" class="anchor" href="#less-string-manipulation" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>操纵少弦</h3>
+<p class="translated">虽然我们很喜欢<code>format!</code>连接字符串，但如果objectID的生成更像Rust就更好了:一个<code>objectID</code>特征和一个好的<code>derive</code>宏对大多数用例来说是更好的解决方案，因为它们允许控制和可重复性，但保持了灵活性。</p>
+<pre><code class="language-rust">pub trait objectID {&#13;
+  fn object_id(&amp;self) -&gt; String;&#13;
+}&#13;
+&#13;
+#[derive(Serialize, objectID)]&#13;
+#[object_id(prefix="something", field="id")]&#13;
+struct Something {&#13;
+  id: i32,&#13;
+}&#13;
+&#13;
+impl objectID for Other {&#13;
+  // ....&#13;
+}&#13;
+</code></pre>
+<hr/>
+<p class="translated"><em>我们希望你喜欢Gyula的这篇深入的文章，如果你正在寻找更多这样的内容，我们在<a href="https://www.algolia.com/blog/"> Algolia博客</a>上有更多的主题！如果你是Algolia的新手，你可以通过注册一个<a href="https://www.algolia.com/users/sign_up?utm_source=blog&amp;utm_medium=main-blog&amp;utm_campaign=devrel&amp;utm_id=blog-algolia-and-rust">免费等级账户</a>来尝试一下。</em></p>
+</div></div>    
+</body>
+</html>

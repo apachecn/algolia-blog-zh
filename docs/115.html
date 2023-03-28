@@ -1,0 +1,125 @@
+<html>
+<head>
+<title>DevTool Intro: The Algolia CLI! | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">DevTool简介:Algolia CLI！</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/algolia-devtool-introduction-the-algolia-cli/#0001-01-01">https://www.algolia.com/blog/engineering/algolia-devtool-introduction-the-algolia-cli/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><pre class="lang:default decode:true">Wake up Neo...</pre>
+<p class="translated"><span>我们需要您为我们的药品索引重置配置！我们对高亮设置进行了修改，现在查询“红色药丸”的结果被高亮显示为蓝色，这真的非常令人困惑… </span></p>
+<p class="translated"><span>此外，我们有点担心所有经历过的现实都可能是机器运行的模拟，以奴役人类！</span></p>
+<p class="translated"><span>不过请先修复索引！</span></p>
+<p class="translated"><span> — </span></p>
+<p class="translated">哦，伙计，你们不都喜欢在周一日出前被叫醒做这些事情吗？在理想情况下，这将是一个快速解决方案。随着我黑色风衣的挥动，我会从床上滚下来，蹲在房间中央，手里拿着笔记本电脑。我会按回车键跳过白兔，忽略敲我的门。我会用一只手调整太暗的夹鼻眼镜，而另一只手在几秒钟内发出命令。一些简短的，甜蜜的，中肯的。大概是这样… </p>
+<pre class="lang:default decode:true">algolia settings import prod_pharmaceuticals_index -F pharm_settings_snapshot.ndjson</pre>
+<p class="translated"><span>看了一眼终端，显示出愉快的反应:</span></p>
+<pre class="lang:default decode:true ">✓ Imported settings on prod_pharmaceuticals_index</pre>
+<p class="translated">很好……那么关于机器奴役人类的另一件事是什么？</p>
+<p class="translated"><span>——</span></p>
+<h3 class="translated"><a id="meet-the-algolia-cli" class="anchor" href="#meet-the-algolia-cli" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>迎接阿洛利亚CLI！</h3>
+<p class="translated">如果你和我一样，命令行是你的朋友和信任的盟友。无论我是在测试一个快速的API调用还是在我最喜欢的IDE中编码，使用命令行都能让我流畅地迭代。此外，我喜欢通过命令行界面(CLI)做的任何事情都可以轻松地编写脚本并安排在我喜欢的任何时间运行。在我的CLI工具箱中有一套强大的工具，解决问题和自动化解决方案就像在公园里散步一样容易。</p>
+<p class="translated"><span>这就是为什么我们如此激动地宣布全新Algolia CLI工具的公开测试版发布，完整版即将推出！</span>T31<br/>T33】</p>
+<p class="translated"><span> Algolia CLI使上传索引、自动化常见仪表板操作或保存和重新加载您的配置快照成为可能，只需通过命令行即可实现！不需要API客户端！</span></p>
+<p class="translated">那么我该如何开始呢？别担心，您不必为此访问oracle开始使用Algolia CLI轻而易举！</p>
+<p class="translated"><span>如果你在MacOS上，只需在终端中运行以下命令，使用homebrew安装该工具:</span></p>
+<pre class="lang:default decode:true">brew install algolia/algolia-cli/algolia</pre>
+<p class="translated"><span>想戳代码自己造？Algolia CLI是完全开源的，在麻省理工学院的许可下，存在于一个公共的github存储库中(你可以在这里</span> <a href="https://github.com/algolia/cli"> <span>找到</span> </a> <span>)！</span></p>
+<p class="translated"><span>Linux和Windows版本即将发布！</span></p>
+<p class="translated"><span>让我们来看看一些具体的使用案例，看看Algolia CLI如何让您的生活变得更加轻松，这样您就可以专注于拯救世界了，明星！</span></p>
+<p class="translated"><span>——</span></p>
+<h3 class="translated"><a id="example-0-set-your-active-algolia-application-with-profiles" class="anchor" href="#example-0-set-your-active-algolia-application-with-profiles" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>示例#0:使用情景模式设置您的活动Algolia应用程序</h3>
+<p class="translated"><span>任何Algolia CLI命令均可通过</span> <code><span>--admin-api-key [</span>string<span>]</span></code> <span>和</span> <code><span>--application-id [</span>string<span>]</span></code> <span>标志调用，以指定与哪个应用程序交互。为了使您能够发出命令，而不必总是在剪贴板中拖动api-keys和app-id，您可以使用下面的命令来注册一个默认的概要文件。</span></p>
+<pre class="lang:default decode:true">algolia profile add --name [string] --app-id [string] --admin-api-key [string] --default</pre>
+<pre class="lang:default decode:true ">✓ Profile 'test_pharm_app' (##APP#ID##) successfully added and set as default.</pre>
+<p class="translated"><span>当没有提供配置文件或API密钥/应用程序ID对时，<code>--default</code>标志告诉CLI在将来的命令中使用哪个应用程序。一次只能将一个应用程序设置为默认。花时间注册个人资料可以让未来的互动更加流畅，尤其是在使用2个或更多Algolia应用程序时。</span></p>
+<p class="translated"><span>您也可以通过运行</span>来交互提供该命令的字段</p>
+<pre class="lang:default decode:true">algolia profile add</pre>
+<p class="translated"><span>然后，该工具将提示您输入每个字段，一次一个，并根据指定添加应用程序。</span></p>
+<p class="translated"><span>要查看所有添加的应用程序列表，只需运行:</span></p>
+<pre class="lang:default decode:true">algolia profile list</pre>
+<pre class="lang:default decode:true ">NAME                  APP ID      NUMBER OF INDICES  DEFAULT&#13;
+test_pharm_app        #APP#ID#1#  2                  ✓&#13;
+playground_pharm_app  #APP#ID#2#  1&#13;
+prod_pharm_app        #APP#ID#3#  15</pre>
+<p class="translated"><span>牛逼！我们在这里看到我们添加了多个Algolia应用程序，应用程序</span> <code><span>test_pharm_app</span></code>是我们的默认应用程序！</p>
+<p class="translated"><span>注:应用简介保存在<code>~/.config/algolia/config.toml</code> </span></p>
+<p class="translated"><span>让我们上传一些数据吧！</span></p>
+<p class="translated"><span>——</span></p>
+<h3 class="translated"><a id="example-1-create-an-index-and-upload-records-from-a-file" class="anchor" href="#example-1-create-an-index-and-upload-records-from-a-file" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>示例#1:创建索引并从文件上传记录</h3>
+<p class="translated">我想创建一个新的索引，给它一个相关的名称，并从本地系统上的一个文件中上传记录。CLI能处理这种情况吗？当然可以！</p>
+<pre class="lang:default decode:true">algolia objects import new_index_name -F ./path_to_file.ndjson</pre>
+<p class="translated"><span>您是否注意到我们既没有指定应用id、api密钥，也没有指定应用配置文件？在这种情况下，CLI将根据默认应用程序(即上一步中指出的</span> <code><span>test_pharm_app</span></code>)进行操作。</p>
+<p class="translated"><span>我们还可以将<code>-F</code> </span> <span>标志替换为<code>-</code> </span> <span>，通过</span> <span> stdin </span> <span>将内容传递给CLI进行上传。让我们一起用管道发送一些命令吧！以下命令产生与上一个命令相同的结果(读取文件并将内容上传到指定的索引)，但是使用</span> <span> cat </span> <span>将文件的内容传递到CLI工具的</span> <span> stdin </span> <span>，而不是将文件路径作为参数传递。整洁！</span></p>
+<pre class="lang:default decode:true">cat ./path_to_file.ndjson | algolia objects import new_index_name -F -</pre>
+<p class="translated"><a href="https://ndjson.org/"> <span>什么是ndjson？</span> </a> <span>换行符分隔的JSON是Algolia CLI读取和写入文件的格式。这意味着，任何将ndjson格式的数据作为输出传递或作为输入接受的命令都可以与Algolia CLI命令连接在一起！我们将在下一个例子</span>中看到更多</p>
+<p class="translated"><span>–</span></p>
+<h3 class="translated"><a id="example-2-managing-index-settings-snapshots" class="anchor" href="#example-2-managing-index-settings-snapshots" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>例2:管理索引设置快照</h3>
+<p class="translated"><span>到目前为止，我们已经将CLI连接到我们的Algolia应用程序，并将一些数据上传到一个索引中！让我们更进一步，拍摄索引设置的快照，以便将来可以将它们恢复到健康的检查点。</span></p>
+<p class="translated"><span>哪些指标存在于我们默认的app中，</span> <code><span>test_pharm_app</span><span>?</span></code></p>
+<pre class="lang:default decode:true">algolia index list</pre>
+<pre class="lang:default decode:true ">NAME               ENTRIES  SIZE    UPDATED AT  CREATED AT  LAST BUILD DURATION  PRIMARY  REPLICAS&#13;
+pills_treatments   1,000    100 kB  1 day ago   1 day ago   2s                            []&#13;
+pills_cures        0        0 B     2 days ago  2 days ago  3s                            []</pre>
+<p class="translated"><span>让我们将索引</span> <code><span>pills_treatments</span></code> <span>的设置保存到系统上的一个文件中。</span></p>
+<pre class="lang:default decode:true">algolia settings get pills_treatments &gt; ./pt_settings_snapshot.ndjson</pre>
+<p class="translated"><span>快照已创建！现在，恢复到快照非常简单… </span></p>
+<pre class="lang:default decode:true">algolia settings import pills_treatments -F ./pt_settings_snapshot.ndjson</pre>
+<pre class="lang:default decode:true ">✓ Imported settings on pills_treatments</pre>
+<p class="translated"><span>我们还可以在一行中将设置从一个索引转移到另一个索引！让我们将</span> <code><span>pills_treatments</span></code> <span>指标的设置复制到</span> <code><span>pills_cures</span></code> <span>指标中！在导入命令中，我们将使用</span> <code><span>-F</span></code> <span>标志后的</span> <code><span>-</span></code> <span>值来告诉CLI从</span> <code><span>stdin</span></code> <span>而不是指定的文件中读取输入。</span></p>
+<pre class="lang:default decode:true">algolia settings get pills_treatments | algolia settings import pills_cures -F -</pre>
+<pre class="lang:default decode:true ">✓ Imported settings on pills_cures</pre>
+<p class="translated"><span>简单！还有一个场景…我们已经在测试应用中的所有指数上测试过了，现在我们准备将这些设置迁移到我们的生产应用中！我们将</span> <code><span>prod_pharm_app</span></code> <span>配置文件中的</span> <code><span>pills_treatments_prod</span></code> <span>索引作为目标。</span></p>
+<pre class="lang:default decode:true">algolia settings get pills_treatments | algolia settings import pills_treatments_prod -F - -p prod_pharm_app</pre>
+<pre class="lang:default decode:true ">✓ Imported settings on pills_treatments_prod</pre>
+<p class="translated">你开始相信了，是吗？</p>
+<p class="translated"><span>——</span></p>
+<h3 class="translated"><a id="example-3-cicd-pipelines-that-execute-algolia-tasks" class="anchor" href="#example-3-cicd-pipelines-that-execute-algolia-tasks" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>示例#3:执行Algolia任务的CI/CD管道</h3>
+<p class="translated">这是事情开始变得真正令人兴奋的地方。考虑以下工作流程:</p>
+<ol>
+<li class="translated"><span>一个数据库包含你的数据。</span></li>
+<li class="translated"><span>自动脚本每晚运行，根据数据库中的数据生成索引。</span></li>
+<li class="translated">一个自动脚本将该索引上传到Algolia。</li>
+</ol>
+<p class="translated"><span>整齐！酷！方便！让我们改变这一点。我们会把事情搞砸一点。我们把一只虫子推到刺戳处怎么样？</span></p>
+<ul>
+<li class="translated">工程师Anderson负责执行数据库迁移。他创造了改变！</li>
+<li class="translated">工程师贝基负责审阅变更，她说LGTM！</li>
+<li class="translated"><span>变更已提交！</span></li>
+<li class="translated"><span>CI/CD管道将更改应用于测试数据库。没有错误！数据库迁移测试通过！</span></li>
+<li class="translated"><span>更改将应用于生产数据库。没有错误！数据库迁移测试通过！</span></li>
+<li class="translated">工程师安德森面带微笑地签了字，回家，并帮他的女房东倒垃圾。</li>
+</ul>
+<p class="translated"><span> … </span></p>
+<p class="translated">那天晚上，当工程师安德森睡得正香，梦见在飞行中的直升机下面晃来晃去时，灾难降临了！</p>
+<p class="translated"><span> … </span></p>
+<ul>
+<li class="translated"><span>自动索引脚本在夜间运行，根据数据库中的数据生成索引。</span></li>
+<li class="translated"><span>然而，数据库迁移转换了该脚本使用的字段。</span></li>
+<li class="translated"><span>输出索引缺少重要的搜索属性，但上传成功。</span></li>
+<li class="translated"><span>搜索格式错误的索引会产生不准确和不相关的结果。哦不！</span></li>
+<li class="translated"><span>直到3天后，随着搜索指标下降，问题才被发现。工程师Anderson又花了一天时间回滚更改并修复索引。</span></li>
+</ul>
+<p class="translated">对此能做些什么？你如何防止这种混乱再次发生？</p>
+<p class="translated"><span>如果DB changes在CI/CD管道中运行了一些简单的查询测试用例会怎么样？每一个变化都会立即生成一个索引，并针对它启动一系列测试查询。工程师Anderson的更改会使CI/CD管道失败，因为它会产生与预期不同的查询结果。只需创建一些测试用例以及一个简单的脚本，针对这些测试用例运行Algolia CLI的</span> <code><span>algolia search</span></code> <span>命令，就可以提前检测到这个问题！</span></p>
+<p class="translated"><span>让我们配置一个这样的测试用例！当索引正常工作时，我们可以执行测试查询并保存结果。保存的数据是我们的“预期结果”，我们将根据它来比较后续查询测试的结果。我们将在前一个例子的索引中搜索“蓝色药丸”:</span></p>
+<pre class="lang:default decode:true">algolia search pills_treatments_prod -p prod_pharm_app --query "blue pills" &gt; blue_pills_expected_results.ndjson</pre>
+<p class="translated"><span>爽！我们有一个查询“蓝色药丸”的测试用例！让我们在测试app中的</span> <code><span>pills_treatments</span></code> <span>索引上运行这个，</span> <code><span>test_pharm_app</span></code> <span>，看看是否匹配。</span></p>
+<pre class="lang:default decode:true">algolia search pills_treatments -p test_pharm_app --query "blue pills" &gt; blue_pills_actual_results.ndjson &amp;&amp; diff blue_pills_expected_results.ndjson blue_pills_actual_results.ndjson | wc -m</pre>
+<pre class="lang:default decode:true">0</pre>
+<p class="translated">我们查询测试索引并保存结果。然后，我们通过调用 <code><span>diff</span></code> <span>命令将预期结果与实际结果进行比较，该命令只输出两个文件之间的差异。最后，我们将</span> <code><span>diff</span></code> <span>的输出传送到</span> <code><span>wc -m</span></code> <span>命令，该命令计算</span> <code><span>diff</span></code> <span>输出中的字符数。我们观察到输出为0，这意味着两个文件之间没有差异，这表明我们的查询在两个索引中产生了相同的结果，并且我们的查询测试通过了！</span></p>
+<p class="translated">按照这些思路，非零输出意味着这两个文件中存在一些差异，我们的查询测试未能在两个索引中产生相同的输出。</p>
+<p class="translated">这只是如何将Algolia CLI集成到CI/CD管道中的一个例子。想象一下，使用索引设置管理工作流将营销团队设置的仪表板配置设置提升到生产应用程序。然后，促销可以调用一系列查询测试来验证更改，瞧！CLI也成为您的业务用户的力量倍增器！ <span> <br/> </span> <span> <br/> </span> <span>使用Algolia CLI自动执行任务，改善您的工作流程，并保持您的搜索体验无缝运行，即使您正在更改和开发内容！</span></p>
+<p class="translated"><span>——</span></p>
+<h3 class="translated"><a id="get-involved" class="anchor" href="#get-involved" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>参与进来！</h3>
+<p class="translated"><span>我们已经看到，Algolia CLI几乎可以处理任何事情，从索引上传等简单操作到快照恢复等更复杂的工作流。请继续关注我们推出的更新，并进一步扩展CLI的功能，让您作为Algolia开发人员的生活更加轻松！</span></p>
+<p class="translated">请记住，Algolia CLI处于公开测试阶段！在MacOS上，用自制软件安装:</p>
+<pre class="lang:default decode:true">brew install algolia/algolia-cli/algolia</pre>
+<p class="translated"><span> Windows和Linux安装程序即将推出！</span></p>
+<p class="translated"><span>或者，</span> <a href="https://github.com/algolia/cli"> <span>克隆GitHub repo </span> </a> <span>自己构建！</span></p>
+<p class="translated">想了解更多？查看<a href="https://www.algolia.com/doc/tools/cli/get-started/overview/">官方CLI文档</a>获取指导教程！</p>
+<p class="translated">别忘了在你的日历上标记9月14日至15日！Algolia DevCon 快速接近。我们将重点介绍CLI工具并展示其功能！开发者体验团队将在那里主持现场Q &amp; A，回答你所有的问题。你不会想错过的！</p>
+<p class="translated"><span>——</span></p>
+<p class="translated"><strong>弃用建议</strong>–在创建这个CLI之前，我们有一个<a href="https://www.npmjs.com/package/@algolia/cli"> npm Algolia CLI包</a>提供类似的功能。传统CLI<strong>已弃用</strong>——今后我们将不再维护/更新/支持它。但是，我们不会从npm中删除该包(因为客户仍在使用它)。相反，我们已经宣布弃用<a href="https://github.com/algolia/algolia-cli-old">传统CLI GitHub回购</a>(并将回购重命名为“algolia-cli- <strong> old </strong>”)，并将客户重新定向到<a href="https://github.com/algolia/cli">新CLI GitHub回购</a>。</p>
+</div></div>    
+</body>
+</html>

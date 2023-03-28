@@ -1,0 +1,116 @@
+<html>
+<head>
+<title>Blogcast: Search for education/media with Alex Patterson CodingCatDev | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">Blogcast:使用Alex Patterson coding catdev \n搜索教育/媒体</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/blogcast-building-search-for-education-and-media-with-alex-patterson-from-codingcatdev/#0001-01-01">https://www.algolia.com/blog/engineering/blogcast-building-search-for-education-and-media-with-alex-patterson-from-codingcatdev/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">Alex Patterson是CodingCatDev 的创始人兼首席执行官，这是一个在线学习平台，面向希望了解不同技术的新手和有经验的开发者。Alex还制作播客和视频，采访和指导全球50多名工程师。他也是云架构师，构建无头架构。</p>
+<p class="translated"><span>我们在Jamstack Conf 2021上遇到了Alex。他加入了我们的展位，并介绍自己是Algolia的长期用户。我们很想了解更多，所以第二天我联系了他，他同意和我坐在一起讨论他的项目和Algolia解决方案。我们开始我们的博客，讨论为什么他选择了三个独特的领域的职业生涯——教育、播客和工程。然后我们进入他的技术选择，他给了我们一个他的Algolia实现的代码眼视图。我们结束了对他的解决方案的采访，并提出了他可以改善整体搜索体验的几种方法。</span></p>
+<h2 class="translated"><a id="tell-us-about-yourself-and-your-online-business" class="anchor" href="#tell-us-about-yourself-and-your-online-business" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>告诉我们关于你自己和你的网上生意</span></h2>
+<p class="translated"><span>我的主要背景是web开发，对前端开发有浓厚的兴趣。我还花了10多年时间作为SAP ABAP开发人员，专门研究API的RFC。最近几年，很难远离云超伸缩性，所以我转向了解决方案架构师背景，专攻微服务。</span></p>
+<p class="translated">我设计无头架构并构建企业应用程序。在我的网站上，我使用了许多用于数据存储、CMS、电子邮件、认证、搜索的无头服务——几乎所有的服务。我也建立自己的服务。Headless允许我在不改变基于服务的中间层和后层的情况下改变底层技术(比如从Gatsby到NextJS)。</p>
+<h2 class="translated"><a id="how-did-you-get-into-education" class="anchor" href="#how-did-you-get-into-education" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>你是怎么进入教育的？</span></h2>
+<p class="translated"><span>我开始为一个非盈利组织编写代码，多年来我发现我想教授和回报社区。我也领导当地的开发小组。寻找合适的教育空间一直是一个挑战。这就是为什么我建立了我的网站，一个免费和基于订阅的在线学习平台。在某种程度上，我在弥补我在自己的科技教育中所缺失的东西。</span></p>
+<p class="translated">我的教学工具是教程、完整课程和播客。播客是一个伟大的教育和培养工具。我和我的同事与专家交谈，深入研究各种各样的技术。我们还利用播客作为指导的机会。例如，我们采访了一位现在是Google Dev倡导者的油炸厨师，以及一位已经成为非常熟练的技术教育家的高中教师。</p>
+<h2 class="translated"><a id="what-role-does-search-play-in-online-learning" class="anchor" href="#what-role-does-search-play-in-online-learning" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>搜索在在线学习中起到什么作用？</span></h2>
+<p class="translated">对我来说，搜索可能是最重要的部分。人们来到我们的平台，希望学习一些具体的东西，所以他们去我们的搜索栏找到他们的技术。就这么简单:搜索对于我们的学生如何参与我们的内容至关重要。</p>
+<p class="translated">我们提供各种各样的内容，需要一个好的搜索栏。搜索让我们的访问者接触到这种多样性，并帮助他们建立自己的学习计划。我们有:</p>
+<ul>
+<li aria-level="1" class="translated"><span> 4门完整课程，21门教程</span></li>
+<li aria-level="1" class="translated"><span> 50个播客/视频广播</span></li>
+<li aria-level="1" class="translated"><span> 38博客</span></li>
+</ul>
+<p class="translated">搜索向他们显示哪些 <i> <span>材料组合</span> </i> <span>他们可以用来继续他们的学业。这也有助于他们发现我们在每个播客末尾添加的</span> <i> <span>完美精选、</span> </i> <span>。</span></p>
+<h2 class="translated"><a id="before-getting-into-your-algolia-implementation-tell-us-more-about-your-website%e2%80%99s-tech" class="anchor" href="#before-getting-into-your-algolia-implementation-tell-us-more-about-your-website%e2%80%99s-tech" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a></h2>
+<p class="translated"><span>我开始<a href="https://codingcat.dev/"> CodingCat。Dev </a>与Angular，Hugo，然后是Gatsby，现在是Next.js。我真的发现职业需要转向React背景，而当时Gatsby没有一个很好的混合渲染要求(SSR，SSG，CSR…)的解决方案。我还听了谷歌空间内关于网络性能的一些精彩谈话，以及chrome团队如何直接与Vercel合作开发Next.js，后者最近被正式命名为Aurora。</span></p>
+<p class="translated"><span>我们使用Algolia已经5年了。在每一次技术变革中，Algolia一直是我唯一的搜索引擎。我已经测试了竞争对手，但他们无法击败搜索的速度和启动运行的简单性。构建搜索引擎不需要编码，它是100%即插即用的。</span></p>
+<p class="translated"><span>至于我们的无头服务，这里有一个完整的列表:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>燃烧基地</span></li>
+<li aria-level="1" class="translated"><span> Sanity.io </span></li>
+<li aria-level="1" class="translated"><span>阿尔戈利亚</span></li>
+<li aria-level="1" class="translated"><span>云媒体</span></li>
+<li aria-level="1" class="translated"><span> Youtube /主播</span></li>
+<li aria-level="1" class="translated"><span>social bee . io–广播和社交</span></li>
+<li aria-level="1" class="translated"><span>插入工具的jam stack</span></li>
+<li aria-level="1" class="translated"><span>发送蓝色邮件</span></li>
+<li aria-level="1" class="translated"><span>不和谐</span></li>
+</ul>
+<h2 class="translated"><a id="tell-us-about-your-algolia-search-implementation" class="anchor" href="#tell-us-about-your-algolia-search-implementation" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>给我们介绍一下你们的Algolia搜索</span> <span>实现</span></h2>
+<p class="translated"><span>我是因为火基才发现阿尔戈利亚的。我在Firebase Cloud Firestore上存储所有东西(在每个站点迭代中)。Firestore没有很好的全文搜索解决方案。当时，Firebase对此有一个解决方案，并建议使用Algolia。</span></p>
+<p class="translated"><span> Algolia非常适合我，因为我的网站需要大量的数据。Algolia有一个惊人的JavaScript库用于客户端集成。我不想花费大量的时间来设置搜索，我发现文档和预构建的React组件非常适合我要完成的任务。我研究了弹性和类型感，仍然发现Algolia是最简单的解决方案。</span></p>
+<h2 class="translated"><a id="show-us-the-code" class="anchor" href="#show-us-the-code" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>给我们看代码</span></h2>
+<p class="translated"><span> Firebase具有云功能，允许在Firestore数据库中的数据更新时“触发”。然后我可以轻松地使用<code>algoliasearch Node.js</code>。</span></p>
+<pre class="lang:javascript decode:true ">export const onPostWriteSearch = functions.firestore
+  .document('posts/{postId}')
+  .onWrite((snap, context) =&gt; {
+    console.log('Adding Data for', context.params.postId);
+    const post = snap.after.data();
+
+    if (!post) {
+      console.log('post missing data');
+      return;
+    }
+
+    if (post.type === 'lesson') {
+      console.log('post type is lesson, skipping');
+      return;
+    }
+
+    post.objectID = context.params.postId;
+
+    // Write to the algolia index
+    const index = client.initIndex(ALGOLIA_INDEX_NAME);
+    return index.saveObject(cleanTimestamp(post));
+  });
+
+export const onPostDeleteSearch = functions.firestore
+  .document('posts/{postId}')
+  .onDelete((snap, context) =&gt; {
+    // Write to the algolia index
+    console.log('Deleting Data for', context.params.postId);
+    const index = client.initIndex(ALGOLIA_INDEX_NAME);
+    return index.deleteObject(context.params.postId);
+  });
+</pre>
+<h2 class="translated"><a id="next-steps" class="anchor" href="#next-steps" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>下一步</span></h2>
+<p class="translated">谢谢你，亚历克斯，聚在一起分享你的故事！</p>
+<p class="translated"><span>采访结束后，Alex和我谈到了他的Algolia解决方案。类似于Alex对他的播客所做的，我们喜欢帮助我们的客人改进他们的搜索。随着他的业务增长，他渴望改进他的搜索功能，所以他很高兴看到他还可以用Algolia做些什么。以下是我提出的一些建议。它们包括给他的搜索结果增加更多种类(通过联合搜索)，并开始增加更多个性化的结果和浏览功能。</span></p>
+<h3 class="translated"><a id="relevance" class="anchor" href="#relevance" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>关联</span></h3>
+<p class="translated">我们深入研究了他的数据和索引配置。我们添加了新的可搜索属性，并将他的排名从“日期排序”改为“相关性排序”。然后，我们添加了一个自定义的流行度排名，并创建了一个副本，允许用户切换到“按日期排序”。</p>
+<h3 class="translated"><a id="autocomplete-federated-search" class="anchor" href="#autocomplete-federated-search" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>自动完成/联合搜索</span></h3>
+<p class="translated">Alex很惊讶地得知我们有一个前端插件，可以显示来自不同数据源的多个结果。这意味着当他的用户键入他们的查询时，他可以将他的教程、课程和播客显示为三个不同的结果集。我们的自动完成插件只需要各种索引的凭证和名称。他可以用自己的CSS来标记它，当然，他可以克隆这个库，并根据自己的需要进行定制。</p>
+<h3 class="translated"><a id="full-text-searching" class="anchor" href="#full-text-searching" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>全文搜索</span></h3>
+<p class="translated"><span>我们讨论了Algolia如何对大型文本执行全文搜索，这需要不同的索引策略。策略是将文本分成更小的块，每个块一条记录。每个组块通常是一个段落。这极大地增强了文本内搜索。我给他发了一篇关于<a href="https://www.algolia.com/developers-tech-blog/code-and-deep-dives/Building-search-for-technical-documentation-the-laravel-example">搜索大文本</a>的文章，是我们CTO写的，还有这个教程。</span></p>
+<h3 class="translated"><a id="indexing-updates" class="anchor" href="#indexing-updates" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>索引更新</span></h3>
+<p class="translated">Alex面临的一大挑战是在不影响发布日期的情况下继续动态构建他的索引。例如，现在当他有一个处于“草稿”状态的帖子，或者一个未来的“发布日期”时，他的代码不会执行更新来删除这些帖子。我们向他展示了删除或仅更新某些属性的<code>DeleteObjects</code>和<code>PartialUpdates</code>方法。解决方案的另一部分是管理Firebase事件和更新。</p>
+<pre class="lang:javascript decode:true ">// Configure this to match an existing Algolia index name
+  const algoliaIndex = algolia.initIndex(algoliaConfig.index);
+  try {
+    let result;
+    if (req.body?.deleted) {
+      // remove if doc removed
+      result = await algoliaIndex.deleteObject(req.body?.deleted);
+    } else if (req.body?.updated &amp;&amp; !publish) {
+      // remove if not published after update
+      result = await algoliaIndex.deleteObject(req.body?.updated);
+    } else if (publish) {
+      // create when in publish state
+      result = await algoliaIndex.saveObject(req.body);
+    }
+    console.log(result ? `Result: ${JSON.stringify(result)}` : 'Nothing Done.');
+    res.status(200).end();
+  } catch (error) {
+    console.log(error);
+    res.json({ message: 'Error check logs' });
+    res.status(500).end();
+  }
+</pre>
+<h3 class="translated"><a id="algolia-talksearch-app" class="anchor" href="#algolia-talksearch-app" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><span>Algolia talk search app</span></h3>
+<p class="translated"><span>又一个大赢家。由于Alex在Youtube上有很多视频和播客内容，我们建议他使用我们的TalkSearch工具，该工具可以抓取YouTube元数据及其转录或字幕，并建立一个用户可以搜索的Algolia索引。TalkSearch允许他的访问者直接进入任何视频或播客的任何时刻。他对此真的很惊讶，想马上实施。除了scraper，TalkSearch还提供了一个前端解决方案，他可以根据自己的网站进行修改。</span></p>
+<h3 class="translated"><a id="analytics-insights-recommendations-and-personalization" class="anchor" href="#analytics-insights-recommendations-and-personalization" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>分析、洞察、建议和个性化</span></h3>
+<p class="translated"><span>最后，Alex立即看到了他如何利用分析和人工智能支持的推荐和个性化。Alex可以使用分析来跟踪成功指标，改进他的内容，增加他的产品，并建立个性化的搜索/学习体验。Algolia可以为学生建立一套建议，根据他们以前的考试成绩和教育选择，建议接下来的课程或相关课程。</span></p>
+</div></div>    
+</body>
+</html>

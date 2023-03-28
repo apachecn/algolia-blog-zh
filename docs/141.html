@@ -1,0 +1,136 @@
+<html>
+<head>
+<title>Content that works everywhere — a history + future of rich text formats | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">随处可用的内容—富文本格式的历史和未来</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/content-that-works-everywhere-a-history-and-a-future-of-cross-use-rich-text-formats/#0001-01-01">https://www.algolia.com/blog/engineering/content-that-works-everywhere-a-history-and-a-future-of-cross-use-rich-text-formats/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">还记得什么时候“内容”是这样的吗？</p>
+<figure id="attachment_15371" aria-describedby="caption-attachment-15371" class="wp-caption alignnone"><img loading="lazy" class="wp-image-15371 size-full" src="../Images/cdaf04ac1fb0bb4b1ebd5a1075c39a3e.png" alt="Original form of punched card content graphic" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/06/original-content-graphic-1.png 1600w, https://blog-api.algolia.com/wp-content/uploads/2022/06/original-content-graphic-1-320x140.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/06/original-content-graphic-1-720x315.png 720w, https://blog-api.algolia.com/wp-content/uploads/2022/06/original-content-graphic-1-768x336.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/06/original-content-graphic-1-1536x672.png 1536w" sizes="(max-width: 1600px) 100vw, 1600px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/06/original-content-graphic-1.png"/><figcaption id="caption-attachment-15371" class="wp-caption-text">Generously offered under the Creative Commons Attribution 2.0 Generic license by Pete Birkinshaw on Wikimedia.</figcaption></figure>
+<p class="translated">啊，美好的旧时光。</p>
+<p class="translated">如今，“内容”往往是这样的:</p>
+<p class="translated"><img loading="lazy" class="alignnone wp-image-15373 size-full" src="../Images/af0f5d523537a91143be9f34b0d9ef46.png" alt="Modern content WAV format encoded" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/06/content-1.png 618w, https://blog-api.algolia.com/wp-content/uploads/2022/06/content-1-173x178.png 173w, https://blog-api.algolia.com/wp-content/uploads/2022/06/content-1-389x400.png 389w" sizes="(max-width: 618px) 100vw, 618px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/06/content-1.png"/></p>
+<p class="translated">科技发展到了什么程度。</p>
+<p class="translated">不要误解我的意思，这两种格式(分别是穿孔卡和WAV)各有千秋，实际上都相当擅长各自的任务。但事实是，几十年来，我们一直在寻找一种包含所有类型“内容”的单一格式。我们还没有完全失败——已经做了许多尝试，都取得了不同程度的成功——但我们也没有完全实现全垒打。</p>
+<p class="translated">这方面的大多数尝试(适当地)将范围缩小到富文本。毕竟，如果我们能创造出只适用于富文本的更好的东西，那么放弃对视频等明显不同类型的内容的支持是合理的。</p>
+<p class="translated">因此，在本文中，我将深入研究过去跨平台、全功能富文本格式的三种最著名的尝试——<strong>XML、Markdown和JSON</strong>——以及解决这个问题的三种现代方法——<strong>concept、ExtraMark和Sanity的结构化内容</strong>。</p>
+<h2 class="translated"><a id="xml" class="anchor" href="#xml" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> XML</h2>
+<p class="translated">当XML被创建时，它被迫回答这个问题:“我们存储的是什么？”。类似于HTML的格式对这个问题有一个明确的答案(在它的例子中，就是网站布局)。XML的回答几乎是“你想要的任何东西”，因此缩写为eXtensible。</p>
+<p class="translated">有时候，这可能是一件好事。例如，新闻行业使用一个名为<a href="https://en.wikipedia.org/wiki/News_Industry_Text_Format"> NITF </a>的规范来格式化提要，其他工具可以将提要合并到跨期刊的文章集合中，如谷歌新闻。这是唯一可能的，因为XML允许NITF的创建者选择他们想包含的任何标签。</p>
+<p class="translated">这种可扩展性有时也是一件坏事。这种格式缺乏特异性，意味着学习XML实际上并没有教会你如何使用它。您仍然需要担心规范的细节，因为这将告诉您如何实际访问存储在XML中的数据。</p>
+<p class="translated">这种可扩展性也使XML文件变得不必要的长！假设我想为我的内容创建一个标题。在XML中，我需要任意定义<heading>元素，或者我喜欢称它为什么，并确保该元素的存在对于稍后阅读该数据的任何人都是清楚的。这通常是通过文档类型定义来完成的。然后，我们必须以某种方式传达这些信息的含义，因为除了不言自明的元素标题之外，元素并没有告诉我们太多。标题到底是什么？两个不同的人阅读这些数据可能会对<heading>有不同的解读。所有这些占用了大量空间——太冗长了，以至于后来的努力最终走向了相反的极端。</heading></heading></p>
+<h2 class="translated"><a id="markdown" class="anchor" href="#markdown" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>降价销售</h2>
+<p class="translated">Markdown的创建者看到了在XML中定义像标题这样简单的东西的混乱，认为这很荒谬，于是想出了这个:</p>
+<pre><code class="language-markdown">#&#13;
+</code></pre>
+<p class="translated">我认为这是相反的极端。</p>
+<p class="translated">包裹在那个小小的标签中(英镑符号？只是哈希？夏普？奥克托索普？)是最高阶标题的整个概念。它假定标题所针对的内容的主题是不相关的，因此不需要为<articletitle>、<productname>或<companyname>设置不同的标记。最高级标题的单个标记就可以了。</companyname></productname></articletitle></p>
+<p class="translated">这导致了与XML相反的问题！XML的灵活性大放异彩，而Markdown却没有。事实上，当你想存储一个可以通过你的网站销售的产品时，在你的数据库中有一个名为<code>heading</code>的字段似乎是不必要的。不，你可能希望它更具描述性，特别是因为你的产品名称有时会显示为标题，有时会显示为列表项，有时会显示为纯文本。所以最后，虽然Markdown通过迎合实际的网站布局设计使Web上的展示变得更容易，但它实际上并没有有效地标记它存储的信息，而这正是富文本格式的首要目的。这在某些用例中很方便，但在几乎所有其他用例中却毫无意义。</p>
+<p class="translated">但是，即使在预期的地方使用降价也有一两个问题。例如，你会期望如果它要在网页设计中表现元素，它会全力以赴。然而，Markdown在HTML中表示富文本的很大一部分可能方式上并没有类似的方法。除此之外，技术上没有一个单一的降价标准，这一难题也是<em>和</em>实现的功能有点悬而未决。积极的一面是，这很容易解决！在回到最近的修复尝试之前，让我们先确定一下这个问题。</p>
+<h2 class="translated"><a id="json" class="anchor" href="#json" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> JSON</h2>
+<p class="translated">2001年，一名开发人员决定序列化一个JavaScript对象，这样它就可以作为一个只能发送字符串的协议(如HTTP)中的有效载荷发送。因为它为人所熟悉(最初是JavaScript的子集)，而且是跨环境的(几乎每种语言都有驱动程序)，JSON很快成为领先的数据传输格式之一。因为它可以存储和传输几乎任何东西，不久人们就开始尝试用它来处理富文本。</p>
+<p class="translated">但到目前为止，这篇文章的主题似乎是反复出现的:有一个致命的缺陷。我们又回到了XML的无限可扩展性，所以我们又回到了学习这种格式并没有教会我们如何使用它的地方。JSON中的属性比XML中的更清楚一点(这是我非常主观的观点，但是考虑到它们的相对普及性，我可以说很多人都同意我的观点)，所以甚至一些对象描述的块的“内容”也是属性。这听起来可能有点令人困惑，但这里有一个例子:</p>
+<p class="translated"><strong> XML </strong></p>
+<pre><code class="language-xml">&#13;
+&lt;product-description&#13;
+	sold-out="true"&#13;
+&gt;&#13;
+	This is the product description.&#13;
+&lt;/product-description&gt;&#13;
+</code></pre>
+<p class="translated"><strong> JSON </strong></p>
+<pre><code class="language-json">&#13;
+{&#13;
+	"product-description": {&#13;
+		"sold-out": true,&#13;
+		"content": "This is the product description."&#13;
+	}&#13;
+}&#13;
+</code></pre>
+<p class="translated">为了进行比较，XML示例使用了两种不同类型的存储数据(为了演示而分开，而不是因为这是最佳实践)。您可以将简单数据存储为父元素本身的属性，或者存储为该父元素的子节点。何时使用这些方法可能会有点混乱，尤其是如果您不知道使用这些XML的程序的最终开发方向。另一方面，JSON示例平等地对待所有属性。它们可以是字符串、布尔值、数字、<code>null</code>、数组或子对象，所有这些都是大多数开发人员熟悉的数据类型。为了格式的原因，我们不需要把它们都像字符串一样对待(参见XML示例中的<code>sold-out</code>)。</p>
+<p class="translated">我个人是JSON的粉丝，不是因为某种客观的标准，而是因为我是一名JavaScript开发人员，使用起来感觉很好。有趣的是，JSON似乎是存储富文本最常见的方式之一。虽然脱机文档仍然需要格式(想想DOCX，一种用于Microsoft Word的XML规范)，但今天创建的绝大多数文档都是为了在万维网上公开共享，我们通常使用支持JavaScript的浏览器访问万维网。所以XML确实有一席之地，但是有一个越来越大的争论，因为富文本主要是为浏览器准备的，所以JSON是一种跨环境(不是HTML)的原生格式来存储它，正如我们将要发现的那样。</p>
+<h2 class="translated"><a id="notion" class="anchor" href="#notion" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>观念</h2>
+<p class="translated">我们已经谈了很多关于过去的尝试——让我们谈一谈现在和未来。我最初的想法是(看我在那里做了什么？)在检查了我自己的工作流程以及它是如何从技术作者多年前使用的工作流程发展而来之后，写了这样一篇文章。我发现最大的改进是<a href="https://www.notion.so/">概念</a>，我用来写这些文章的笔记应用。我深入研究了organization的API，想弄清楚他们是如何存储我现在正在写的富文本内容的。看看当我查询这个部分的标题时，我得到了什么:</p>
+<pre><code class="language-json">{&#13;
+	"object": "list",&#13;
+	"results": [&#13;
+		{&#13;
+			"object": "block",&#13;
+			"id": "00000000-this-long-uuid-000000000000",&#13;
+			"created_time": "2022-05-24T02:55:00.000Z",&#13;
+			"last_edited_time": "2022-05-24T02:55:00.000Z",&#13;
+			"created_by": {&#13;
+				"object": "user",&#13;
+				"id": "0another-very-long-uuid-000000000000"&#13;
+			},&#13;
+			"last_edited_by": {&#13;
+				"object": "user",&#13;
+				"id": "0another-very-long-uuid-000000000000"&#13;
+			},&#13;
+			"has_children": false,&#13;
+			"archived": false,&#13;
+			"type": "heading_2",&#13;
+			"heading_2": {&#13;
+				"rich_text": [&#13;
+					{&#13;
+						"type": "text",&#13;
+						"text": {&#13;
+							"content": "Notion",&#13;
+							"link": null&#13;
+						},&#13;
+						"annotations": {&#13;
+							"bold": false,&#13;
+							"italic": false,&#13;
+							"strikethrough": false,&#13;
+							"underline": false,&#13;
+							"code": false,&#13;
+							"color": "default"&#13;
+						},&#13;
+						"plain_text": "Notion",&#13;
+						"href": null&#13;
+					}&#13;
+				],&#13;
+				"color": "default"&#13;
+			}&#13;
+		}&#13;
+	],&#13;
+	"next_cursor": null,&#13;
+	"has_more": false&#13;
+}&#13;
+</code></pre>
+<p class="translated">好吧，所以肯定是JSON。</p>
+<p class="translated">问题是，他们如何使用底层技术来匹配用例？嗯，我注意到几件事:</p>
+<ol>
+<li class="translated">每个数据对象都用一个UUID来标识。诸如块的实际内容之类的东西并不重要——我说的是离散的对象，如块本身、用户、页面等。仅这一点就消除了在JSON中构建复杂数据结构的最大缺点之一，即允许您引用其他对象而不重复它们的内容。它仅次于GraphQL这样的查询语言。那么<a href="https://notionql.com"> NotionQL </a>的存在是多么的方便。</li>
+<li class="translated">也许这是一件小事，但我喜欢的是，它们不只是在<code>annotations</code>属性中有一个列出一些注释选项的字符串，比如<code>bold-underline-italic</code>。JSON继承了JavaScript简单、易于理解的布尔值，因此，创建一个<code>annotations</code>对象的选项，每个注释选项都是它自己的布尔值。这意味着他们不必担心注释给出的顺序，也不必担心未来的更改(例如，添加上标注释选项)会破坏一切。</li>
+<li class="translated">XML的一个好处是它需要标记名！很容易掩盖这一点，但是这些标签名称有助于定义每个元素实际上<em>是什么</em>。这里的概念已经确保了他们的JSON对象不是未标记的。它们实际上在每个离散对象上有一个一致的属性(见这个列表的#1)，叫做<code>object</code>，它告诉你你实际上正在读取的对象<em>是什么</em>。第5行告诉你“你正在阅读关于一个内容块的信息”，第10行告诉你“你现在正在看一个代表用户的对象”。在XML中，这些将是&lt;块&gt;和&lt;用户&gt;标签，所以非常清楚——但是这种简单模式的一致应用给了JSON同样的优势。</li>
+</ol>
+<p class="translated">凭借这些优势，concept创建了一个系统，其他工具可以很好地采用它，甚至可以对其进行扩展，直到它成为一个完整的规范！我正在努力寻找任何“不合逻辑”的部分，即使我个人可以看到采取不同方法的好处。例如，concept在JSON上进行了扩展——考虑到程序基于块的特性，这是一个恰当的决定——但他们仍然将Markdown作为输入和输出，因此他们仍然受到Markdown所能支持的内容的限制。我个人使用了很多切换列表和并排元素，它们在Markdown中都不受支持，但在concept中却受支持。无论如何，观念已经建立了一个优秀的系统，我真的很兴奋看到它的发展。</p>
+<h2 class="translated">额外标记</h2>
+<p class="translated">让我们取出之前放在Markdown中的大头针——概括一下，我只是抱怨Markdown专门用于表示web上的富文本，但没有足够的标记来表示web上所有类型的富文本，这限制了它的预期用途。但是，当我们添加一些缺失的元素时，情况会大大改善。web上的Markdown的有用性没有改变，但是一些新的Markdown风格可以使它完美地直接映射到HTML富文本。</p>
+<p class="translated">就拿<a href="https://github.com/vimtaai/extramark"> ExtraMark </a>来说吧。这是CommonMark 的超集，common mark是最受欢迎和公认的减价风格之一。但ExtraMark更进一步，开始添加其他非常有用的功能。以下是他们的GitHub自述文件列表:</p>
+<ul>
+<li class="translated">自动排版替换</li>
+<li class="translated">桌子</li>
+<li class="translated">标题锚(直到标题级别3)</li>
+<li class="translated">定义列表</li>
+<li class="translated">上标</li>
+<li class="translated">下标</li>
+<li class="translated">缩写</li>
+<li class="translated">脚注</li>
+<li class="translated">评论家标记</li>
+</ul>
+<p class="translated">太神奇了。我记不清有多少次——尽管我个人很讨厌和桌子打交道——我在谷歌上搜索如何用Markdown做一个，却发现自己被卡住了。现在，有可能了！定义列表是另一个应该经常使用的特性(它在语义上很有价值，只是有点晦涩)，现在它也可以用在Markdown中了！</p>
+<p class="translated">不过，我应该给最后一句话加个脚注。从技术上讲，我们可以在Markdown中使用脚注和下标，但是无论是解析还是显示Markdown都需要支持ExtraMark，实际上我从来没有听说过这样的实现。这个回购有4颗GitHub星——它不是一个常用的工具。这是一种耻辱！ExtraMark是我所见过的最符合逻辑，但仍然是最强大的降价建议规范！因为它完全兼容CommonMark，如果你的下一个项目需要Markdown解析器，我推荐选择这个！到目前为止，您编写的所有内容仍然可以工作，但是现在您已经可以轻松使用所有这些功能了。</p>
+<h2 class="translated"><a id="structured-content" class="anchor" href="#structured-content" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>结构化内容</h2>
+<p class="translated">现在让我们跳回JSON我个人认为只有一种格式超越了concept。我想向您介绍一下<a href="https://www.sanity.io/structured-content"> Sanity的结构化内容</a>。</p>
+<p class="translated">虽然it <em>不是</em>使用结构化内容所必需的，但它与他们的数据存储平台有足够紧密的联系，是一种可选的好处，而不是强制性的负担。如果您需要某个地方来存储您在结构化内容中传输的数据，您可以明智地将它放在那里，因为您知道他们会为您处理格式和一切。</p>
+<p class="translated">结构化内容不仅仅包括丰富的文本！它内置了结构化内容的工具(顾名思义)——您的内容所遵循的模型与其他所有内容一起存在！您可以存储逻辑和自定义算法，以便在需要时修改数据(注意，虽然这听起来很疯狂，但这一部分实际上在富文本中很常见——想想动态修改HTML的JavaScript，或者PowerPoint中那些愚蠢的可编程动画)，您可以轻松地在外部服务中循环(也不是没有听说过——在Markdown中甚至有这方面的变通办法),图像在显示时会自动自定义(这总是可能的，但以前需要外部服务——Sanity将它融入到您的富文本中)。</p>
+<p class="translated">最好的部分(在我看来)是您可以严格地使用富文本规范，而不需要所有的健全性特定的特性(大部分逻辑实际上在那里运行)。该规范本身被称为<a href="https://github.com/portabletext/portabletext">可移植文本</a>，它得到了由Sanity团队开发的驱动程序和解析器的良好支持。他们花了很大力气才没有把你锁定在他们的平台上。截至2022年5月，他们已经有了以可移植文本为输入，吐出<a href="https://github.com/portabletext/to-html/">纯HTML </a>、<a href="https://www.npmjs.com/package/%40sanity/block-content-to-markdown"> Markdown </a>、<a href="https://www.npmjs.com/package/sanity-blocks-vue-component"> Vue组件</a>、<a href="https://github.com/portabletext/react-portabletext"> React组件</a>、<a href="https://github.com/portabletext/svelte-portabletext/"> Svelte组件</a>、<a href="https://www.npmjs.com/package/%40sanity/block-content-to-hyperscript"> Hyperscript </a>的公开库(我到现在还没看到这个，但看起来很神奇)。如果你正在使用其他编程语言，他们也已经把你包括在内了——不是说我想再使用PHP，但是如果我想，至少我会很欣慰知道我可以使用可移植文本。</p>
+<h2 class="translated"><a id="looking-back" class="anchor" href="#looking-back" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>回首往事</h2>
+<p class="translated">这是一篇相当深入的文章。我已经写了将近三千字，但我认为我们花得很值；深入研究富文本格式的历史是一个有用的练习，因为它有助于我们理解任何未解决的问题或缺点，以便我们能够改进它。</p>
+<p class="translated">实际上，我们中的许多人可能不会参与创建未来的富文本规范之一，但是很有可能，我们必须选择一个来使用，我们在这里回顾的粗略理解将有助于做出这些决定。也许普通的XML、Markdown和JSON正在逐渐消失，但是在下一个项目中，您将使用什么格式来传递富文本呢？如果你想听我的建议——你已经读到这里了，为什么不呢——如果你打算走降价路线，就去找ExtraMark，或者找便携文本。</p>
+<p class="translated">感谢你的阅读，我期待看到你创造的东西。</p>
+</div></div>    
+</body>
+</html>

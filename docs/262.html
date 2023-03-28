@@ -1,0 +1,151 @@
+<html>
+<head>
+<title>Creating search relevance for ecommerce and media with great content - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">为内容丰富的电子商务和媒体创建搜索相关性- Algolia博客</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/product/creating-great-search-relevance-for-ecommerce-and-media/#0001-01-01">https://www.algolia.com/blog/product/creating-great-search-relevance-for-ecommerce-and-media/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">我们继续我们的搜索相关性系列。我们的第一篇文章 <a href="https://www.algolia.com/blog/product/what-is-search-relevance-in-the-era-of-browsing-discovery-and-recommendations/"> <span>定义了相关性</span> </a> <span>，描述了一个</span> <b>相关性循环</b> <span>，该循环从</span> <i> <span>搜索</span> </i> <span>(即查找和订购项目)开始，并继续高级</span> <i> <span>浏览</span> </i> <span>和</span> <i> <span>发现</span> </i> <span>策略，如商品销售、内容管理、个性化</span></p>
+<p class="translated">在本文中，我们主要关注循环的第一部分，搜索。我们浏览了一些真实的例子，并搜索了创建生产级相关性的配置策略。我们分解并优化搜索相关性的两大支柱:</p>
+<ul>
+<li aria-level="1" class="translated"><b>文本相关性</b><span>–</span><i><span>查找与查询</span>匹配的 </i> <span>项</span></li>
+<li aria-level="1" class="translated"><b>排名</b><span>–</span><i><span>排序</span> </i> <span>所找到的商品中哪些</span> <span>商品最符合查询</span></li>
+</ul>
+<p class="translated"><span>首先，我们将展示这些支柱在很大程度上取决于您如何</span> <b>构建和配置您的数据</b> <span>。为了说明这一点，我们将描述一些基础知识:</span> <b>可搜索属性</b> <span>、</span> <b>分面</b> <span>和</span> <b>自定义排名</b><span>——这些术语我们将在后面定义。</span></p>
+<p class="translated"><span>我们将讨论重要的配置，如</span> <b>同义词</b> <span>、</span> <b>语言</b> <span>、</span> <b>错别字设置</b> <span>。最后，我们将展示</span> <b>分析</b> <span>和</span> <b>的重要性，测试您最重要的查询</b> <span>以查看它们是否返回所需的搜索结果。</span></p>
+<h2 class="translated"><a id="matching-words-to-content" class="anchor" href="#matching-words-to-content" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>匹配单词到内容</span></h2>
+<p class="translated"><span>我们说的“相关性”，往往是指“</span> <i> <span>文本</span> </i> <span>相关性”，是指搜索引擎如何将一个查询的词与你的底层数据(搜索索引)进行比较，返回匹配结果。</span></p>
+<p class="translated">有两个相关的问题要问:</p>
+<ul>
+<li aria-level="1" class="translated"><span>内容中的条目与查询中的词匹配吗？</span></li>
+<li aria-level="1" class="translated">如果是，这是一场强有力的比赛还是弱有力的比赛？ <i> <span>最佳</span> </i> <span>匹配是</span> <i> <span>最强</span> </i> <span>匹配。</span></li>
+</ul>
+<p class="translated"><span>为了说明我们所说的找到弱匹配和强匹配是什么意思，想象一个使用最简单的相关性形式的搜索，即</span> <i> <span>逐字母比较</span> </i> <span>。</span></p>
+<p class="translated"><span>这里有四个著名的引语(我们已经在<a href="https://www.algolia.com/blog/product/what-is-search-relevance-in-the-era-of-browsing-discovery-and-recommendations/">第一部分</a>中讨论过了，但角度略有不同)</span></p>
+<ol>
+<li aria-level="1" class="translated"><span>“要</span><b/><span>还是不要:</span> <b>那</b> <span>就是这个问题了”(作者威廉·莎士比亚)</span></li>
+<li aria-level="1" class="translated"><span>“那是</span> <b>成为</b> <span>的第一个时代，那是最坏的时代”(作者查尔斯·狄更斯)</span></li>
+<li aria-level="1" class="translated"><span>“不要问你的国家能为你做什么——问你能为你的国家做什么”(美国总统约翰·肯尼迪)</span></li>
+<li aria-level="1" class="translated"><span>“很长一段时间我习惯去</span> <b>做</b><span>【d早】(作者马赛尔·普鲁斯特)</span></li>
+</ol>
+<p class="translated"><span>文本匹配可以是精确的，也可以是部分的。搜索"</span><b>be</b><span>"</span><span>匹配3条记录的文本:记录1 (" </span> <b> be </b> <span>")，记录2 (" </span> <b> be </b> <span> st ")，记录4 (" </span> <b> be </b> <span> d)。在本例中，记录1是最强的，因为它是完全匹配的，而记录2和4较弱，因为它们只是部分匹配。</span></p>
+<p class="translated"><span>继续这个例子，如果我们允许1个单词的错别字，那么搜索“</span> <b> that </b> <span>”将找到记录1和3，其中记录1(“</span><b>that</b><span>”)比记录3(“</span><b>w</b><span>hat”)强，这与查询相差1个字母。</span></p>
+<h2 class="translated"><a id="matching-intent" class="anchor" href="#matching-intent" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>匹配</span> <i> <span>意图</span> </i></h2>
+<p class="translated">如果只是这么简单的话……事实是，搜索人员的要求远不止这些。搜索不仅仅是匹配文本。他们希望他们的结果感觉直观。这里有一些额外的问题要问:</p>
+<ul>
+<li aria-level="1" class="translated">我应该以什么顺序显示这些记录？</li>
+<li aria-level="1" class="translated"><span>“最好”这个词应该回归什么？只记录2(</span><b>最好</b> <span>的次数)？但是，如果用户一直在寻找“最佳”的</span> <i> <span>创意</span></i><span>=比如，最佳报价，会怎么样呢？</span></li>
+<li aria-level="1" class="translated">创造一个“最好”的同义词，比如“最伟大”怎么样？</li>
+</ul>
+<ul>
+<li aria-level="1" class="translated">查询“question”(“question”输入错误)应该返回记录1吗？</li>
+<li aria-level="1" class="translated"><span>如果有人只寻找“文学名言”(记录1，2，4)呢？</span></li>
+<li aria-level="1" class="translated"><span>如果我只想查找从法语翻译过来的引文(记录4)，该怎么办？</span></li>
+</ul>
+<p class="translated"><span>为了帮助实现这一点，我们需要考虑内容/数据的质量以及如何最好地配置它。</span></p>
+<p class="translated"><span>内容，或</span> <b>数据</b> <span>，需要包含更多的细节。这里有一个更新的数据集:</span></p>
+<ol>
+<li aria-level="1" class="translated"><span>《生存还是毁灭:这是个问题》，莎士比亚，英国，哈姆雷特，戏剧，引文</span></li>
+<li aria-level="1" class="translated"><span>《这是最好的时代，这是最坏的时代》，狄更斯，英国，《双城记》，小说</span></li>
+<li aria-level="1" class="translated"><span>“不要问你的国家要求你什么——问你能为你的国家做些什么”，肯尼迪，美国，演讲，政治</span></li>
+<li aria-level="1" class="translated"><span>“很长一段时间我习惯早睡”，普鲁斯特，法语，寻找逝去的时光/ a la recherche du temps perdu，小说</span></li>
+</ol>
+<p class="translated"><span>有了这么多数据，还有一步:引擎需要</span> <b>配置</b> <span>。我们会添加一些同义词。同义词不是数据的一部分，而是引擎设置的一部分。让我们加上“最好=最伟大”。我们还将配置引擎来匹配单数和复数形式(book = books ),并告诉它容忍打字错误和拼写错误。正如我们稍后将讨论的那样，还可以进行其他配置。</span></p>
+<h2 class="translated"><a id="rolling-up-our-sleeves-%e2%80%93-let%e2%80%99s-create-an-optimized-set-of-searchable-data" class="anchor" href="#rolling-up-our-sleeves-%e2%80%93-let%e2%80%99s-create-an-optimized-set-of-searchable-data" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>卷起袖子，让我们创建一组优化的可搜索数据</span></h2>
+<p class="translated">上面的引文被用来说明我们所说的相关性。现在让我们来看一个典型的媒体/电子商务例子:一系列书籍(用于购买或流媒体播放)。</p>
+<p class="translated"><span>在这里，我们可以设想书的信息(即属性)如下:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>标题</span></li>
+<li aria-level="1" class="translated"><span>描述</span></li>
+<li aria-level="1" class="translated"><span>作者</span></li>
+<li aria-level="1" class="translated"><span>流派</span></li>
+<li aria-level="1" class="translated"><span>封面图片</span></li>
+<li aria-level="1" class="translated"><span>人气</span></li>
+</ul>
+<p class="translated">要搜索，我们不需要使用“封面图片”、“价格”或“人气”。我们现在也将忽略“描述”。其他字段(“标题”、“作者”、“流派”)将用于查找图书。这种只选择部分属性的过程有助于引擎聚焦于 <a href="https://www.algolia.com/doc/guides/managing-results/must-do/searchable-attributes/"> <span> <em>可搜索</em>属性</span> </a> <span>，使你的信息更加精确，保证相关搜索结果。</span></p>
+<ul>
+<li class="translated"><b>标题(可搜索)</b></li>
+<li class="translated"><span>描述</span></li>
+<li class="translated"><b>作者(可搜索)</b></li>
+<li class="translated"><b>流派(可搜索)</b></li>
+<li class="translated"><span>价格</span></li>
+<li class="translated"><span>封面图片</span></li>
+<li class="translated"><span>人气</span></li>
+</ul>
+<p class="translated"><span>其他字段用于其他目的。例如，用于在搜索结果中显示(“价格”、“图像”)和按(“人气”、“价格”)排序。</span></p>
+<h2 class="translated"><a id="ordering-by-relevance-known-as-ranking" class="anchor" href="#ordering-by-relevance-known-as-ranking" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>按相关性排序，称为排名</span></h2>
+<p class="translated"><span/><i><span>排序</span> </i> <span>对你的可搜索信息同样重要。我们称之为相关性排名。例如，如果您键入“king”来查找斯蒂芬·金写的书籍，您可能会在看到斯蒂芬·金书籍之前看到“标题”中带有“King”一词的书籍。要解决这个问题，你需要将你的属性按以下顺序排列(例如，“作者”在“标题”之上，让搜索引擎首先搜索作者):</span></p>
+<ul>
+<li class="translated"><b>作者</b></li>
+<li class="translated"><b>标题</b></li>
+<li class="translated"><b>流派</b></li>
+<li class="translated"><span>描述</span></li>
+<li class="translated"><span>价格</span></li>
+<li class="translated"><span>封面图片</span></li>
+<li class="translated"><span>人气</span></li>
+</ul>
+<p class="translated"><span>还可以在顶部加上“流派”，这样《王者恐怖》会保证有好的效果。</span></p>
+<ul>
+<li class="translated"><b>流派</b></li>
+<li class="translated"><b>标题</b></li>
+<li class="translated"><b>作者</b></li>
+<li class="translated"><span>描述</span></li>
+<li class="translated"><span>价格</span></li>
+<li class="translated"><span>封面图片</span></li>
+<li class="translated"><span>人气</span></li>
+</ul>
+<p class="translated">这里的要点是你可以选择搜索内容的优先级。这是一项重要的业务定制，是每个书商的独特选择。</p>
+<p class="translated"><span>为了提高匹配度，我们添加“描述”作为后备。然而，我们需要小心。像“描述”这样的长属性可能会产生噪音，并在相关性方面产生误报。这样的属性通常包含太多的简单匹配。在这种情况下，您可以创建一个“简短描述”属性，该属性从“描述”中提取关键字的子集。</span></p>
+<ul>
+<li class="translated"><b>流派</b></li>
+<li class="translated"><b>标题</b></li>
+<li class="translated"><b>作者</b></li>
+<li class="translated"><b>简短描述</b></li>
+<li class="translated"><span>价格</span></li>
+<li class="translated"><span>封面图片</span></li>
+<li class="translated"><span>人气</span></li>
+</ul>
+<p class="translated">最后，让我们确保可以在字段的开头或中间搜索“标题”、“作者”和“简短描述”。这使得寻找“和平”能够找到“战争与和平”，即使“和平”不是标题中的第一个词。这对每个属性都不好，比如“流派”。我们用一个特殊的词“ <b>(无序)</b> <span>”来完成这一点。</span></p>
+<ul>
+<li class="translated"><b>流派</b></li>
+<li class="translated"><b>标题(无序)</b></li>
+<li class="translated"><b>作者(无序)</b></li>
+<li class="translated"><b>简短描述(未订购)</b></li>
+<li class="translated"><span>价格</span></li>
+<li class="translated"><span>封面图片</span></li>
+<li class="translated"><span>人气</span></li>
+</ul>
+<h2 class="translated"><a id="creating-order-with-custom-ranking" class="anchor" href="#creating-order-with-custom-ranking" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>用自定义排名创建订单</span></h2>
+<p class="translated"><span>这里我们重点关注属性“人气”。我们只需要告诉引擎使用“流行度”来帮助排序记录。</span></p>
+<ul>
+<li class="translated"><span>流派</span></li>
+<li class="translated"><span>标题(未排序)</span></li>
+<li class="translated"><span>作者(无序)</span></li>
+<li class="translated"><span>简短描述(未订购)</span></li>
+<li class="translated"><span>价格</span></li>
+<li class="translated"><span>封面图片</span></li>
+<li aria-level="1" class="translated"><b>人气</b></li>
+</ul>
+<p class="translated">这个<a href="https://www.algolia.com/doc/guides/managing-results/must-do/custom-ranking/"> <i>自定义</i>排名</a>的想法需要一些上下文。当用户搜索“king”时，所有在可搜索属性中包含单词“king”的记录都会显示出来。将“作者”作为一个字段当然会确保这一点(关于斯蒂芬·金)。<br/>T48】</p>
+<p class="translated">问题是:斯蒂芬·金的哪本书应该排在榜首？哪一秒？这就是受欢迎的原因。没有办法知道先显示哪个，因为它们都匹配得一样好，所以我们可以按受欢迎程度排序。我们也可以订购最新的版本。</p>
+<p class="translated">现在，如果有一个你想让你的用户知道的未知作者呢？您可以添加另一个自定义属性，如promote-book(真或假),或者一个评分系统(1到5，1对向用户显示非常重要)。其他自定义排名属性:最高利润或最流行。或者两种或多种属性的组合。</p>
+<p class="translated">我们将这一过程描述为平局决胜，我们比较匹配项，将最强的匹配项放在顶部，较弱的匹配项放在较低的位置。例如，如果有人键入“ki”，与“ki”完全匹配的作者(例如，<i><span>【Ki Lynn】</span></i><span>)将比仅部分匹配的作者显示得更高。但如果用户加上“ng”，使其成为“王”，Ki Lynn下降(作为</span>  <span>精确匹配中的</span> <i> <span>)而Stephen King上升到顶部。此外，由于流行度是一个自定义排名，斯蒂芬·金很可能会填满搜索结果的前10页。(有办法避免这最后一个事实——一个受欢迎的作者可以在搜索结果中独占鳌头。例如，您可以将斯蒂芬·金限制为只有3个结果。)</span></i></p>
+<h2 class="translated"><a id="optimizing-relevance-even-further-with-synonyms-typo-tolerance-filters-analytics" class="anchor" href="#optimizing-relevance-even-further-with-synonyms-typo-tolerance-filters-analytics" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>利用同义词、错别字容差、过滤器、分析进一步优化相关性</span></h2>
+<p class="translated"><span>现在你的数据可以搜索了，排名也合适了。搜索引擎不需要知道更多关于你的数据。您已经构建了它，并通过指定如何搜索赋予了它意义。我们可以做更多的事情来管理某些特定的情况，但是我们所做的事情在很大程度上已经足够了。但是我们可以更进一步，创建同义词和方面(即过滤器)。</span></p>
+<h3 class="translated"><a id="adding-synonyms" class="anchor" href="#adding-synonyms" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>添加同义词</b></h3>
+<p class="translated"><span>每个顾客都有一套独特的词，可以通过创造</span> <a href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/adding-synonyms/"> <span>同义词</span> </a> <span>来满足。就书而言，有一个词“小说”是“书”的同义词。有剧院和戏剧，有作者和作家，还有诸如“椅子”和“座位”，或“裤子”、“宽松裤”和“裤子”等世俗的同义词。很多相关的同义词可以来源于一本字典，但其他的则非常具体到一个行业或一家公司。他们也可以</span> <a href="https://www.algolia.com/doc/guides/algolia-ai/dynamic-synonym-suggestions/"> <span> AI-power你的同义词</span> </a> <span>。</span></p>
+<h3 class="translated"><a id="adding-filters" class="anchor" href="#adding-filters" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>添加滤镜</b></h3>
+<p class="translated"><span>已经提到过，对于书籍，添加“流派”和“作者”这样的属性有助于用户根据这些和其他过滤器挖掘和挑选出书籍。</span> <a href="https://www.algolia.com/doc/guides/managing-results/refine-results/filtering/"> <span>滤镜</span> </a> <span>可以在后台工作，也可以放在屏幕上作为</span> <a href="https://www.algolia.com/doc/guides/managing-results/refine-results/faceting/"> <span>面</span> </a> <span>。</span></p>
+<p class="translated"><b>错别字&amp;拼写错误</b></p>
+<p class="translated">你的搜索引擎应该能够找到只有一两个字母不同的单词。然而，打错“shakspear”应该找到“shakespear”。这叫做<a href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/typo-tolerance/"><span/></a><span>。</span></p>
+<h3 class="translated"><a id="language-settings" class="anchor" href="#language-settings" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>语言设置</b></h3>
+<p class="translated"><span>将您搜索解决方案的</span> <a href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/"> <span>语言</span> </a> <span>设置为您用户的母语。如果你只卖英文书，你需要告诉搜索引擎你的用户将用英语打字。然后，搜索引擎可以应用特定于语言的逻辑(例如确定复数或单词分离)。但是，如果您的读者也是法国人，您可能希望开始向数据中添加法语文本，或者创建一组不同的数据—一个英语，另一个法语..</span></p>
+<p class="translated">你会希望搜索引擎区分单数和复数，不要被“the”、“what”和“And”这样的“stop”词所困扰。</p>
+<h3 class="translated"><a id="analytics-and-testing" class="anchor" href="#analytics-and-testing" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>分析和测试</b></h3>
+<p class="translated"><span>最后，</span> <a href="https://www.algolia.com/doc/guides/getting-analytics/search-analytics/out-of-the-box-analytics/"> <span>分析学</span> </a> <span>。您希望跟踪输入最多的前10个查询。然后，测试这10大查询和其他分析指标，看看您对结果是否满意。还有，避免提供</span> <a href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/empty-or-insufficient-results/"> <span>没有结果</span> </a> <span>。查看您的热门搜索是没有返回结果，还是只返回少量结果。并跟踪</span> <a href="https://www.algolia.com/doc/guides/getting-analytics/search-analytics/advanced-analytics/"> <span>用户点击量和</span> </a> <span>。</span></p>
+<p class="translated"><span>最后，用你所有的</span> <a href="https://www.algolia.com/doc/guides/getting-analytics/search-analytics/understand-reports/"> <span>分析报告</span> </a> <span>，以及</span> <a href="https://www.algolia.com/doc/guides/ab-testing/what-is-ab-testing/"> <span> AB测试</span> </a> <span>，来分析提升你的搜索性能。</span></p>
+<h2 class="translated"><a id="conclusion-going-beyond-search" class="anchor" href="#conclusion-going-beyond-search" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>结论——超越搜索</span></h2>
+<p class="translated">匹配文本是一个关键的起点。为此，您需要预测用户的查询和表达方式，然后组织数据以匹配最常见的查询词。正如我们所见，简单的文本匹配并不能解决所有问题。您还需要过滤、排名、属性优先级、处理错别字、同义词和其他基于语言的特征等功能，以便让搜索引擎能够从字里行间读出意思。下一步是超越搜索  <span>的</span> <a href="https://www.algolia.com/blog/ecommerce/advanced-search-experience-for-e-commerce/"> <span>，看看你如何能够</span> </a><a href="https://www.algolia.com/blog/ecommerce/the-guide-to-e-commerce-merchandising/"> <span>深化你与个性化</span> </a> <span>的关联，销售，浏览，发现和推荐。</span></p>
+</div></div>    
+</body>
+</html>

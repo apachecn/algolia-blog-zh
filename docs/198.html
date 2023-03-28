@@ -1,0 +1,340 @@
+<html>
+<head>
+<title>Integrating third-party APIs into GraphQL with Apollo Client | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">使用Apollo客户端将第三方API集成到graph QL </h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/integrating-third-party-apis-into-graphql-with-apollo-client/#0001-01-01">https://www.algolia.com/blog/engineering/integrating-third-party-apis-into-graphql-with-apollo-client/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">要将快速且功能丰富的第三方API添加到任何代码库中，开发人员需要在一个旨在包含这些自给自足的API的生态系统中工作。</p>
+<p class="translated">开发人员还需要依靠像带有Apollo Client和React的GraphQL这样的技术来帮助他们管理各种功能和数据源。</p>
+<p class="translated">在大多数情况下，GraphQL是天赐之物。作为一个灵活的数据层，它有助于集中和标准化后端和前端之间的数据交换。</p>
+<p class="translated">然而，要求所有数据交换都流经GraphQL有时会阻碍外部API发挥其作为关键功能组件的全部潜力。在我们的例子中，我们希望集成一个基于云的搜索API，它的性能远远优于GraphQL。</p>
+<p class="translated">我们在本文中解决的问题是，你如何使用一个独立的外部API，与GraphQL <span> — </span>并行，也就是说，不通过GraphQL。</p>
+<h3 class="translated"><a id="why-we-decided-to-bypass-graphql-with-apollo-client-and-how-we-achieved-interoperability" class="anchor" href="#why-we-decided-to-bypass-graphql-with-apollo-client-and-how-we-achieved-interoperability" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>为什么我们决定用Apollo客户端绕过GraphQL，以及我们如何实现互操作性</h3>
+<p class="translated">我们将本文分为两部分:</p>
+<ul>
+<li class="translated">解释为什么我们决定绕过GraphQL来允许我们的前端直接调用外部API的云服务</li>
+<li class="translated">我们用来构建外部API和GraphQL与Apollo客户端之间的互操作性的代码</li>
+</ul>
+<p class="translated">请随意跳到代码。但是背景故事可能会帮助那些面临同样问题的人:<em>如何将GraphQL与提供自己数据集的自给自足的API结合起来？</em></p>
+<h2 class="translated"><a id="why-graphql-why-an-external-search-api" class="anchor" href="#why-graphql-why-an-external-search-api" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>为什么是GraphQL？为什么是外部搜索API？</h2>
+<p class="translated">说我们的在线服务是数据密集型的是一种保守的说法。Openbase帮助开发者找到完全符合他们需求的开源库和包。他们可以使用强大的指标和用户评论来搜索和比较开源包。这些信息有很多来源，包括Github和我们自己的数据库。</p>
+<p class="translated">还有其他的担忧:</p>
+<ul>
+<li class="translated">每周下载量</li>
+<li class="translated">维护</li>
+<li class="translated">捆绑大小</li>
+<li class="translated">分门别类</li>
+</ul>
+<h3 class="translated"><a id="using-graphql-with-apollo-client" class="anchor" href="#using-graphql-with-apollo-client" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>使用GraphQL与Apollo客户端</h3>
+<p class="translated"><a href="https://openbase.com"> Openbase </a>是一个GraphQL商店。我们用<code><a href="https://openbase.com/js/@apollo/client">@apollo/client</a></code>访问数据，用<a href="https://openbase.com/js/react"> <code>React</code> </a>进行渲染。我们的许多React组件都是使用<a href="https://www.apollographql.com/docs/react/caching/cache-interaction/#readfragment"> <code>@apollo/client#readFragment</code> </a>从我们的GraphQL api引用数据构建的。这使得我们的组件与<code>@apollo/client</code>和GraphQL紧密耦合，与其他数据源的可重用性更低。</p>
+<p class="translated">示例:</p>
+<p class="translated"><code>PackageTile.tsx</code>的代码:</p>
+<pre class="lang:tsx decode:true ">import { useApolloClient } from '@apollo/client'&#13;
+import React, { FC } from 'react'&#13;
+&#13;
+// Generated using GraphQL Code Generator&#13;
+import { AlgoliaProductFragment, AlgoliaProductFragmentDoc } from '@openbase/graphql'&#13;
+&#13;
+interface PackageTileProps {&#13;
+	packageId: string&#13;
+}&#13;
+&#13;
+const PackageTile: FC&lt;PackageTileProps&gt; = ({ packageId }) =&gt; {&#13;
+	const apolloClient = useApolloClient()&#13;
+&#13;
+	const packageFragment = apolloClient.readFragment&lt;AlgoliaProductFragment&gt;({&#13;
+		fragment: AlgoliaProductFragmentDoc,&#13;
+		id: `Package:${packageId}`&#13;
+	})&#13;
+&#13;
+	return (&#13;
+		&lt;div&gt;&#13;
+			&lt;div&gt;{packageFragment.name}&lt;/div&gt;&#13;
+			&lt;div&gt;{packageFragment.description}&lt;/div&gt;&#13;
+			&lt;div&gt;{packageFragment.bundleSize.gzipSizeInBytes}&lt;/div&gt;&#13;
+		&lt;/div&gt;&#13;
+	)&#13;
+}&#13;
+</pre>
+<h3 class="translated"><a id="building-search-with-a-third-party-cloud-based-search-api" class="anchor" href="#building-search-with-a-third-party-cloud-based-search-api" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>使用第三方、基于云的搜索API构建搜索</h3>
+<p class="translated">有了这些数据，搜索对我们的业务是必不可少的。我们的开发者用户从搜索栏开始。但是他们做的不止这些<span>——</span>他们分类、过滤、浏览多个结果和分类页面，所有这些都来自外部搜索API。最重要的是，我们的产品提供评级和推荐，并允许用户个性化他们最喜欢的语言的结果。这些额外的功能大部分直接来自外部搜索API的结果，结合我们自己的数据源，可以通过GraphQL访问。</p>
+<h2 class="translated"><a id="the-two-options-for-combining-graphql-and-an-external-search-api" class="anchor" href="#the-two-options-for-combining-graphql-and-an-external-search-api" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>这两个选项用于组合GraphQL和一个外部搜索API</h2>
+<p class="translated">有两种<em>互斥的</em>方法可以将外部API集成到GraphQL前端层:</p>
+<p class="translated">1.使用前端的API作为<code>@apollo/client</code> <br/> 2旁边的辅助数据源。使用我们的GraphQL API后面的后端API，并维护一个前端数据源</p>
+<h3 class="translated"><a id="option-1-the-reason-for-bypassing-graphql" class="anchor" href="#option-1-the-reason-for-bypassing-graphql" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>选项1——绕过GraphQL的原因</h3>
+<p class="translated">由<a href="https://www.algolia.com/developers/"> Algolia </a>提供的外部搜索API<strong>快速</strong>，在用户输入时即时显示搜索结果。将Algolia放在我们的GraphQL API后面会成为搜索的瓶颈，大大降低搜索速度。</p>
+<ol>
+<li class="translated">Algolia的API显示超过300，000个请求的平均搜索速度为<strong>_ 32毫秒</strong>(在撰写本文时)</li>
+<li class="translated">我们的GraphQL API请求有时需要100-200毫秒</li>
+</ol>
+<p class="translated">相比之下，这种延迟是站不住脚的。</p>
+<p class="translated">为了获得额外的速度，这对我们的产品至关重要，我们真的需要直接调用API。</p>
+<h3 class="translated"><a id="option-2-the-reasons-to-put-the-external-api-behind-graphql" class="anchor" href="#option-2-the-reasons-to-put-the-external-api-behind-graphql" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>选项2–将外部API置于GraphQL之后的原因</h3>
+<p class="translated">对于绕过GraphQL，我们有两个顾虑:</p>
+<ul>
+<li class="translated"><strong>缓存。</strong>构建在GraphQL缓存上的现有组件不知道通过我们的搜索API检索到的记录。</li>
+<li class="translated"><strong>无图式。搜索API的记录是无模式的。它的索引是平面的，包含搜索、显示和排序所需的最小属性集。虽然对于速度、相关性和可伸缩性来说是必要的，但是一个平面的、无模式的数据集不容易与我们的GraphQL模式中的对象类型相一致，而我们的组件是建立在该模式之上的。</strong></li>
+</ul>
+<p class="translated">此外，将搜索功能放在GraphQL的后面，将搜索结果集成到前端组件中，正好可以脱离GraphQL的框架:前端只是向GraphQL发出请求，检索相同的对象类型，开发人员的体验保持一致。</p>
+<h3 class="translated"><a id="the-decision" class="anchor" href="#the-decision" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>决定</h3>
+<p class="translated">因此，我们面临以下选择:要么选择更简单的解决方案(将API插入GraphQL ),要么再努力一点，从API中获得我们期望的全部功能。</p>
+<p class="translated">我们毫不犹豫地决定为用户提供即时搜索结果。</p>
+<h2 class="translated"><a id="how-we-integrated-the-external-api-into-our-graphql-front-end-components" class="anchor" href="#how-we-integrated-the-external-api-into-our-graphql-front-end-components" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>我们如何将外部API集成到我们的GraphQL前端组件中</h2>
+<p class="translated">Algolia使用不属于GraphQL层的索引。从这一点开始，我们将引用<a href="https://www.algolia.com/doc/api-client/getting-started/what-is-the-api-client/javascript/?client=javascript"> <code>algolia</code> </a>。</p>
+<p class="translated">我们的GraphQL客户端叫做<code>@apollo/client</code>。</p>
+<p class="translated">基于以上考虑，我们引入了一个<code>algolia-to-@apollo/client</code>互操作层，这样我们就能够:</p>
+<ol>
+<li class="translated">直接在前端使用API(以保持<strong>快速</strong>)</li>
+<li class="translated">使用我们现有的针对GraphQL构建的react组件来维护与我们应用程序的其余部分一致的开发人员和用户体验</li>
+</ol>
+<p class="translated">在高层次上，互操作性是这样工作的:</p>
+<ol>
+<li class="translated">从<code>algolia-indices</code>查询记录</li>
+<li class="translated">使用自定义映射函数和从<a href="https://openbase.com/js/@graphql-codegen/cli"> <code>@graphql-codegen/cli</code> </a>生成的GraphQL片段将记录中的数据写入我们的<code>@apollo/client</code>缓存</li>
+<li class="translated">所有组件都使用GraphQL从<code>@apollo/client</code>的缓存中读取数据</li>
+</ol>
+<p class="translated">下面是我们如何建立我们的指数来实现这一点(用<code><a href="https://openbase.com/js/typescript">typescript</a></code>建立):</p>
+<p class="translated"><code>algoliaToGraphQL.tsx</code>的代码:</p>
+<pre class="lang:tsx decode:true ">import type { ObjectWithObjectID, SearchOptions, SearchResponse } from '@algolia/client-search'&#13;
+import type { RequestOptions } from '@algolia/transporter'&#13;
+import type { ApolloClient, DocumentNode } from '@apollo/client'&#13;
+import type { SearchClient, SearchIndex } from 'algoliasearch'&#13;
+&#13;
+// Narrowly type our indices for intellisense&#13;
+export type AlgoliaTypedIndex&lt;TRecord&gt; = Omit&lt;SearchIndex, 'search'&gt; &amp; {&#13;
+	search: (query: string) =&gt; Readonly&lt;Promise&lt;SearchResponse&lt;TRecord &amp; ObjectWithObjectID&gt;&gt;&gt;&#13;
+}&#13;
+&#13;
+// Define the schema for configuring the custom mappings&#13;
+export interface AlgoliaToGraphQLFieldConfig&lt;&#13;
+	TIndex extends ObjectWithObjectID,&#13;
+	TFragment extends Record&lt;string, any&gt;&#13;
+&gt; {&#13;
+	__typename: string&#13;
+	fragment: DocumentNode&#13;
+	fragmentName?: string&#13;
+	id?: (value: TIndex) =&gt; string&#13;
+	write: (value: TIndex) =&gt; MaybePromise&lt;Maybe&lt;TFragment&gt;&gt;&#13;
+}&#13;
+&#13;
+// Define how the custom mapping will type-translate to narrowly-typed indices&#13;
+export interface AlgoliaToGraphQLFields {&#13;
+	[indexName: string]: AlgoliaToGraphQLFieldConfig&lt;any, any&gt;&#13;
+}&#13;
+&#13;
+export type AlgoliaToGraphQLResult&lt;T extends AlgoliaToGraphQLFields&gt; = {&#13;
+	[P in keyof T]: T[P] extends AlgoliaToGraphQLFieldConfig&lt;infer I, any&gt;&#13;
+		? AlgoliaTypedIndex&lt;I&gt;&#13;
+		: never&#13;
+}&#13;
+&#13;
+// Create algolia-indices that will inject hits data to our `@apollo/client` cache&#13;
+const createIndex = async &lt;&#13;
+	TIndex extends ObjectWithObjectID,&#13;
+	TFragment extends Record&lt;string, any&gt;&#13;
+&gt;(&#13;
+	algolia: SearchClient,&#13;
+	apollo: ApolloClient&lt;object&gt;,&#13;
+	name: string,&#13;
+	config: AlgoliaToGraphQLFieldConfig&lt;TIndex, TFragment&gt;&#13;
+): Promise&lt;AlgoliaTypedIndex&lt;TIndex&gt;&gt; =&gt; {&#13;
+	const {&#13;
+		__typename,&#13;
+		fragment,&#13;
+		fragmentName,&#13;
+		id = (value) =&gt; `${__typename}:${value.objectID}`,&#13;
+		write,&#13;
+	} = config&#13;
+&#13;
+	const writeFragment = async (value: TIndex): Promise&lt;void&gt; =&gt; {&#13;
+		const fragmentData = await write(value)&#13;
+&#13;
+		!!fragmentData &amp;&amp; apollo.writeFragment&lt;TFragment&gt;({&#13;
+			fragment,&#13;
+			fragmentName,&#13;
+			data: { __typename, ...fragmentData },&#13;
+			id: id(value),&#13;
+		})&#13;
+	}&#13;
+&#13;
+	const index = algolia.initIndex(name) as AlgoliaTypedIndex&lt;TIndex&gt;&#13;
+&#13;
+	return {&#13;
+		...index,&#13;
+		// Override search to write everything into cache.&#13;
+		async search(query, opts) {&#13;
+			const result = await index.search(query, opts)&#13;
+&#13;
+			await Promise.all(result.hits.map(async (hit) =&gt; writeFragment(hit)))&#13;
+&#13;
+			return result&#13;
+		},&#13;
+	}&#13;
+}&#13;
+&#13;
+// Generate all of the new algolia indices from a config&#13;
+export const algoliaToGraphQL = async &lt;T extends AlgoliaToGraphQLFields&gt;(&#13;
+	algolia: SearchClient,&#13;
+	apollo: ApolloClient&lt;object&gt;,&#13;
+	config: T&#13;
+): Promise&lt;AlgoliaToGraphQLResult&lt;T&gt;&gt; =&gt; {&#13;
+	const indices = await Promise.all(&#13;
+		Object.entries(config).map(async ([indexName, fieldConfig]) =&gt; {&#13;
+			const index = await createIndex(algolia, apollo, indexName, fieldConfig)&#13;
+&#13;
+			return [indexName, index] as readonly [string, AlgoliaTypedIndex&lt;any&gt;]&#13;
+		})&#13;
+	)&#13;
+&#13;
+	return indices.reduce(&#13;
+		(acc, [indexName, index]) =&gt; ({ ...acc, [indexName]: index }),&#13;
+		{} as AlgoliaToGraphQLResult&lt;T&gt;&#13;
+	)&#13;
+}&#13;
+</pre>
+<p class="translated">一旦我们有办法将<a href="https://www.algolia.com/doc/api-client/getting-started/instantiate-client-index/javascript/?client=javascript"> <code>algoliasearch</code> </a>数据注入到我们的<code>@apollo/client</code>缓存中，我们只需键入Algolia记录的形状，定义要写入的GraphQL片段，将记录映射到片段，并构建新的索引。</p>
+<p class="translated"><code>types.ts</code>的代码:</p>
+<pre class="lang:tsx decode:true ">import type { ObjectWithObjectID } from '@algolia/client-search'&#13;
+&#13;
+// Types for our algolia records (for demonstration only)&#13;
+&#13;
+interface BaseAlgoliaTypes {&#13;
+	AlgoliaProduct: {&#13;
+		name: string // String!&#13;
+		description?: Maybe&lt;string&gt; // String&#13;
+		bundleSize?: Maybe&lt;number&gt; // Int&#13;
+		starRating: number // Float!&#13;
+	}&#13;
+}&#13;
+&#13;
+export type AlgoliaTypes = {&#13;
+	[P in keyof BaseAlgoliaTypes]: BaseAlgoliaTypes[P] &amp; ObjectWithObjectID&#13;
+}&#13;
+</pre>
+<p class="translated">用于映射的GraphQL片段的代码:</p>
+<pre class="lang:graphql decode:true ">fragment AlgoliaProduct on Package {&#13;
+id&#13;
+name&#13;
+description&#13;
+bundleSize {&#13;
+gzipSizeInBytes&#13;
+}&#13;
+starRating&#13;
+}&#13;
+</pre>
+<p class="translated"><code>indices.ts</code>的代码:</p>
+<pre class="lang:tsx decode:true">import type { ApolloClient } from '@apollo/client'&#13;
+import type { SearchClient } from 'algoliasearch'&#13;
+import { algoliaToGraphQL, AlgoliaToGraphQLFieldConfig } from './algoliaToGraphQL'&#13;
+import type { AlgoliaTypes } from './types'&#13;
+&#13;
+// Generated using GraphQL Code Generator&#13;
+import { AlgoliaProductFragment, AlgoliaProductFragmentDoc } from '@openbase/graphql'&#13;
+&#13;
+// Map algolia package records to our `AlgoliaProduct` fragment in GraphQL&#13;
+const packages: AlgoliaToGraphQLFieldConfig&lt;&#13;
+	AlgoliaTypes['AlgoliaProduct'],&#13;
+	AlgoliaProductFragment&#13;
+&gt; = {&#13;
+	__typename: 'Package',&#13;
+	fragment: AlgoliaProductFragmentDoc,&#13;
+	write(value: AlgoliaTypes['AlgoliaProduct']): AlgoliaProductFragment {&#13;
+		return {&#13;
+			id: value.objectID,&#13;
+			name: value.name,&#13;
+			description: value.description,&#13;
+			bundleSize: {&#13;
+				gzipSizeInBytes: value.bundleSize,&#13;
+			},&#13;
+			starRating: value.starRating,&#13;
+		}&#13;
+	},&#13;
+}&#13;
+&#13;
+// Create all of our indices&#13;
+export const getIndices = (algolia: SearchClient, apollo: ApolloClient&lt;object&gt;) =&gt; {&#13;
+	return algoliaToGraphQL(algolia, apollo, {&#13;
+		packages,&#13;
+		// Different sortings using algolia virtual replicas&#13;
+		packages_by_bundleSize_desc: packages,&#13;
+		packages_by_starRating_desc: packages,&#13;
+	})&#13;
+}&#13;
+</pre>
+<p class="translated"><code>AlgoliaApolloProvider.tsx</code>的代码:</p>
+<pre class="lang:tsx decode:true ">import { useApolloClient } from '@apollo/client'&#13;
+import algolia from 'algoliasearch'&#13;
+import React, {&#13;
+	createContext,&#13;
+	FC,&#13;
+	ReactNode,&#13;
+	useContext,&#13;
+	useEffect,&#13;
+	useState&#13;
+} from 'react'&#13;
+import { getIndices } from './indices'&#13;
+&#13;
+export type AlgoliaApolloContextIndex = InferFromPromise&lt;ReturnType&lt;typeof getIndices&gt;&gt;&#13;
+&#13;
+const AlgoliaApolloContext = createContext&lt;Maybe&lt;AlgoliaApolloContextIndex&gt;&gt;(null)&#13;
+&#13;
+export interface AlgoliaApolloProviderProps {&#13;
+	children?: ReactNode&#13;
+}&#13;
+&#13;
+// Wrap your application with this, to be able to use the interoperability anywhere&#13;
+export const AlgoliaApolloProvider: FC&lt;AlgoliaApolloProviderProps&gt; = ({&#13;
+	children,&#13;
+}) =&gt; {&#13;
+	const [index, setIndex] = useState&lt;Maybe&lt;AlgoliaApolloContextIndex&gt;&gt;(null)&#13;
+&#13;
+	const apollo = useApolloClient()&#13;
+&#13;
+	useEffect(() =&gt; {&#13;
+		const newClient = algolia(process.env.ALGOLIA_APP_ID, process.env.ALGOLIA_API_KEY)&#13;
+&#13;
+		getIndices(client, apollo).then((newIndices) =&gt; setIndex(newIndices))&#13;
+	}, [apollo])&#13;
+&#13;
+	return (&#13;
+		&lt;AlgoliaApolloContext.Provider value={index}&gt;&#13;
+			{children}&#13;
+		&lt;/AlgoliaApolloContext.Provider&gt;&#13;
+	)&#13;
+}&#13;
+&#13;
+// Hook to use in any component that needs to search algolia&#13;
+export const useAlgoliaIndex = () =&gt; useContext(AlgoliaApolloContext)&#13;
+</pre>
+<p class="translated">从这一点开始，每当搜索Algolia时，使用<code>@apollo/client</code>缓存的组件将开箱即用:</p>
+<pre class="lang:tsx decode:true ">import { NextPage } from 'next'&#13;
+import React from 'react'&#13;
+import { useAlgoliaIndex } from './AlgoliaApolloProvider'&#13;
+&#13;
+const Page: NextPage = () =&gt; {&#13;
+	const index = useAlgoliaIndex()&#13;
+	const [hits, setHits] = useState&lt;any[]&gt;([])&#13;
+&#13;
+	useEffect(() =&gt; {&#13;
+		index?.packages&#13;
+			.search('react', { length: 20, offset: 0 })&#13;
+			.then((results) =&gt; setHits(results.hits.slice()))&#13;
+	}, [index])&#13;
+&#13;
+	return (&#13;
+		&lt;div&gt;&#13;
+			{!!hits &amp;&amp; hits.map((hit) =&gt; (&#13;
+				&lt;PackageTile key={hit.objectID} packageId={hit.objectID} /&gt;&#13;
+			))}&#13;
+		&lt;/div&gt;&#13;
+	)&#13;
+}&#13;
+&#13;
+export default Page&#13;
+</pre>
+<p class="translated">这样，我们实现了我们为快速搜索设定的目标，开发人员和用户体验与Openbase的其他部分保持一致。我们修改的索引的API与来自<code>algoliasearch</code>的未修改的索引相同，并且我们的组件可以保持不变<span> — </span>特定于我们的单个<code>@apollo/client</code>数据源。</p>
+<p class="translated">想出一套高质量和相关的Github repos是一个无限的挑战。Algolia的<code>algoliasearch</code>为Openbase消除了一个显著的复杂性，以构建一个允许用户找到满足其需求的最佳开源工具的体验。GraphQL商店采用的集成Algolia或任何其他API的方法可能取决于您自己的要求和条件。</p>
+</div></div>    
+</body>
+</html>

@@ -1,0 +1,228 @@
+<html>
+<head>
+<title>AI-powered recommendations for media, books, blogs | algolia | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">人工智能推荐媒体、书籍、博客| algolia </h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/ai/ai-powered-recommendations-for-media-books-blogs-articles-publications/#0001-01-01">https://www.algolia.com/blog/ai/ai-powered-recommendations-for-media-books-blogs-articles-publications/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">你在博客上浏览文章以供阅读。这个博客展示了一系列诱人的建议来帮助你选择。你的选择让人感觉不可预测，并且受你当前情绪等因素的影响——它会随着你阅读的每篇新文章而变化。机器推荐最佳文章的几率有多大？有多少过去的历史(你的和其他人的总和)可以教会机器如何根据口味预测未来的主观选择？机器如何预测或参与自发性？</p>
+<p class="translated">关于推荐一部电影看或一个播客听，我们可以问同样的问题。</p>
+<p class="translated"><span>为了帮助我们回答这些问题，我们的一名ML/AI工程师</span> <span>使用我们的<a href="https://www.algolia.com/doc/guides/algolia-ai/recommend/">推荐API </a>开发了一款应用，为技术博客的读者推荐下一篇文章。场景是这样的:当一名工程师读完一篇文章时，推荐系统会显示与下一篇文章最相关的文章。该应用程序从ML模型生成的相关文章数据集中提取推荐，这些模型是由Algolia根据博客所有读者之前的集体活动建立的。</span></p>
+<p class="translated">这里的目标是提出问题并提供一个回答问题的框架。这也是关于实施和评估我们的建议的简单性。虽然我们经常谈论电子商务的建议，但我们的API可以处理任何用例。如下所述，重要的部分是<strong>捕捉正确的信号，并对每个信号的相关性进行“评分”,以确定两篇或多篇文章之间的关系强度。</strong></p>
+<p class="translated">结合我们的<span>建议</span>和<a href="https://www.algolia.com/doc/guides/getting-analytics/search-analytics/advanced-analytics/">点击&amp;转换洞察API </a> s，我们<span>能够深入回答如下问题:</span></p>
+<ul>
+<li aria-level="1" class="translated">这些建议“准确”吗？“相关”？</li>
+<li aria-level="1" class="translated">好奇心——对于好奇的读者来说，它们是否足够令人惊讶，值得点击？是每个读者都对他们的下一个选择保持开放和好奇，还是他们只专注于寻找特定的东西？</li>
+<li aria-level="1" class="translated"><span>见解深刻——这些建议是否过于明显？它们是多样的还是多余的？</span></li>
+<li aria-level="1" class="translated">机缘巧合——一台天真的机器能否创造出机缘巧合的时刻，让系统推荐读者从未想过的伟大的未知事物？</li>
+<li aria-level="1" class="translated">随机——这些推荐是奇怪的、平庸的、随机的、无用的吗？</li>
+</ul>
+<p class="translated">虽然实验没有回答所有这些问题，也没有成功地创建一个可以预见未来的应用程序，但我们确实相信，在概念和具体的层面上，人们可以建立一个基于内容/媒体的网站<a href="https://www.algolia.com/search-solutions/media/"><span/></a><span>】，为其读者提供相关的<a href="https://www.algolia.com/blog/product/introducing-algolia-recommend-the-next-best-way-for-developers-to-increase-revenue/">有用的推荐</a>。</span></p>
+<h2 class="translated"><a id="building-ai-powered-recommendations-for-reading" class="anchor" href="#building-ai-powered-recommendations-for-reading" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>建筑人工智能推荐阅读</h2>
+<p class="translated"><span>推荐书籍很棘手。这需要非常直觉和熟练的书商或图书管理员。通常，他们会先问几个关于</span> <i> <span>意图</span> </i> <span>的问题——你想找什么类型的书或作者？你要找的是小说还是非小说？什么科目？然后他们转移到</span> <i> <span>喜好</span></i><span>——口味、风格、时代、流派的问题。最好的顾问在咨询他们内在的经验和知识“数据库”时会仔细倾听。他们对读者有一种感觉，并且知道他们是如何设计他们的问题的。有了这些，个人顾问就可以推荐“正确的”或“最好的”书籍了。他们的推荐会很完美吗？经常，是的。或者至少是鼓舞人心的，有见地的。你永远无法取代人情味…或者你能吗？</span></p>
+<p class="translated"><span>一个<a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-1/">推荐系统</a>如何与这种个人感动竞争？例如，一个人刚读完</span> <i> <span>莫比迪克</span> </i> <span>又想读别的。下一本书是什么？</span></p>
+<ul>
+<li aria-level="1" class="translated"><i> <span>十九世纪捕鲸业的历史</span> </i></li>
+<li aria-level="1" class="translated"><span>更多19世纪的小说</span></li>
+<li aria-level="1" class="translated"><span>其他书籍作者赫尔曼·梅尔维尔</span> <i> <span>莫比·迪克</span> </i></li>
+<li aria-level="1" class="translated"><i> <span>荷马史诗</span> </i> <span>或</span> <i> <span>少年派的一生</span> </i> <span>(其他海上冒险)</span></li>
+<li aria-level="1" class="translated"><span>关于更小的鱼，像</span> <i> <span>河流穿过它</span> </i></li>
+<li aria-level="1" class="translated"><span>另一种类型的冒险(哈利·波特系列)</span></li>
+<li aria-level="1" class="translated"><span>旅游书籍—</span><i><span>远航公海</span> </i></li>
+<li aria-level="1" class="translated">或者一些完全不同的有趣的事情，来摆脱莫比·迪克的沉重负担</li>
+</ul>
+<p class="translated">谁知道呢？可能性太多了。推荐任何东西似乎都是随机的或瞎猜的。有时甚至读者都不知道…然而，这就是有趣的地方: <b> </b></p>
+<blockquote><p class="translated"><b>在推荐书籍时，书商和一个好的推荐系统并不仅仅关注</b> <b> <i>暗示</i> </b> <b>书籍，他们希望</b> <b> <i>启发我们</i> </b> <b>做出我们自己关于下一本书的最佳选择。</b></p></blockquote>
+<p class="translated"><span>挑战说的够多了。现在，我们如何面对这些挑战？</span></p>
+<h2 class="translated"><a id="how-recommender-systems-calculate-the-best-recommendations" class="anchor" href="#how-recommender-systems-calculate-the-best-recommendations" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>推荐系统如何计算最佳推荐</h2>
+<p class="translated"><span>让我们从比较三个不同的用例开始:</span></p>
+<ol>
+<li aria-level="1" class="translated"><span>定义明确的读者群:在线图书馆研究平台上的学生</span></li>
+<li aria-level="1" class="translated">一个更大但相当同质的读者群:技术博客的读者</li>
+<li aria-level="1" class="translated"><span>更大的异质读者群:通用博客的读者</span></li>
+</ol>
+<p class="translated">我们研究了每种情况，但只试验了第二种。我们将利用第一个和最后一个为第三个——技术博客——打下基础。每个场景都给了推荐系统或多或少的上下文。所以我们会看到背景在避免随机性方面有多重要。但是首先，让我们看看可以用来帮助建立模型的 <b>启发式评分</b> <span>。</span></p>
+<h3 class="translated"><a id="the-heuristic-of-scoring-books-based-on-user-reading-patterns" class="anchor" href="#the-heuristic-of-scoring-books-based-on-user-reading-patterns" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>基于用户阅读模式的启发式图书评分</h3>
+<p class="translated">为了取代读者和书商之间的口头聊天，在线系统必须利用能够传达意图和偏好的用户信号<i><span/></i><span>。这是通过</span> <b>点击</b> <span>(用户在阅读之前、期间和之后点击的内容)和</span> <b>转换</b> <span>(用户阅读的内容或阅读的时长)来完成的。例如，如果许多用户在同一个阅读会话中阅读文章X和Y，我们可以得出两个结论:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>这些读者有强烈的意图将这两篇文章</span> <i> <span>合在一起</span> </i></li>
+<li aria-level="1" class="translated">因此，文章X和Y在某种程度上是相关的。</li>
+</ul>
+<p class="translated"><span>另一个例子是当用户点击文章内部的链接，阅读链接的文章，然后返回继续阅读第一篇文章。这种行为表明这些文章是相关的。</span></p>
+<p class="translated">这些关于意图的结论是启发性的。让我们更进一步，让我们给某些行为更多的权重:如果我们认为多次点击 <i> <span>内的链接相同的</span> </i> <span>文章，每次点击的</span><i><span/></i><span>阅读时间长，表明读者强烈倾向于认为所有这些文章都是相关的，那么我们可以有信心给这组行为</span> <b>更多的权重</b> <span>这是另一种启发式方法——看看哪些行为表现出强烈或微弱的意图，并相应地对它们进行衡量或评分。</span></p>
+<p class="translated"><span>这就是你如何使用我们的</span> <a href="https://www.algolia.com/products/recommendations/"> <span> Algolia推荐的</span> </a> <span>产品。Algolia客户在向我们推荐的产品发送点击量和转化率之前，可以考虑几个因素。例如，他们可以通过不发送信号，或者根据信号的强度发送一次或两次来增加或减少信号的强度。</span></p>
+<p class="translated">然而，试探法的一个危险是，如果关于信号的潜在假设是错误的，那么将一个已经不正确的解释的分数加倍就会使错误加倍。这是一场赌博。</p>
+<h3 class="translated"><a id="context-plays-a-role-in-recognizing-intent" class="anchor" href="#context-plays-a-role-in-recognizing-intent" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>上下文在识别意图时起作用</h3>
+<p class="translated">让我们回到上面的两个上下文:</p>
+<ol>
+<li aria-level="1" class="translated"><span>教育背景(学生图书馆)</span></li>
+<li aria-level="1" class="translated"><span>随机公开(一个通用博客)</span></li>
+</ol>
+<h2 class="translated"><a id="scenario-1-%e2%80%93-creating-recommendations-for-students" class="anchor" href="#scenario-1-%e2%80%93-creating-recommendations-for-students" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>场景1–为学生创建推荐</h2>
+<p class="translated"><span>学生们提供了一个定义清晰、界限分明的世界，为推荐系统提供了一个良好的开端。学生的选择范围很窄。他们的意图很明确，并且和其他读者有着相似的目标:了解某个特定的主题。</span></p>
+<p class="translated">图书馆的在线目录可以自信地显示“推荐的下一本书”和“不太可能有帮助的书”。他们可以通过在每篇文章的文本中嵌入大量相关文章的超链接来使其特别准确。(注意，这些超链接可以使用推荐系统本身随着时间的推移而被刷新。)</p>
+<h3 class="translated"><a id="clicks-conversions-%e2%80%93-the-signals-and-events-to-collect" class="anchor" href="#clicks-conversions-%e2%80%93-the-signals-and-events-to-collect" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>点击&amp;转换-要采集的信号和事件</h3>
+<p class="translated">我们将收集他们点击的链接和阅读次数，以记录他们实际阅读的内容。为了收集数据，我们称之为“发送事件”。如上所述，有两个事件要发送:点击和转换。点击和转换事件都在两本或更多本书之间建立“相关书”关系。转换也在两本或更多的书之间建立了一种“经常一起阅读”的关系。</p>
+<p class="translated"><span>出于我们的目的，我们对点击和转化做出以下假设和解释:</span></p>
+<ul>
+<li aria-level="1" class="translated">我们假设一个学生的相关书籍的集合可能与参加同一项目的其他学生的相关书籍的集合相似。</li>
+<li aria-level="1" class="translated"><span>学生阅读的每篇</span> <i> <span>下一篇博客</span> </i> <span>无论是从一个链接，还是在搜索或浏览之后，都可能反映出与当前文章的合理相关性。所以我们发送一个点击事件。</span></li>
+<li aria-level="1" class="translated"><span>为了确保下一本书是相关的，我们将</span> <i> <span>阅读时间</span> </i> <span>添加到等式中，并通过添加额外的</span> <b>权重</b> <span>来帮助Algolia的建模，以加强关系。我们通过过滤掉一些事件或加倍分数来进行加权:</span><ul>
+<li aria-level="2" class="translated"><span>如果用户点击但没有阅读点击的文章，我们会放弃点击——也就是说，我们不会发送任何点击事件</span></li>
+<li aria-level="2" class="translated"><span>如果他们阅读了链接的文章，但时间不长，我们会发送一个点击，但不会发送一个转化事件</span></li>
+<li aria-level="2" class="translated"><span>如果他们阅读了被点击文章的大部分或全部内容，我们会发送点击和转换事件</span></li>
+<li aria-level="2" class="translated"><span>如果他们已经阅读了一篇文章的大部分或全部，然后回到原文并继续阅读，我们会再次发送点击和转换事件</span></li>
+</ul>
+</li>
+</ul>
+<p class="translated">这些只是说明区别对待每个事件的重要性的建议。我们可以使用其他信号。Medium允许评论，不仅在整个博客上，而且在文本的选定部分。如果用户突出显示一个句子“喜欢它”或“评论它”，我们可以在阅读会话期间发送所有评论文章的点击事件，以加强这些文章之间的关系。假设在一个单独的会话中，一个学生正在阅读一个主题，因此所有的文章都将与该主题相关。</p>
+<p class="translated">最后一个变化是推荐一篇文章或一本书的部分内容。我们可以把书籍分解成 <i> <span>相关段落</span> </i> <span>。这为下一次阅读提供了特别有用的细节。我们可以推荐“相关段落阅读”。</span></p>
+<p class="translated">现在你可能同意或不同意这些例子，但关键是，你需要用你认为最能抓住用户阅读图书馆目录中的文章的意图的动作来建立模型。我们试图通过识别一心一意的学生选择连续阅读的内容来避免随机性。</p>
+<h2 class="translated"><a id="scenario-2-%e2%80%93-public-blog-recommendations" class="anchor" href="#scenario-2-%e2%80%93-public-blog-recommendations" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>场景2——公众博客推荐</h2>
+<p class="translated">为学生推荐一个教育学阅读之旅包含了很多内在的可靠性。学生们分享学习特定科目的背景和目标。但是，面对一群兴趣广泛，但在阅读选择上没有明显亲和力的读者，我们该怎么办呢？虽然我们仍然可以依靠点击超链接，但我们需要意识到下一篇文章可能与点击的链接无关。因此，还有一个额外的因素可以帮助我们构建模型:</p>
+<ul>
+<li aria-level="1" class="translated"><span>博客的</span> <i> <span>分类</span> </i> <span>。</span></li>
+</ul>
+<p class="translated"><span>如果每个博客都被准确分类，那么这些类别可以如下使用:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>如果一本书被点击，并且在同一组类别中，那么在将它添加到模型中时，就可以得到那么高的分数</span></li>
+<li aria-level="1" class="translated"><span>无论何时将任何书籍添加到模型中，算法本身都会使用类别作为一种方式来构建其相关项目推荐。</span></li>
+</ul>
+<h2 class="translated"><a id="scenario-3-%e2%80%93-readers-of-a-technical-blog" class="anchor" href="#scenario-3-%e2%80%93-readers-of-a-technical-blog" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>场景3——技术博客的读者</h2>
+<p class="translated"><span>如上所述，在技术博客这样的单主题博客上推荐文章应该“更容易”，因为读者对技术有着共同的兴趣。虽然这种凝聚力不像学生博客那样强大，推荐系统获得了更紧密共享意图的额外好处(相同的课程材料，相同的测试)，但技术博客确实内置了一些类似的意图和偏好。</span></p>
+<p class="translated">以下是一些挑战</p>
+<ul>
+<li aria-level="1" class="translated"><span>会有很多javascript工程师想要提升自己的前端，所以就有了</span> <i> <span>一些</span> </i> <span>类似的意图和喜好，但并不完全——UI的题材相当广泛。</span></li>
+<li aria-level="1" class="translated">有些后端工程师对UI一点也不感兴趣，但是他们可能会阅读相同的文章来帮助理解如何使用前端系统。</li>
+<li aria-level="1" class="translated"><span>虽然所有工程师可能都想了解微服务的理论和实现，但前端工程师可能只想知道如何在他们的UI中使用它们。</span></li>
+<li aria-level="1" class="translated"><span>一个额外的挑战是</span> <i> <span>简档不平衡</span> </i> <span>，例如，你有80%的JS开发人员/ 20%的后端专家，所以对80%的用户有效的推荐对于后一组可能仍然是</span> <i> <span>错误的</span> </i> <span>。解决方案？您需要基于每个细分市场得分较高的配置文件的配置文件细分推荐。</span></li>
+</ul>
+<p class="translated"><span>这些挑战表明，即使是对同一活动领域但具有不同意图和特征的读者，推荐书籍也可能并不容易。但这不是不可能的，你会看到的。我们的人工智能工程师构建的实验性应用程序调查了我们在这个时间点上可以取得的成功程度。</span></p>
+<h2 class="translated"><a id="the-experiment-recommending-books-%e2%80%9cfrequently-read-together%e2%80%9d" class="anchor" href="#the-experiment-recommending-books-%e2%80%9cfrequently-read-together%e2%80%9d" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>实验:推荐书籍“常一起读”</h2>
+<p class="translated"><span>在我们经常一起阅读的</span><b/><span>场景中，我们可以考虑:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>将每个用户的阅读列表转换为单个多项内容</span></li>
+<li aria-level="1" class="translated"><span>同一天的阅读作为多篇文章的单个转换，而超过4天的每天一篇文章将被视为4个单独的单个项目的转换。</span></li>
+</ul>
+<p class="translated"><span>我们将使用以下信号:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>用户在短时间内(在明确定义的会话中)阅读了什么内容</span></li>
+</ul>
+<p class="translated"><span>未考虑的因素:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>用户在阅读给定文章时点击并阅读的文章内的链接</span></li>
+<li aria-level="1" class="translated"><span>用户已经阅读的文章的类别。我们不会给予更多或更少的权重，也不会添加一个信号事件，只是因为2篇或更多的文章属于同一类别。我们不这样做，不是因为这无关紧要，而是因为我们想专注于如何最好地将用户的意图与博客的内容相匹配。</span></li>
+<li aria-level="1" class="translated"><span>一个用户的</span> <i> <span>自己的</span> </i> <span>阅读列表，正如没有理由相信一个用户想要阅读的内容一定是彼此相关的。</span></li>
+<li aria-level="1" class="translated"><span>然而，请注意，当这些因素放在一起时，会创建一个相关项目的强指标；然而，我们在这里的目标是推荐“经常一起阅读”的文章，而不是“相关文章”。显然，相关项目是任何推荐系统的基础，但我们现在想限制这些因素。</span></li>
+<li aria-level="1" class="translated">我们没有考虑每次阅读来自哪里(链接，搜索，..).例如，我们完全不知道链接结构。另一个实验将需要测试链接点击对于提供有用建议的重要性——即使从表面上看，它似乎很重要。</li>
+</ul>
+<h2 class="translated"><a id="results-of-the-experiment" class="anchor" href="#results-of-the-experiment" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>实验结果</h2>
+<p class="translated"><span>注意，完整的结果、技术细节和代码将在我们的下一篇文章中给出。</span></p>
+<p class="translated"><span>下面的百分比是置信分数:当展示给Y时，与X互动的人将成功地与Y互动的模型的确定程度。您可以在您的用户界面中通过将它标记为“匹配分数”、“相关性分数”或“可能性”(用户参与内容的可能性)来帮助用户理解这一点。</span></p>
+<table>
+<tbody>
+<tr>
+<td class="translated"><b> <i>如果你读到……</i></b></td>
+</tr>
+<tr>
+<td>
+ 
+<ul>
+<li aria-level="1" class="translated"><b>添加AI到你的搜索框</b> <span>:我们推荐</span> <i> <span>添加微信到你的搜索</span></i><span>(</span><b>99.63</b><span>%)、</span> <i> <span>如何用规则推广</span></i><span>(</span><b>98.54</b><span>%)、</span> <i> <span/></i></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+ 
+<ul>
+<li aria-level="1" class="translated"><b>添加微信到你的搜索</b> <span>:我们推荐</span> <i> <span>添加AI到你的搜索框</span></i><span>(</span><b>99.63</b><span>%)，</span> <i> <span>更高ROI带个性化刻面</span></i><span>(</span><b>99.11</b><span>)</span></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+ 
+<ul>
+<li aria-level="1" class="translated"><b>添加搜索推荐</b> <span>:我们推荐</span> <i> <span>缩放你的搜索引擎</span></i><span>(</span><b>99.72</b><span>%)，</span> <i> <span>挖掘你的代码</span></i><span>(</span><b>99.13</b><span>%)，</span></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+ 
+<ul>
+<li aria-level="1" class="translated"><b> CSS for a Cool前端</b> <span>:推荐</span> <i> <span>调试搜索</span></i><span>(</span><b>95.79</b><span>%)，</span> <i> <span>挖掘你的代码</span></i><span>(</span><b>95.06</b></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+ 
+<ul>
+<li aria-level="1" class="translated"><b>调试搜索</b> <span>:我们推荐</span> <i> <span>挖掘你的代码</span></i><span>(</span><b>99.83</b><span>%)，</span> <i> <span>缩放你的搜索引擎</span></i><span>(</span><b>99.28</b></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+ 
+<ul>
+<li aria-level="1" class="translated"><b>挖掘你的代码</b> <span>:推荐</span> <i> <span>调试搜索</span></i><span>(</span><b>99.83</b><span>%)，</span> <i> <span>缩放你的搜索引擎</span></i><span>(</span><b>99.39</b><span>%)，</span> <i> <span>添加搜索推荐</span> </i> <span>()</span></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+ 
+<ul>
+<li aria-level="1" class="translated"><b>更高的ROI搭配个性化的刻面</b> <span>:我们推荐</span> <i> <span>开箱推荐用例</span></i><span>(</span><b>99.18</b><span>%)、</span> <i> <span>添加微信到您的搜索</span></i><span>(</span><b>99.11</b>【T56 %)、 <i> <span/></i></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+ 
+<ul>
+<li aria-level="1" class="translated"><b>如何用规则推广</b> <span>:我们推荐</span> <i> <span>添加AI到你的搜索框</span></i><span>(</span><b>98.54</b><span>%)，</span> <i> <span>添加微信到你的搜索</span></i><span>(</span><b>98.02</b>【T90)</li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+ 
+<ul>
+<li aria-level="1" class="translated"><b>介绍推荐</b> <span>:我们推荐</span> <i> <span>开箱推荐用例</span></i><span>(</span><b>98.12</b><span>%)，</span> <i> <span>更高的ROI搭配个性化的刻面</span></i><span>(</span><b>97.76</b><span/></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+ 
+<ul>
+<li aria-level="1" class="translated"><b>开箱推荐用例</b> <span>:我们推荐</span> <i> <span>具有个性化刻面的更高ROI</span></i><span>(</span><b>99.18</b><span>%)，</span> <i> <span>挖掘您的代码</span></i><span>(</span><b>99.07<span>)</span></b></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td>
+ 
+<ul>
+<li aria-level="1" class="translated"><b>缩放您的搜索引擎</b> <span>:我们推荐</span> <i> <span>添加搜索推荐</span></i><span>(</span><b>99.72</b><span>%)，</span> <i> <span>挖掘您的代码</span></i><span>(</span><b>99.39</b></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<h2 class="translated"><a id="conclusion-evaluating-the-recommendations" class="anchor" href="#conclusion-evaluating-the-recommendations" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>结论——评估建议</h2>
+<p class="translated">最终，我们如何知道自己是对的？我们如何评估我们建议的质量？这让我们进入了任何推荐系统的评估阶段。我们将很快公布如何评估推荐系统的完整论述。</p>
+<p class="translated">但是你可以通过心理评估这些数字来了解成功的概念</p>
+<ul>
+<li aria-level="1" class="translated"><span>这些建议是多种多样的，还是你得到了循环的建议，其中项目A的建议项目对B、C和D有相同的整体建议组？(比如A - &gt;读作【B，C，D】；B - &gt;读作【丙，丁，甲】；C - &gt;读作【B，D，A】；D - &gt;改为【A，B，C】)</span></li>
+<li aria-level="1" class="translated"><span>分数是多种多样的，还是你总是得到大约99%的推荐，这将暗示一些</span> <i> <span>过拟合</span> </i> <span>，系统实际上停止学习，将样本数据的结论应用于所有新书。</span></li>
+</ul>
+<p class="translated">通过问自己类似这样的问题，你已经可以对你的推荐质量有一个很好的预感。</p>
+<p class="translated"><span>还有另一种方法:小步前进，观察用户对你的建议的反应。看看读者是否点击阅读你的推荐。还可以进行AB测试或者live用户测试，或者度量转换，或者看看被点击的是</span> <i> <span>不是</span> </i> <span>什么书。像这样的小步骤可以走很长的路。实验、实际分析和评估是任何推荐系统成功的关键。快乐阅读！</span></p>
+</div></div>    
+</body>
+</html>

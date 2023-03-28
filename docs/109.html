@@ -1,0 +1,108 @@
+<html>
+<head>
+<title>Building an open source index for all - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">为所有人建立一个开源索引</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/building-an-open-source-index-for-all/#0001-01-01">https://www.algolia.com/blog/engineering/building-an-open-source-index-for-all/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">在阿尔戈利亚，我们本质上是一群业余爱好者。我们不仅仅是为财富500强建造，我们也是为修补者建造。这就是为什么我们在DocSearch这样的工具上投入了如此多的精力——我们喜欢任何在像<a href="https://docs.astro.build/en/getting-started/"> Astro </a>、<a href="https://www.home-assistant.io/docs/">家庭助手</a>和<a href="https://sass-lang.com/documentation/"> SASS </a>这样的工具背后有回报、开源软件思维的人，就像<a href="https://reactjs.org/docs/getting-started.html"> React </a>、<a href="https://www.twilio.com/docs"> Twilio </a>和<a href="https://discord.com/developers/docs/intro"> Discord </a>一样。</p>
+<p class="translated">我们一直在酝酿一个想法，特别是关于回馈发现驱动的开发人员，他们从Algolia开始就一直在试验:开放索引。互联网上已经存在许多开放数据集，但它们的质量并不为人所知。即使是高质量的也不总是我们需要的形式，而且没有什么激励让制作者来帮助我们，因为他们通常不会因为维护他们的数据集而得到报酬。这似乎是我们在Algolia要解决的完美问题，所以我们中的一些人一直在努力设计我们的第一个开放式指数。让我们在本文中浏览一下这个过程；它是相当概念性的，所以对于那些自己艰难地完成偶尔复杂的<a href="https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/">索引创建</a>过程的人来说，它仍然是一个有用的指南。</p>
+<p class="translated">不过，在我们开始之前，我们需要谈一谈可组合性。</p>
+<h2 class="translated"><a id="composability-%e2%80%94-a-big-word-for-small-things" class="anchor" href="#composability-%e2%80%94-a-big-word-for-small-things" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>可组合性——小事情的大词</h2>
+<p class="translated">可组合性是一个系统的各个部分在独立和不同组合中有用程度的主观度量。</p>
+<p class="translated">以一首歌为例，制作人不仅要考虑歌手是否唱得好，吉他是否走调，或者鼓手是否合拍，还要考虑这些曲目配合得如何。在歌曲的不同点，这些曲目的不同组合将同时播放，因此它们需要独立工作，并在不同的环境中工作。我们的指数也是如此。</p>
+<p class="translated">当您为公司创建一个应用程序时，不太可能只有一个应用程序一次性使用给定记录的所有数据—大型应用程序通常会为不同的页面和视图请求数十种不同的数据组合。但对于我们的索引来说，这种影响更加突出:我们不知道哪些数据将被谁使用，所以我们需要确保所有这些数据都是高质量的，彼此独立，但也可以很容易地组合成高质量的超级结构，就像音乐制作人希望每张唱片独立工作，同时也能在任何配置下整齐地融入整个轨道一样。</p>
+<p class="translated">让我们试着做一个食谱，特别是厨师约翰在Allrecipes 上提供的这道看起来很美味的<a href="https://www.allrecipes.com/recipe/242352/greek-lemon-chicken-and-potatoes/">希腊柠檬鸡肉和土豆食谱。让我们看看是否可以从Allrecipes的食谱模型开始，然后将其改进为更加具体和可组合的。就目前的情况来看，配方模型似乎具有这样的结构:</a></p>
+<ul>
+<li class="translated"><code>title</code>(字符串)</li>
+<li class="translated"><code>description</code>(字符串)</li>
+<li class="translated"><code>times</code>(物体阵列)<ul>
+<li class="translated"><code>name</code>(一对预定义选项的字符串)</li>
+<li class="translated"><code>number</code>(数字)</li>
+<li class="translated"><code>unit</code>(一对预定义选项的字符串)</li>
+</ul>
+</li>
+<li class="translated"><code>ingredients</code>(对象数组)<ul>
+<li class="translated"><code>amount</code>(数字)</li>
+<li class="translated"><code>unit</code>(一对预定义选项的字符串)</li>
+<li class="translated"><code>ingredient_name</code>(字符串)</li>
+<li class="translated"><code>is_header</code>(布尔型)</li>
+</ul>
+</li>
+<li class="translated"><code>directions</code>(对象数组)<ul>
+<li class="translated"><code>step_content</code>(字符串)</li>
+<li class="translated"><code>is_header</code>(布尔型)</li>
+</ul>
+</li>
+<li class="translated"><code>notes</code>(对象数组)<ul>
+<li class="translated"><code>title</code>(字符串)</li>
+<li class="translated"><code>note</code>(字符串)</li>
+</ul>
+</li>
+<li class="translated"><code>servings</code>(数字)</li>
+<li class="translated"><code>yield</code>(字符串)</li>
+<li class="translated"><code>public</code>(布尔型)</li>
+<li class="translated"><code>media</code>(字符串数组，验证为URL)</li>
+<li class="translated"><code>author</code>(字符串)</li>
+</ul>
+<p class="translated">这已经是相当全面了！他们可以用它做很多事情，比如计算完成一份食谱需要的总时间，营养信息，以及不同份量的配料量。不过，我们可能会提出一些建议:</p>
+<ol>
+<li class="translated">Allrecipes使用配料行在列表中的配料之间创建一种标题。我们选择的食谱没有使用这个功能(<em>它看起来不像许多人做的</em>，但是你可以设想这样一种情况，你在指导读者如何先制作两个独立的项目，然后再将它们组合起来(<em>像馅饼或芝士蛋糕的外皮和馅料</em>)。这绝对是一个有用的特性，更多的食谱作者应该利用它，但是没有在食谱的结构中将其形式化，而是选择使用配料行作为“标题”，只是在视觉上而不是从根本上区分配料组，这感觉有点奇怪。我可能会建议创建一个名为<code>ingredient_groups</code>的高级数组，其中至少包含一个带有<code>title</code>(即标题文本)的对象和一个名为<code>ingredients</code>的数组。只有当需要描述多个组时，才会显示该标题，并且该内部数组将包含该标题下特定部分的所有成分。然后我们可以去掉那个讨厌的<code>is_header</code>布尔值，否则他们需要将部分标题渲染得与其他成分不同。同样的变化也适用于说明书，说明书同样使用标题线来划分章节。</li>
+<li class="translated">说到配料，Allrecipes实际上并不要求提交者将配料分成数量、单位和项目名称——他们只是要求你输入一个简单的字符串，就像这样:<img loading="lazy" class="aligncenter size-full wp-image-15978" src="../Images/198fd0d497c427749603ce8eaf5fba7b.png" alt="Recipes ingredients input form example" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/08/recipes-input-example.png 860w, https://blog-api.algolia.com/wp-content/uploads/2022/08/recipes-input-example-183x178.png 183w, https://blog-api.algolia.com/wp-content/uploads/2022/08/recipes-input-example-411x400.png 411w, https://blog-api.algolia.com/wp-content/uploads/2022/08/recipes-input-example-768x747.png 768w" sizes="(max-width: 860px) 100vw, 860px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/08/recipes-input-example.png"/>我怀疑他们在内部将它存储为三部分，因为他们用数字和单位进行数学计算(你可以让它将4份食谱转换为3份，这通常需要改变单位)。所以这已经是可组合的了，但是我们可以做得更好。如果我们分别要求所有这三个组件，我们可以用它做一些有趣的事情。例如，我们可以有一个可接受成分的列表(如果他们的成分在我们的数据库中不存在，用户可以添加)，让用户选择成分，而不是以字符串的形式输入。在生产环境中，我们的数据库中会有这些成分，这里只通过UUID引用。每种配料都将在它们自己的数据库记录中存储几个表单选项——例如，我将“黄油”称为一种配料，而“冷冻的”、“软化的”、“融化的”、“切片的”和“切块的”作为一种“黄油”配料的可选表单。配料也可以有其偏好的单位类别(面粉应该总是按重量或干体积来测量，但决不能按长度来测量)，这可以可选地是定制的(像“黄油棒”)或者甚至是空的(你不需要一个特殊的“土豆”单位)。然后，这个特定配方中的配料表单将存储在我们的配方索引中的配料对象中，旁边是一个与这个特定配料的可用单位相匹配的单位字符串和一个经过验证的配料数值。我们可能会在将来完全发布这个系统(如果你在数据库或CMS公司，你知道在哪里可以找到我们),但是现在，我们只是将这些信息放在一个JSON对象中，这个对象表示索引中食谱中使用的所有配料。现在对我们来说，这将是更多的手工工作，但是每个使用索引的人都不必担心启动他们自己的数据库实例。</li>
+</ol>
+<p class="translated">这是我们新的<code>recipes</code>指数形状:</p>
+<ul>
+<li class="translated"><code>title</code>(字符串)</li>
+<li class="translated"><code>description</code>(字符串)</li>
+<li class="translated"><code>times</code>(对象数组)<ul>
+<li class="translated"><code>name</code>(一对预定义选项的字符串)</li>
+<li class="translated"><code>number</code>(数字)</li>
+<li class="translated"><code>unit</code>(一对预定义选项的字符串)</li>
+</ul>
+</li>
+<li class="translated"><code>ingredient_groups</code>(对象数组)<ul>
+<li class="translated"><code>title</code>(字符串)</li>
+<li class="translated"><code>ingredients</code>(对象数组)<ul>
+<li class="translated"><code>ingredient</code> (UUID，匹配<code>ingredients</code> JSON中的一种成分)</li>
+<li class="translated"><code>forms</code>(字符串数组，匹配成分的<code>forms</code>)</li>
+<li class="translated"><code>amount</code>(数量)</li>
+<li class="translated"><code>unit</code>(字符串，匹配该成分的<code>unit_categories</code>之一)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="translated"><code>direction_groups</code>(对象数组)<ul>
+<li class="translated"><code>title</code>(字符串)</li>
+<li class="translated"><code>directions</code>(字符串数组)</li>
+</ul>
+</li>
+<li class="translated"><code>notes</code>(对象数组)<ul>
+<li class="translated"><code>title</code>(字符串)</li>
+<li class="translated"><code>note</code>(字符串)</li>
+</ul>
+</li>
+<li class="translated"><code>servings</code>(数字)</li>
+<li class="translated"><code>yield</code>(字符串)</li>
+<li class="translated"><code>public</code>(布尔型)</li>
+<li class="translated"><code>media</code>(字符串数组，验证为URL)</li>
+<li class="translated"><code>author</code>(字符串)</li>
+</ul>
+<p class="translated">然后是我们的新成分JSON ，其中每个记录都与这个形状匹配:</p>
+<ul>
+<li class="translated"><code>uuid</code> (UUID)</li>
+<li class="translated"><code>name</code>(字符串)</li>
+<li class="translated"><code>plural_name</code>(字符串)</li>
+<li class="translated"><code>unit_categories</code>(字符串数组)</li>
+<li class="translated"><code>custom_unit</code>(字符串数组，除非<code>unit_category</code>包含“自定义”，否则不存在)</li>
+<li class="translated"><code>forms</code>(字符串数组)</li>
+</ul>
+<p class="translated">单元列表是一个足够合理的对象，也可以作为JSON保存在内存中，所以<a href="https://github.com/jadenguitarman/cooking-units/blob/main/units.js">这里有一个小的实用JavaScript程序来跟踪这些单元并在它们之间轻松转换</a>，它是由我的同事Jaden编写的。</p>
+<p class="translated"><a href="https://github.com/jadenguitarman/cooking-units/blob/main/recipes.json">这是我们要上传到Algolia </a>的食谱JSON。为了获得最佳结果，你通常会希望只存储你将在Algolia中搜索的内容，然后将其余内容存储在一个快速数据库中，如<a href="https://fauna.com"> Fauna </a>，但是因为这是一个测试数据集，我们将所有内容都进行了搜索，这就是为什么JSON对于一个食谱来说如此之大。如果你想把你的个人食谱添加到这个数据集中，我们很乐意把它们包括进来！只需在这里为每个食谱填写谷歌表单，我们会筛选并手动添加最好的。</p>
+<p class="translated">您一直在等待的部分:由于这个索引是开放的并且在不断增长，所以在加载生产就绪数据之前，对您来说试验Algolia和测试您自己的集成将是非常有用的！如果你想试一试，以下是凭证:</p>
+<blockquote><p class="translated"><em>只读公钥:</em>ea 2f 27 cfed 9 ddeed 93 f 7532424 a 64480</p>
+<p class="translated"><em>申请ID: </em> OKF83BFQS4</p>
+<p class="translated"><em>索引名称:</em>食谱</p></blockquote>
+<p class="translated">我们很高兴看到你用什么来填充这个数据集(同样，<a href="https://forms.gle/5NpnCs963qw3JN2x9"> Google表单在这里</a>可用)！我们将利用我们团队中数百名Algolia开发者的配方来改进它。如果你对数据集本身做了一些有趣的事情，一定要在<a href="https://twitter.com/algolia"> Twitter </a>上给我们喊一声！</p>
+</div></div>    
+</body>
+</html>

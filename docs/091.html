@@ -1,0 +1,215 @@
+<html>
+<head>
+<title>Part 2: Business Intelligence Data Indexing from PostgreSQL using Algolia – Implementation and conclusion - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">第2部分:使用Algolia从PostgreSQL进行商业智能数据索引-实现和结论- Algolia博客</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/bi-data-indexing-from-postgresql-to-algolia-2/#0001-01-01">https://www.algolia.com/blog/engineering/bi-data-indexing-from-postgresql-to-algolia-2/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">我们邀请Starschema的朋友写一个结合使用Algolia和PostgreSQL的例子。请欣赏软件开发人员Mátyás Budavári的这一两部分系列！</p>
+<p class="translated">如果您想跳回到第一部分，其中涵盖了用例以及提议的解决方案，<a href="https://algolia.com/blog/engineering/bi-data-indexing-from-postgresql-to-algolia-1">点击这里</a>。</p>
+<hr/>
+<p class="translated">在本帖中，我们将介绍搜索索引解决方案的一个简化实现。</p>
+<p class="translated">为了让我们的用户从外部位置访问我们的审计数据，我们需要将它发送到他们可以访问的地方。因此，我们将详细介绍如何实现这一点。</p>
+<p class="translated">为了模拟匿名化的数据，我们将使用随机生成的数字ID-s，我们将重点关注结构，并从示例中省略JSON数据类型。</p>
+<p class="translated">你可以在GitHub上查看<a href="https://github.com/algolia-samples/algolia-postgres-db/tree/master/code">的源代码</a>。你可以用免费的Algolia账户试试。关于安装步骤，请查看GitHub库根目录下的<a href="https://github.com/algolia-samples/algolia-postgres-db/blob/master/README.md">自述文件</a>。</p>
+<p class="translated"><a href="https://blog-api.algolia.com/wp-content/uploads/2022/10/indexing-bi-data-3.png" target="_blank" rel="noopener"> <img loading="lazy" class="size-large wp-image-16866 aligncenter" src="../Images/b84624d2dfaf8783b0b4a3f96920c451.png" alt="Indexing Business Intelligence Data" srcset="https://blog-api.algolia.com/wp-content/uploads/2022/10/indexing-bi-data-3-720x115.png 720w, https://blog-api.algolia.com/wp-content/uploads/2022/10/indexing-bi-data-3-320x51.png 320w, https://blog-api.algolia.com/wp-content/uploads/2022/10/indexing-bi-data-3-768x123.png 768w, https://blog-api.algolia.com/wp-content/uploads/2022/10/indexing-bi-data-3-1536x246.png 1536w, https://blog-api.algolia.com/wp-content/uploads/2022/10/indexing-bi-data-3.png 1669w" sizes="(max-width: 640px) 100vw, 640px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2022/10/indexing-bi-data-3-720x115.png"/> </a></p>
+<h2 class="translated"><a id="implementation-details" class="anchor" href="#implementation-details" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>实施细节</h2>
+<p class="translated">让我们详细研究一下我们的解决方案。我们的演示遵循一个简单的模式。</p>
+<p class="translated">我们使用单个生产者定期创建新的审计日志行，并使用多个数据消费者读取这些新行。</p>
+<p class="translated">为了简单起见，我们为服务创建了一个最小的示例。</p>
+<ul>
+<li class="translated"><a href="https://github.com/algolia-samples/algolia-postgres-db/tree/master/code/producer">生产者</a>将随机活动放入数据库</li>
+<li class="translated"><a href="https://github.com/algolia-samples/algolia-postgres-db/tree/master/code/consumer">消费者</a>读取队列并将数据上传到Algolia</li>
+</ul>
+<p class="translated">为了更容易阅读和抓住要点，我只使用了重要的外部库，并尽可能保持代码简单。</p>
+<p class="translated">这个例子并没有反映我们实际的代码库，但是给了你一个如何以最小的开销实现它的想法。</p>
+<h2 class="translated"><a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true">T12<path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/>T14</a>入门</h2>
+<p class="translated">让我们来看看您需要做些什么，如存储库<a href="https://github.com/algolia-samples/algolia-postgres-db/blob/master/README.md"> README </a>中所示。</p>
+<p class="translated">所有组件和依赖关系都在<code>docker-compose.yml</code>文件中描述。</p>
+<ul>
+<li class="translated">要按预期运行这个例子，您必须安装<a href="https://docs.docker.com/get-docker/">Docker</a>。</li>
+<li class="translated">您需要基于<code>.env.example</code>文件创建一个<code>.env</code>文件</li>
+<li class="translated">您需要在<a href="https://algolia.com/">阿尔戈利亚</a>注册，并在<code>.env</code>文件中设置您的凭证。</li>
+<li class="translated">注意docker-compose文件使用了环境变量。只有从与<code>.env</code>文件所在的文件夹相同的文件夹中启动，它才能正常工作</li>
+</ul>
+<p class="translated">该示例可以从以下内容开始:</p>
+<pre><code class="language-shell">docker-compose up --build&#13;
+</code></pre>
+<p class="translated">启动后，应该会发生以下情况。</p>
+<ol>
+<li class="translated">PostgreSQL容器启动</li>
+<li class="translated">PostgreSQL容器用模拟数据初始化数据库</li>
+<li class="translated">PostgreSQL容器进入健康阶段后，一个生产者和两个消费者启动</li>
+<li class="translated">应用程序等待并按照<code>DELAY_PRODUCER</code>和<code>DELAY_CONSUMER</code>环境变量中的设置定期执行任务。</li>
+</ol>
+<h2 class="translated"><a id="component-details" class="anchor" href="#component-details" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>组件详细信息</h2>
+<p class="translated">让我们看一下每个组件以及它们如何相互作用。</p>
+<h3 class="translated"><a id="postgresql-database" class="anchor" href="#postgresql-database" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a>PostgreSQL数据库</h3>
+<p class="translated">我们运行PostgreSQL的<a href="https://hub.docker.com/_/postgres">官方docker映像</a>。</p>
+<p class="translated">首次启动时:</p>
+<ol>
+<li class="translated">创建一个数据库文件夹(或可选的卷),以便在两次运行之间保存数据库</li>
+<li class="translated">运行<a href="https://github.com/algolia-samples/algolia-postgres-db/tree/master/code/postgres/docker-entrypoint-initdb.d">docker-entry point-initdb . d</a>中的SQL-s来初始化数据库。</li>
+</ol>
+<h3 class="translated"><a id="init-scripts" class="anchor" href="#init-scripts" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>初始化脚本</h3>
+<p class="translated">PostgreSQL docker映像可以在第一次创建卷时将初始数据加载到数据库中。您可以在PostgreSQL映像的DockerHub页面的“<em>初始化脚本”</em>部分下的文档中找到更多关于它如何工作的一般信息。</p>
+<p class="translated">init脚本按字母顺序运行。第一组sql文件(<code>001_init_audit_log_table.sql</code>和<code>002_queue_table.sql</code>)创建应用程序使用的表。</p>
+<ol>
+<li class="translated">创建<code>app</code>模式。</li>
+<li class="translated">创建<code>app.audit_log</code>事实表</li>
+<li class="translated">创建<code>app.queue_audit_log</code>队列表</li>
+</ol>
+<p class="translated">表准备好之后，<code>003_queue_trigger.sql</code>创建一个触发器来捕捉插入到<code>app.audit_log</code>表中的新数据，并将其复制到<code>app.queue_audit_log</code>队列中。</p>
+<pre><code class="language-sql">create or replace function audit_insert_trigger_fnc()&#13;
+  returns trigger as $$&#13;
+    begin&#13;
+        insert into&#13;
+            app.queue_audit_log (&#13;
+             action&#13;
+            ,user_id&#13;
+            ,content_item_id&#13;
+            ,create_date&#13;
+            )&#13;
+        values(&#13;
+             new."action"&#13;
+            ,new."user_id"&#13;
+            ,new."content_item_id"&#13;
+            ,new."create_date"&#13;
+        );&#13;
+&#13;
+        return new;&#13;
+    end;&#13;
+$$ language 'plpgsql';&#13;
+&#13;
+create trigger audit_insert_trigger&#13;
+  after insert on app.audit_log&#13;
+  for each row&#13;
+  execute procedure audit_insert_trigger_fnc();&#13;
+</code></pre>
+<p class="translated">当结构准备好并且触发器就位时，最后一个脚本(<code>004_generate_mock_data.sql</code>)将随机数据生成到事实表中。它的可配置部分被提取到变量中，因此我们可以看到它在不同数据量下的表现。随机数发生器有一个硬编码的init种子，所以它应该在多次重建中生成相同的数据。</p>
+<pre><code class="language-sql">-- set random seed for repeatable random data generation&#13;
+SELECT setseed(0.8);&#13;
+DO $$&#13;
+    DECLARE&#13;
+        -- configurable parameters for data generation&#13;
+        nr_lines integer := 20;&#13;
+        user_min integer := 10;&#13;
+        user_max integer := 20;&#13;
+        citm_min integer := 1500;&#13;
+        citm_max integer := 2300;&#13;
+        actn_min integer := 1;&#13;
+        actn_max integer := 3;&#13;
+    BEGIN&#13;
+        with&#13;
+            -- generate user_ids&#13;
+            users as (&#13;
+                select generate_series(user_min, user_max) as user_id&#13;
+            )&#13;
+            -- generate content_ids&#13;
+           ,content as (&#13;
+               select generate_series(citm_min, citm_max) as content_id&#13;
+            )&#13;
+            -- generate action_ids&#13;
+           ,actions as (&#13;
+               select generate_series(actn_min, actn_max) as action_id&#13;
+            )&#13;
+            -- get the cartesian product of the above in a random sort&#13;
+           ,limited_data as (&#13;
+               select&#13;
+                 random() randomizer&#13;
+                 ,*&#13;
+               from users, content, actions&#13;
+               order by randomizer&#13;
+               limit nr_lines&#13;
+            )&#13;
+        insert&#13;
+            into app.audit_log (&#13;
+                action&#13;
+                ,user_id&#13;
+                ,content_item_id&#13;
+            )&#13;
+            select&#13;
+                 action_id&#13;
+                ,user_id&#13;
+                ,content_id&#13;
+            from limited_data&#13;
+        ;&#13;
+END $$&#13;
+;&#13;
+&#13;
+-- view data&#13;
+-- select * from audit_log order by content_item_id, user_id, action;&#13;
+</code></pre>
+<p class="translated">这个模拟数据生成脚本通过用<code>setseed</code>在代码开始处设置初始随机种子来使用受控的随机数据生成。我们为生成的每一行生成一个<code>random()</code>数，我们可以用它来避免添加相似的行。我们用每个值的可配置范围之间的<code>generate_series</code>来生成标识符。为了只选择给定数量的项目，我们用<code>limit</code>添加了结果集的上限。</p>
+<p class="translated">为了更好地分离代码，不同的逻辑组件在它们自己的<a href="https://www.postgresql.org/docs/current/queries-with.html">公共表表达式</a> aka中定义。CTE由<code>with</code>查询创建。在<code>limited_data</code> CTE中，我们组合了不同数据类型的所有生成行，并在限制结果之前对它们进行洗牌。</p>
+<p class="translated">PostgreSQL docker官方映像的编写方式是，只有在数据库第一次启动时，数据库初始化脚本才会启动。如果您停止服务，然后重新启动它们，初始化将不会再次发生，但数据将会保留。</p>
+<h3 class="translated"><a id="producer" class="anchor" href="#producer" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>制片人</h3>
+<p class="translated">文件夹<code>./producer</code>中的代码代表我们的应用程序。在我们的场景中，我们不想修改这段代码，而是通过PostgreSQL利用Algolia的强大功能。</p>
+<ul>
+<li class="translated">启动时连接到数据库。</li>
+<li class="translated">定期在事实表中生成一个新的随机日志行。</li>
+<li class="translated">在这个应用程序的范围之外，插入触发器将把这个数据复制到队列中。</li>
+</ul>
+<p class="translated">这是一个简单的应用程序。<code>main</code>功能是大部分动作发生的地方。<code>db</code>文件夹在<code>db.go</code>中包含一个PostgreSQL连接器，在<code>sql.go</code>中包含一个insert语句。</p>
+<h3 class="translated"><a id="consumer" class="anchor" href="#consumer" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>消费</h3>
+<p class="translated"><code>./consumer</code>文件夹下的消费者服务从数据库中读取最后插入的行，并将它们放入我们的Algolia索引中。</p>
+<p class="translated">启动时连接到数据库，然后定期读取队列中的新数据，并在事务中执行以下操作:</p>
+<ol>
+<li class="translated">读取最后的<code>N</code>行，然后将其标记为已访问</li>
+<li class="translated">将选定的行上传到Algolia</li>
+<li class="translated">从队列中清除已访问的行</li>
+</ol>
+<p class="translated">我们假设如果必要的话，多个消费者将可用于调整重负载。我们不能依赖这些消费者一直在运行的事实。由于这个限制，我们不能利用PostgreSQL的<a href="https://www.postgresql.org/docs/current/sql-notify.html">通知</a> / <a href="https://www.postgresql.org/docs/current/sql-listen.html">监听</a>模式。我们使用一个队列表来代替。</p>
+<p class="translated">这个概念的核心在于下面的SQL查询:</p>
+<pre><code class="language-shell">with get_lines as (&#13;
+  select&#13;
+      id&#13;
+    , action&#13;
+    , user_id&#13;
+    , content_item_id&#13;
+    , create_date&#13;
+    , _visited&#13;
+  from app.queue_audit_log&#13;
+  where _visited = false&#13;
+  order by create_date desc&#13;
+  limit $1&#13;
+  for update skip locked -- add concurrent consumers&#13;
+)&#13;
+update&#13;
+  app.queue_audit_log new&#13;
+set _visited = true&#13;
+from get_lines old&#13;
+where old.id = new.id&#13;
+returning&#13;
+    new.id&#13;
+  , new.action&#13;
+  , new.user_id&#13;
+  , new.content_item_id&#13;
+  , new.create_date&#13;
+;&#13;
+</code></pre>
+<p class="translated">让我们把这个查询的操作分成几个独立的步骤。所有这些步骤都在由go代码启动的事务中的一条指令中同时发生。</p>
+<p class="translated">为了让多个消费者访问我们的队列表，我们需要添加<code>for update skip locked</code>。<code>for update</code>子句让引擎知道select子查询将用于更新它们。<code>skip locked</code>部分将忽略其他消费者可能已经锁定的线路。</p>
+<blockquote><p class="translated">锁定SKIP后，将跳过任何无法立即锁定的选定行。跳过锁定的行会提供不一致的数据视图，因此这不适合一般用途的工作，但可以用来避免多个使用者访问类似队列的表时发生锁争用。</p></blockquote>
+<ul>
+<li class="translated"><code>order by create_date desc</code>确保我们从队列中获得最新的可用行。</li>
+<li class="translated"><code>limit $1</code>行确保我们只从队列中选择行的子集。</li>
+<li class="translated"><code>returning</code>声明让我们获得每一行的数据。</li>
+<li class="translated">在更新语句中，我们通过<code>where _visited = false</code>仅从当前未访问的行中设置<code>set _visited = true</code>。这是一种安全措施。理论上，我们永远不会有<code>_visited = true</code>以外的交易。这可以通过删除交易中的这些行来进一步简化。</li>
+</ul>
+<h2 class="translated"><a id="usage" class="anchor" href="#usage" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>用法</h2>
+<p class="translated">有了Algolia中的数据，我们的分析团队可以编写自定义查询来搜索他们感兴趣的数据。</p>
+<pre><code class="language-json">{&#13;
+  "filters": "createDateTimestamp &gt; 1655127131 AND userId=12 AND action=2"&#13;
+}&#13;
+</code></pre>
+<p class="translated">它搜索在<code>1655127131</code>(2022年6月13日，星期一，下午1:32:11)之后添加的带有<code>ID:2</code> by <code>user:12</code>的所有动作。epochconverter 是一个在时间戳和日期之间转换的便捷工具。</p>
+<p class="translated">未来，我们计划根据分析团队的需求，使用自定义选择器来扩展我们的web界面。Algolia有一个简单的方法来连接搜索查询和现成的前端组件。</p>
+<h2 class="translated"><a id="conclusion" class="anchor" href="#conclusion" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>结论</h2>
+<p class="translated">这个简化的例子抓住了我们解决方案的精髓。我们能够实现接近PostgreSQL的目标，将数据消费者实现为独立的服务，并且不让任何日志行从我们的队列中溜走。</p>
+<p class="translated">通过我们的实施，Algolia帮助我们实现了我们的业务目标，让我们能够将我们的分析分发到数据库之外的外部位置，并显著改善了我们的洞察处理。</p>
+<hr/>
+<p class="translated"><em>我们希望您喜欢这篇来自Mátyás的深度文章，如果您正在寻找更多类似的内容，我们在<a href="https://www.algolia.com/blog/"> Algolia博客</a>上有更多的主题！如果你是Algolia的新手，你可以通过注册一个<a href="https://www.algolia.com/users/sign_up?utm_source=blog&amp;utm_medium=main-blog&amp;utm_campaign=devrel&amp;utm_id=blog-algolia-and-postgres">免费等级账户</a>来尝试一下。</em></p>
+</div></div>    
+</body>
+</html>

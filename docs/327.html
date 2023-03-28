@@ -1,0 +1,346 @@
+<html>
+<head>
+<title>Replicating the Algolia documentation search with Autocomplete - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">使用自动完成功能复制Algolia文档搜索- Algolia博客</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/ux/replicating-the-algolia-documentation-search-with-autocomplete/#0001-01-01">https://www.algolia.com/blog/ux/replicating-the-algolia-documentation-search-with-autocomplete/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">他们说一个API和它的文档一样好，但是<strong>好的文档超越了内容质量。</strong>技术文档提供了与API交互的体验。对于许多开发者来说，这是你产品的大门。错过这次体验，他们可能会转向下一个类似的产品。</p>
+<p class="translated">让医生脱颖而出没有单一的秘诀；你需要确定是什么让它与众不同，并创造性地解决它。然而，大多数用户期望的共同点是<strong>快速、相关、设计良好的搜索体验。在Algolia，我们最近使用开源的<a href="https://www.algolia.com/doc/ui-libraries/autocomplete/introduction/what-is-autocomplete/">自动完成</a>库<a href="https://www.algolia.com/blog/ux/taking-documentation-search-to-new-heights-with-algolia-and-autocomplete/">重新设计了我们的文档搜索</a>。</strong></p>
+<figure id="attachment_11707" aria-describedby="caption-attachment-11707" class="wp-caption alignnone"><img loading="lazy" class="size-full wp-image-11707" src="../Images/11836ac31d1767a899cf9fb8d70701c9.png" alt="The new Algolia documentation search" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/algolia-documentation-search.png 2880w, https://blog-api.algolia.com/wp-content/uploads/2021/04/algolia-documentation-search-285x178.png 285w, https://blog-api.algolia.com/wp-content/uploads/2021/04/algolia-documentation-search-640x400.png 640w, https://blog-api.algolia.com/wp-content/uploads/2021/04/algolia-documentation-search-768x480.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/algolia-documentation-search-1536x960.png 1536w, https://blog-api.algolia.com/wp-content/uploads/2021/04/algolia-documentation-search-2048x1280.png 2048w" sizes="(max-width: 2880px) 100vw, 2880px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/algolia-documentation-search.png"/><figcaption id="caption-attachment-11707" class="wp-caption-text">The new Algolia documentation search</figcaption></figure>
+<p class="translated"><a href="https://www.algolia.com/doc/ui-libraries/autocomplete/introduction/what-is-autocomplete/"> Autocomplete </a>是一个JavaScript库，用于构建自动完成搜索体验。多年来，它的v0已经成功地推动了产品搜索体验。经过一年的研究和努力，我们终于发布了v1稳定版，将自动完成搜索体验提升到了一个新的水平。</p>
+<p class="translated">Autocomplete已经运行Algolia文档搜索体验几个月了，我们已经收到了许多请求，希望教我们如何构建它。我们很高兴看到其他文档利用我们提出的模式，所以我们决定发布一个深入的指南，教你如何用Autocomplete构建类似的搜索体验。</p>
+<h2 class="translated"><a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true">T15<path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/>T17</a>入门</h2>
+<p class="translated">首先，您需要创建一个新的JavaScript项目。理想的起点是一个最小的<a href="https://parceljs.org/">包</a>设置，带有一个<code>index.html</code>文档和一个<code>index.js</code>入口点。你还需要<a href="https://babeljs.io/">巴贝尔</a>来转换JSX模板。</p>
+<p class="translated">你可以派生或下载这个<a href="https://codesandbox.io/s/vanilla">code sandbox vanilla JavaScript starter</a>并把它作为一个基础。</p>
+<h3 class="translated"><a id="installing-dependencies" class="anchor" href="#installing-dependencies" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>安装依赖</h3>
+<p class="translated">本教程使用<code>@algolia/autocomplete-js</code>和<a href="https://preactjs.com/"> Preact </a>进行模板化。一旦建立了项目，您需要以下依赖项:</p>
+<ul>
+<li class="translated"><code>@algolia/autocomplete-js</code>打造搜索体验</li>
+<li class="translated"><code>@algolia/autocomplete-theme-classic</code>使它看起来漂亮</li>
+<li class="translated"><code>algoliasearch</code>从Algolia检索搜索结果</li>
+<li class="translated"><code>preact</code>作为你的虚拟DOM实现</li>
+</ul>
+<p class="translated"><code>@algolia/autocomplete-js</code>包是自动完成的一个不可知的虚拟DOM实现。如果不想使用Preact，可以在一个<a href="https://www.algolia.com/doc/ui-libraries/autocomplete/integrations/using-react/"> React </a>或<a href="https://www.algolia.com/doc/ui-libraries/autocomplete/integrations/using-vue/"> Vue </a>项目中使用它。如果您根本不想使用JSX，<a href="https://www.algolia.com/doc/ui-libraries/autocomplete/core-concepts/templates/#returning-html">您仍然可以使用为<code>createElement</code>和<code>Fragment</code>提供的实现手工构建虚拟DOM节点</a>。</p>
+<p class="translated">在您的终端中运行以下命令，将它们安装到您的项目中:</p>
+<pre class="lang:sh decode:true ">yarn add @algolia/autocomplete-js @algolia/autocomplete-theme-classic algoliasearch preact&#13;
+# or&#13;
+npm install @algolia/autocomplete-js @algolia/autocomplete-theme-classic algoliasearch preact</pre>
+<h3 class="translated"><a id="initializing-your-autocomplete" class="anchor" href="#initializing-your-autocomplete" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>初始化您的自动完成功能</h3>
+<p class="translated">首先，您需要创建一个新的autocomplete实例，并将其附加到DOM。对于要显示的每组结果，Autocomplete接受几个来源。在我们的例子中，我们将使用<code>algoliasearch</code> API客户端和提供的<code>getAlgoliaResults</code>助手从一组Algolia点击开始。</p>
+<p class="translated">在HTML中，添加一个带有<code>id</code>的空容器。这就是自动完成将注入搜索体验的地方。</p>
+<pre class="lang:xhtml decode:true ">&lt;div id="autocomplete"&gt;&lt;/div&gt;</pre>
+<p class="translated">然后，在JavaScript代码中初始化您的autocomplete，并将其附加到您的<code>#autocomplete</code>容器。</p>
+<pre class="lang:js decode:true ">import { autocomplete } from '@algolia/autocomplete-js';&#13;
+&#13;
+autocomplete({&#13;
+  container: '#autocomplete',&#13;
+  getSources() {&#13;
+    return [];&#13;
+  },&#13;
+});</pre>
+<p class="translated">我们有一个工作的自动完成实例！当然，它还没有返回任何东西，因为<code>getSources</code>方法当前返回一个空数组。我们需要定义在哪里检索要显示的数据，并描述Autocomplete应该如何与它们交互。</p>
+<h3 class="translated"><a id="defining-data-sources" class="anchor" href="#defining-data-sources" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>定义数据源</h3>
+<p class="translated">源是一个JavaScript对象，它实现了一个<a href="https://www.algolia.com/doc/ui-libraries/autocomplete/core-concepts/sources/#source">给定接口</a>。最起码，它需要一个唯一的<code>sourceId</code>来识别数据源，并需要一个<code>getItems</code>函数来返回数据。</p>
+<p class="translated">源可以是同步的，也可以是异步的。在我们的例子中，我们可以初始化一个Algolia搜索客户端，并使用<a href="https://www.algolia.com/doc/ui-libraries/autocomplete/api-reference/autocomplete-js/getalgoliaresults/"> <code>getAlgoliaResults</code> </a>助手检索条目。您可以根据需要进行任意数量的查询，并向它们传递任何<a href="https://www.algolia.com/doc/api-reference/search-api-parameters/"> Algolia搜索参数</a>。</p>
+<pre class="lang:js decode:true ">import algoliasearch from 'algoliasearch/lite';&#13;
+import { autocomplete, getAlgoliaResults } from '@algolia/autocomplete-js';&#13;
+&#13;
+const searchClient = algoliasearch(&#13;
+  'latency',&#13;
+  '6be0576ff61c053d5f9a3225e2a90f76'&#13;
+);&#13;
+&#13;
+autocomplete({&#13;
+  container: '#autocomplete',&#13;
+  getSources() {&#13;
+    return [&#13;
+      {&#13;
+        sourceId: 'hits',&#13;
+        getItems({ query }) {&#13;
+          return getAlgoliaResults({&#13;
+            searchClient,&#13;
+            queries: [&#13;
+              {&#13;
+                indexName: 'instant_search',&#13;
+                query,&#13;
+                params: {&#13;
+                  hitsPerPage: 8,&#13;
+                },&#13;
+              },&#13;
+            ],&#13;
+          });&#13;
+        },&#13;
+      },&#13;
+    ];&#13;
+  },&#13;
+});</pre>
+<p class="translated">最后，我们需要让Autocomplete知道如何呈现点击。来源允许您为每个项目定义模板。<code>@algolia/autocomplete-js</code>包期望模板作为虚拟DOM节点，所以我们将使用Preact通过JSX提供它们。</p>
+<pre class="lang:js decode:true ">/** @jsx h */&#13;
+import { h } from 'preact';&#13;
+import algoliasearch from 'algoliasearch/lite';&#13;
+import { autocomplete, getAlgoliaResults } from '@algolia/autocomplete-js';&#13;
+&#13;
+import '@algolia/autocomplete-theme-classic';&#13;
+&#13;
+const searchClient = algoliasearch(&#13;
+  'latency',&#13;
+  '6be0576ff61c053d5f9a3225e2a90f76'&#13;
+);&#13;
+&#13;
+autocomplete({&#13;
+  container: '#autocomplete',&#13;
+  getSources() {&#13;
+    return [&#13;
+      {&#13;
+        // ...&#13;
+        templates: {&#13;
+          item({ item, components }) {&#13;
+            return (&#13;
+              &lt;a className="aa-ItemLink" href={item.url}&gt;&#13;
+                &lt;div className="aa-ItemContent"&gt;&#13;
+                  &lt;div className="aa-ItemIcon"&gt;&#13;
+                    &lt;img&#13;
+                      src={item.image}&#13;
+                      alt={item.name}&#13;
+                      width="40"&#13;
+                      height="40"&#13;
+                    /&gt;&#13;
+                  &lt;/div&gt;&#13;
+                  &lt;div className="aa-ItemContentBody"&gt;&#13;
+                    &lt;div className="aa-ItemContentTitle"&gt;&#13;
+                      &lt;components.Highlight hit={item} attribute="name" /&gt;&#13;
+                    &lt;/div&gt;&#13;
+                  &lt;/div&gt;&#13;
+                &lt;/div&gt;&#13;
+              &lt;/a&gt;&#13;
+            );&#13;
+          },&#13;
+        },&#13;
+      },&#13;
+    ];&#13;
+  },&#13;
+});</pre>
+<p class="translated">确保你的项目已经安装了Babel，这样JSX模板就可以传输到<code>h()</code>调用中。</p>
+<p class="translated">请注意，我们已经导入了<code>@algolia/autocomplete-theme-classic</code>，这是一个外观时尚的starter主题，与Autocomplete及其插件完全兼容。我们还利用了Autocomplete的组件API(参见提供的<code>components</code>对象)，它允许您声明组件，以便在您的体验中的任何地方重用。默认情况下，Autocomplete提供与Algolia兼容的突出显示和截取组件。</p>
+<p class="translated"><strong>这应该会给你一个有效的自动完成体验，可以在你输入的时候呈现高亮显示的搜索结果。这是一个好的开始，但是我们离在<a href="https://www.algolia.com/doc/?q=what+is+algolia"> Algolia文档上的经验还很远。让我们这样做✨</a></strong></p>
+<h2 class="translated"><a id="search-in-a-modal" class="anchor" href="#search-in-a-modal" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>在一个模态中搜索</h2>
+<p class="translated">大多数自动完成体验使用下拉列表在搜索输入下方显示结果。这是电子商务网站如<a href="https://www.amazon.com/">亚马逊</a>或通用搜索引擎如<a href="https://www.google.com/">谷歌</a>和<a href="https://duckduckgo.com"> DuckDuckGo </a>的典型模式。在Algolia文档中，我们使用搜索模式来从更多的屏幕空间中获益。这创造了一种更具沉浸感的体验，可以在移动设备上全屏显示。</p>
+<p class="translated">自动完成使切换到带有<a href="https://www.algolia.com/doc/ui-libraries/autocomplete/core-concepts/detached-mode/">分离模式</a>的模态搜索变得不那么痛苦。“分离”意味着将自动完成功能从页面中分离出来并显示在顶部。默认情况下，分离模式在较小的屏幕上触发，以显示全屏自动完成。</p>
+<p class="translated">您可以通过向<code>detachedMediaQuery</code>选项传递一个空字符串来启用所有屏幕尺寸的分离模式。</p>
+<pre class="lang:js decode:true ">autocomplete({&#13;
+  // ...&#13;
+  detachedMediaQuery: '',&#13;
+});</pre>
+<p class="translated">这应该会用文档中的搜索按钮替换您的搜索框。点击它，你将在一个模态中打开你的搜索体验🔥</p>
+<h2 class="translated"><a id="keyboard-support" class="anchor" href="#keyboard-support" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>键盘支持</h2>
+<p class="translated">没有键盘的支持，现代网络交互体验是不完整的。在搜索体验中，你需要方便地在输入查询和浏览结果之间切换，而不必伸手去拿鼠标。</p>
+<p class="translated">自动完成实现了<a href="https://www.w3.org/TR/wai-aria-practices/#combobox"> WAI-ARIA 1.1组合框设计模式</a>，这意味着它具有开箱即用的键盘可访问性。您可以使用向上和向下箭头浏览结果，并点击<code>Escape</code>关闭搜索模式。</p>
+<p class="translated">当您找到正确的结果时，您希望通过一次击键导航到该结果。Autocomplete提供了一个<a href="https://www.algolia.com/doc/ui-libraries/autocomplete/core-concepts/keyboard-navigation/"> Navigator API </a>，让您在点击<code>Enter</code>时决定导航到哪里。您所需要做的就是在源代码中实现<code>getItemUrl</code>函数，以提供导航到的URL。</p>
+<pre class="lang:js decode:true ">autocomplete({&#13;
+  // ...&#13;
+  getSources() {&#13;
+    return [&#13;
+      {&#13;
+        // ...&#13;
+        getItemUrl({ item }) {&#13;
+          return item.url;&#13;
+        },&#13;
+      },&#13;
+    ];&#13;
+  },&#13;
+});</pre>
+<p class="translated">当一个项目处于活动状态时点击<code>Enter</code>，自动完成将使用这个函数和<a href="https://developer.mozilla.org/en-US/docs/Web/API/Location">位置API </a>导航到提供的URL。</p>
+<p class="translated">如果您在使用基于JavaScript的路由器进行内部导航的应用程序中实现您的搜索体验(例如，<a href="https://www.gatsbyjs.com/docs/reference/built-in-components/gatsby-link/"> Gatsby Link API </a>，<a href="https://nextjs.org/docs/api-reference/next/router"> Next.js Router </a>)，您可以实现Navigator API的<code><a href="https://www.algolia.com/doc/ui-libraries/autocomplete/core-concepts/keyboard-navigation/#param-navigate">navigate</a></code>函数来使用这个定制路由器。</p>
+<p class="translated">你会注意到默认情况下没有选择任何搜索结果:你需要按一下<code>Down</code>键来选择第一个项目。在我们的例子中，我们正在构建一个随输入的体验，每次击键都会触发一个搜索请求，我们使用<code>Enter</code>键导航到结果，因此不需要手动触发搜索。</p>
+<p class="translated">您可以通过将<code>defaultActiveItemId</code>选项设置为<code>0</code>来启用自动选择。这将预先选择第一个项目，并让您在结果中循环。</p>
+<pre class="lang:js decode:true ">autocomplete({&#13;
+  // ...&#13;
+  defaultActiveItemId: 0,&#13;
+});</pre>
+<h2 class="translated"><a id="mixing-different-types-of-results" class="anchor" href="#mixing-different-types-of-results" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>混合不同类型的结果</h2>
+<p class="translated">你还记得谷歌的搜索结果是什么时候的样子吗？</p>
+<figure id="attachment_11708" aria-describedby="caption-attachment-11708" class="wp-caption alignnone"><img loading="lazy" class="size-full wp-image-11708" src="../Images/cb4125ddfaa2d90e6de13fdee448cb85.png" alt="Google search results back in 1998 | Source: Ionos.fr" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/google-evolution-1998.png 1903w, https://blog-api.algolia.com/wp-content/uploads/2021/04/google-evolution-1998-306x178.png 306w, https://blog-api.algolia.com/wp-content/uploads/2021/04/google-evolution-1998-688x400.png 688w, https://blog-api.algolia.com/wp-content/uploads/2021/04/google-evolution-1998-768x446.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/google-evolution-1998-1536x893.png 1536w" sizes="(max-width: 1903px) 100vw, 1903px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/google-evolution-1998.png"/><figcaption id="caption-attachment-11708" class="wp-caption-text">Google search results back in 1998 | Source: <a href="https://www.ionos.fr/digitalguide/web-marketing/search-engine-marketing/les-resultats-de-recherche-google-de-1998-a-aujourdhui/">Ionos.fr</a></figcaption></figure>
+<p class="translated">快进20年后，整体布局没有太大变化，但谷歌彻底改变了显示结果的方式。搜索“macbook”，你会得到有机的文本结果、图片、故事、答案(“人们也会问”)、地理定位经销商、评论视频、相关搜索等等。这带来了多样性，并迎合了更多用户寻找不同的东西，即使他们键入相同的查询。</p>
+<p class="translated">在Algolia docs上，我们将搜索结果与<a href="https://www.algolia.com/doc/guides/building-search-ui/ui-and-ux-patterns/query-suggestions/js/">查询建议</a>混合在一起。<strong>这消除了分页的需要，当用户对结果不满意时，可以快速改进他们的查询。</strong> Autocomplete允许您传递任意多的源，从而可以直接混合结果类型并定制它们的外观。</p>
+<p class="translated">使用自动完成功能，有两种方法可以添加查询建议:</p>
+
+<h3 class="translated">手动设置额外的信号源</h3>
+<p class="translated">这种技术是我们在Algolia文档中使用的。它允许我们完全控制查询建议的位置，并用它来代替分页。您所需要做的就是向由<code>getSources</code>返回的数组中添加一个条目。</p>
+<pre class="lang:js decode:true ">autocomplete({&#13;
+  // ...&#13;
+  getSources() {&#13;
+    return [&#13;
+      {&#13;
+        // ...&#13;
+      },&#13;
+      {&#13;
+        sourceId: 'suggestions',&#13;
+        getItems({ query }) {&#13;
+          return getAlgoliaResults({&#13;
+            searchClient,&#13;
+            queries: [&#13;
+              {&#13;
+                indexName: 'instantsearch_query_suggestions',&#13;
+                query,&#13;
+                params: {&#13;
+                  hitsPerPage: 4,&#13;
+                },&#13;
+              },&#13;
+            ],&#13;
+          });&#13;
+        },&#13;
+      },&#13;
+    ];&#13;
+  },&#13;
+});</pre>
+<p class="translated">使用模板，您可以定义每个项目的外观，并在列表前设置标题。</p>
+<pre class="lang:js decode:true ">autocomplete({&#13;
+  // ...&#13;
+  getSources() {&#13;
+    return [&#13;
+      // ...&#13;
+      {&#13;
+        sourceId: 'suggestions',&#13;
+        // ...&#13;
+        templates: {&#13;
+          header({ items, Fragment }) {&#13;
+            if (items.length === 0) {&#13;
+              return null;&#13;
+            }&#13;
+&#13;
+            return (&#13;
+              &lt;Fragment&gt;&#13;
+                &lt;span className="aa-SourceHeaderTitle"&gt;&#13;
+                  Can't find what you're looking for?&#13;
+                &lt;/span&gt;&#13;
+                &lt;div className="aa-SourceHeaderLine" /&gt;&#13;
+              &lt;/Fragment&gt;&#13;
+            );&#13;
+          },&#13;
+          item({ item, components }) {&#13;
+            return (&#13;
+              &lt;div className="aa-QuerySuggestion"&gt;&#13;
+                &lt;components.ReverseHighlight hit={item} attribute="query" /&gt;&#13;
+              &lt;/div&gt;&#13;
+            );&#13;
+          },&#13;
+        },&#13;
+      },&#13;
+    ];&#13;
+  },&#13;
+});</pre>
+<p class="translated">自动完成源按定义的顺序显示，因此在这种情况下，它在结果列表的末尾最多添加四个查询建议。</p>
+<p class="translated">与搜索结果不同，我们不想在选择建议时导航到另一个页面。相反，我们希望“提前输入”(或在手机上“提前点击”):用建议更新查询，并触发新的搜索。为此，您可以利用源上的<code>onSelect</code>钩子来设置查询，打开面板，并刷新状态。</p>
+<pre class="lang:js decode:true ">autocomplete({&#13;
+  // ...&#13;
+  getSources() {&#13;
+    return [&#13;
+      // ...&#13;
+      {&#13;
+        sourceId: 'suggestions',&#13;
+        // ...&#13;
+        onSelect({ item, setQuery, setIsOpen, refresh }) {&#13;
+          setQuery(`${item.query} `);&#13;
+          setIsOpen(true);&#13;
+          refresh();&#13;
+        },&#13;
+      },&#13;
+    ];&#13;
+  },&#13;
+});</pre>
+<p class="translated">一个有用的UX技巧是总是在查询后附加一个空格。这为那些想继续打字的用户节省了一次击键，对Algolia来说没有什么不同。</p>
+<h3 class="translated"><a id="using-the-query-suggestions-plugin" class="anchor" href="#using-the-query-suggestions-plugin" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>使用查询建议插件</h3>
+<p class="translated">你可以在亚马逊或谷歌等网站上找到的另一种搜索模式是在列表顶部提供建议，以帮助用户更有效地完成查询。这在手机上尤其有用，因为<a href="https://en.wikipedia.org/wiki/Fat-finger_error">粗手指效应</a>让打字变得更加麻烦。</p>
+<p class="translated">Autocomplete提供了一个官方的<a href="https://www.algolia.com/doc/ui-libraries/autocomplete/api-reference/autocomplete-plugin-query-suggestions/">查询建议插件</a>来将这样的建议添加到您的体验中，而不需要手动添加源。查看文档中的<a href="https://www.algolia.com/doc/ui-libraries/autocomplete/api-reference/autocomplete-plugin-query-suggestions/createQuerySuggestionsPlugin/#example">示例，了解如何将插件集成到您的体验中。</a></p>
+<h2 class="translated"><a id="showing-detailed-information-in-a-preview-panel" class="anchor" href="#showing-detailed-information-in-a-preview-panel" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>在预览面板中显示详细信息</h2>
+<p class="translated">与搜索结果页面不同，自动完成倾向于保持结果紧凑。这使您可以显示更多的信息，但会限制您可以显示的信息量。</p>
+<p class="translated">在Algolia docs上，我们通过受macOS Spotlight体验启发的预览面板解决了这个问题。这让你<strong>在决定是否要导航</strong>到相关资源之前，发现更多关于给定搜索结果的信息。</p>
+<figure id="attachment_11707" aria-describedby="caption-attachment-11707" class="wp-caption alignnone"><img loading="lazy" class="size-full wp-image-11707" src="../Images/11836ac31d1767a899cf9fb8d70701c9.png" alt="A preview panel helps you display many results while exposing in-depth information about the active item." srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/algolia-documentation-search.png 2880w, https://blog-api.algolia.com/wp-content/uploads/2021/04/algolia-documentation-search-285x178.png 285w, https://blog-api.algolia.com/wp-content/uploads/2021/04/algolia-documentation-search-640x400.png 640w, https://blog-api.algolia.com/wp-content/uploads/2021/04/algolia-documentation-search-768x480.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/algolia-documentation-search-1536x960.png 1536w, https://blog-api.algolia.com/wp-content/uploads/2021/04/algolia-documentation-search-2048x1280.png 2048w" sizes="(max-width: 2880px) 100vw, 2880px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/algolia-documentation-search.png"/><figcaption id="caption-attachment-11707" class="wp-caption-text">A preview panel helps you display many results while exposing in-depth information about the active item</figcaption></figure>
+<p class="translated">自动完成提供了几种机制，您可以利用这些机制来组合预览面板:</p>
+<ul>
+<li class="translated">一个<a href="https://www.algolia.com/doc/ui-libraries/autocomplete/core-concepts/context/">上下文API </a>在自动完成生命周期中的任何地方存储和检索任意数据。</li>
+<li class="translated">一个<code>render</code>函数，输出自动完成面板，打开供你自定义。</li>
+<li class="translated">每个源都实现了一个<code>onActive</code>钩子，每当一个项目被激活时，这个钩子就会运行。</li>
+</ul>
+<p class="translated">首先，您需要在源代码中实现<code>onActive</code>方法。它允许您访问所有的自动完成设置器，包括一个让您持久化任意数据的<code>setContext</code>函数。您可以使用它来存储活动项目，以便以后在预览面板中显示。</p>
+<pre class="lang:js decode:true ">autocomplete({&#13;
+  // ...&#13;
+  getSources() {&#13;
+    return [&#13;
+      {&#13;
+        sourceId: 'hits',&#13;
+        // ...&#13;
+        onActive({ item, setContext }) {&#13;
+          setContext({ preview: item });&#13;
+        },&#13;
+      },&#13;
+      // ...&#13;
+    ];&#13;
+  },&#13;
+});</pre>
+<p class="translated">每当你浏览一个搜索结果，<code>preview</code>的值就会改变。现在，您可以使用autocomplete的<code>render</code>功能在结果列表旁边的面板中显示这些数据。</p>
+<p class="translated">默认渲染实现如下:</p>
+<pre class="lang:js decode:true ">import { render } from 'preact';&#13;
+&#13;
+autocomplete({&#13;
+  // ...&#13;
+  render({ children }, root) {&#13;
+    render(children, root);&#13;
+  },&#13;
+});</pre>
+<p class="translated">当需要重新呈现时，Autocomplete将虚拟DOM节点的当前树传递给Preact的<code>render</code>函数，该函数将其呈现到面板容器中。我们可以覆盖它来定制要呈现的内容。</p>
+<p class="translated">自动完成的<a href="https://www.algolia.com/doc/ui-libraries/autocomplete/api-reference/autocomplete-js/autocomplete/#param-render"> <code>render</code> </a>功能允许您访问当前的<code>state</code>，您可以在其上检索上下文。这使您可以构建预览面板并显示当前活动项目中的数据。</p>
+<pre class="lang:js decode:true ">/** @jsx h */&#13;
+import { h, render } from 'preact';&#13;
+&#13;
+// ...&#13;
+&#13;
+autocomplete({&#13;
+  // ...&#13;
+  render({ children, state, Fragment, components }, root) {&#13;
+    const { preview } = state.context;&#13;
+&#13;
+    render(&#13;
+      &lt;Fragment&gt;&#13;
+        &lt;div className="aa-Grid"&gt;&#13;
+          &lt;div className="aa-Results aa-Column"&gt;{children}&lt;/div&gt;&#13;
+          &lt;div className="aa-Preview aa-Column"&gt;&#13;
+            &lt;div className="aa-PreviewImage"&gt;&#13;
+              &lt;img src={preview.image} alt={preview.name} /&gt;&#13;
+            &lt;/div&gt;&#13;
+            &lt;div className="aa-PreviewTitle"&gt;&#13;
+              &lt;components.Highlight hit={preview} attribute="name" /&gt;&#13;
+            &lt;/div&gt;&#13;
+            &lt;div className="aa-PreviewPrice"&gt;${preview.price}&lt;/div&gt;&#13;
+            &lt;div className="aa-PreviewDescription"&gt;&#13;
+              &lt;components.Highlight hit={preview} attribute="description" /&gt;&#13;
+            &lt;/div&gt;&#13;
+          &lt;/div&gt;&#13;
+        &lt;/div&gt;&#13;
+      &lt;/Fragment&gt;,&#13;
+      root&#13;
+    );&#13;
+  },&#13;
+});</pre>
+<p class="translated">您需要编写一些自定义CSS来调整UI并并排显示两列。你可以在已经完成的项目的<a href="https://codesandbox.io/s/algoliaautocomplete-example-preview-panel-in-modal-zhhp8?file=/app.tsx"> CodeSandbox中找到一个例子。</a></p>
+<p class="translated">这就对了。每次滚动浏览结果时，面板都会更新详细视图。这是一个绝佳的机会，可以发挥创意，公开相关信息，帮助用户决定他们是否选择了正确的搜索结果。根据你的用例，你可以展示其他编程语言的兄弟页面的链接(技术文档)，最多的正面和负面评论(电子商务，媒体)，可用的尺寸和颜色变化(零售)等。</p>
+<figure id="attachment_11706" aria-describedby="caption-attachment-11706" class="wp-caption alignnone"><img loading="lazy" class="size-full wp-image-11706" src="../Images/b74490b3a4c4bea0707be4366432910e.png" alt="The final Autocomplete implementation | Source code on CodeSandbox" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/autocomplete-detached-desktop.png 1280w, https://blog-api.algolia.com/wp-content/uploads/2021/04/autocomplete-detached-desktop-292x178.png 292w, https://blog-api.algolia.com/wp-content/uploads/2021/04/autocomplete-detached-desktop-656x400.png 656w, https://blog-api.algolia.com/wp-content/uploads/2021/04/autocomplete-detached-desktop-768x468.png 768w" sizes="(max-width: 1280px) 100vw, 1280px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/autocomplete-detached-desktop.png"/><figcaption id="caption-attachment-11706" class="wp-caption-text">The final Autocomplete implementation | Source code on <a href="https://codesandbox.io/s/algoliaautocomplete-example-preview-panel-in-modal-zhhp8?file=/app.tsx">CodeSandbox</a></figcaption></figure>
+<h1 class="translated"><a id="using-autocomplete-with-docsearch" class="anchor" href="#using-autocomplete-with-docsearch" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>使用DocSearch自动完成</h1>
+<p class="translated">如果您在现有的文档站点上有一个开源API，您可能已经在使用我们的免费技术文档搜索解决方案<a href="https://docsearch.algolia.com/"> DocSearch </a>。DocSearch带有一个前端UI(用Autocomplete构建的)，但是您可以将其换成一个自定义的UI。</p>
+<p class="translated">为此，您需要将应用程序ID和API键替换为您在现有DocSearch实现中使用的ID和API键。此外，确保与自动完成模板中的文档搜索记录的结构相匹配。您可以通过在您的网站上进行搜索并检查来自Algolia的网络响应来查看您当前的记录结构。</p>
+<figure id="attachment_11705" aria-describedby="caption-attachment-11705" class="wp-caption alignnone"><img loading="lazy" class="size-full wp-image-11705" src="../Images/43447a3f98e7885a2935915673702558.png" alt="Inspecting the Algolia search response for a DocSearch implementation in the browser" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/04/docsearch-inspect-algolia-response.png 1709w, https://blog-api.algolia.com/wp-content/uploads/2021/04/docsearch-inspect-algolia-response-320x144.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/04/docsearch-inspect-algolia-response-720x325.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/04/docsearch-inspect-algolia-response-768x346.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/04/docsearch-inspect-algolia-response-1536x693.png 1536w" sizes="(max-width: 1709px) 100vw, 1709px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/04/docsearch-inspect-algolia-response.png"/><figcaption id="caption-attachment-11705" class="wp-caption-text">Inspecting the Algolia search response for a DocSearch implementation in the browser</figcaption></figure>
+<h1 class="translated"><a id="whats-next" class="anchor" href="#whats-next" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>接下来是什么</h1>
+<p class="translated">这让您体验了使用自动完成和最少的用户代码可以构建的高级搜索体验。我们已经在开发新的API和插件，让您走得更远，并为您的项目带来强大的随键入搜索功能。</p>
+<p class="translated">以下是你在不久的将来可以期待的一瞥:</p>
+<ul>
+<li class="translated">公开状态设置器和获取器，以编程方式控制分离模式</li>
+<li class="translated">一个<strong>标签API </strong>在同一个界面中细化自动完成结果</li>
+<li class="translated">一个<strong>组合API </strong>来转换源组</li>
+<li class="translated">一个<strong>流API </strong>通过结果设计类似图形的导航场景</li>
+<li class="translated">以及更多的改进👀</li>
+</ul>
+<p class="translated">请继续关注我们的<a href="https://discourse.algolia.com/tag/autocomplete">论坛</a>上的未来版本，并向我们展示您使用自动完成功能构建的内容！</p>
+</div></div>    
+</body>
+</html>

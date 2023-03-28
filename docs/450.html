@@ -1,0 +1,78 @@
+<html>
+<head>
+<title>A Journey Into SRE - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">SRE之旅-阿尔戈利亚博客|阿尔戈利亚博客</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/a-journey-into-sre/#0001-01-01">https://www.algolia.com/blog/engineering/a-journey-into-sre/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">站点可靠性工程师(SREs)设计并管理高效的流程和操作，他们保持公司基础设施的健康运行。</p>
+<p class="translated"><span>在Algolia，我们的团队在不到两年的时间里从4人发展到了10人，这一增长速度与整个公司相当。该团队不仅在人数上有所增长，而且在我们如何一起工作和创建良好的运营流程方面也有所增长。</span></p>
+<p class="translated"><span>本博客讲述的是一群勤劳的</span><i><span/></i><span>个人，凭借独特的技能和工作方法，成功创建了一个成功的【SRE】</span><i><span>团队</span> </i> <span>。</span></p>
+<p class="translated"><span>我自己在SRE领域的经历反映了这一成熟过程。在我加入Algolia之前，我作为一名电信公司的集成工程师周游世界。在不止一个场合，我找到了构建小工具的机会，这些小工具帮助我提高了工作效率。这增加了我在职业上更进一步的信心。从那时起，我开始探究什么是SRE。以下是谷歌副总裁本·特雷纳对SREs的评论:</span></p>
+<blockquote><p class="translated"><i><span>SRE是当一个软件工程师被分配</span> </i> <i>过去被称为运营的任务时发生的事情。</i></p></blockquote>
+<p class="translated">虽然从技术上讲，我不是软件工程师，但我的职业生涯遵循着同样的模式:编写代码来管理运营任务。因此，我对SRE这个角色感到兴奋，并准备好了改变。</p>
+<h1 class="translated"><a id="what-sres-do-at-algolia" class="anchor" href="#what-sres-do-at-algolia" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><b>SREs在Algolia做什么</b></h1>
+<p class="translated"><span>SRE团队的每个成员都参与了这三项活动:</span></p>
+<ul>
+<li class="translated"><span>项目</span></li>
+<li class="translated"><span>操作</span></li>
+<li class="translated"><span>随叫随到</span></li>
+</ul>
+<p class="translated">项目我们从事不同种类的项目。其中一些对业务有直接影响，另一些有助于改善全球基础设施。</p>
+<p class="translated"><b>运营:</b> <span>我们的大部分基础设施都是裸机，这意味着我们需要相当多的自动化和安装/破坏/修复服务器的工作。我们需要调试实时应用程序，并支持其他团队寻求技术建议。最重要的是，我们必须联系提供商来处理提供商的任何问题。</span></p>
+<p class="translated">随叫随到:我们需要为整个基础设施提供支持。这意味着我们每个人都必须每周7天、每周4天、每天24小时随叫随到。</p>
+<h2 class="translated"><a id="meetings" class="anchor" href="#meetings" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>会议</span></h2>
+<p class="translated">每周一我们都会开一个一小时的会，回顾上周并计划本周。我们谈谈:</p>
+<ul>
+<li class="translated"><span>待命问题</span></li>
+<li class="translated"><span>操作</span></li>
+<li class="translated"><span>项目状态</span></li>
+<li class="translated"><span>个人目标和计划</span></li>
+</ul>
+<h2 class="translated"><a id="operations" class="anchor" href="#operations" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>作战</span></h2>
+<p class="translated">随着时间的推移，Algolia的运营也发生了变化。例如，当我加入时，操作是每天进行的，这使得我很难深入了解已经完成了哪些任务。我们的 <i> <span>黄金法则</span> </i> <span>关于优先权是</span></p>
+<ul>
+<li class="translated"><span>首先响应客户</span></li>
+<li class="translated"><span>内部回答关于时差的问题</span></li>
+<li class="translated"><span>解决突发事件</span></li>
+<li class="translated"><span>供应基础设施</span></li>
+</ul>
+<p class="translated">现在每周进行一次操作。你可以看到下面的轮换计划。除此之外，我们还有两个级别的随叫随到。最后，随叫随到不应该与我们的正常操作有什么不同。总的来说，运营不仅仅是维护和改善我们的基础设施。</p>
+<p class="translated"><img loading="lazy" class="wp-image-8732 aligncenter" src="../Images/80384c461227a4f554dd2087e57d8194.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2019/07/SRE-image-320x119.png 320w, https://blog-api.algolia.com/wp-content/uploads/2019/07/SRE-image-768x285.png 768w, https://blog-api.algolia.com/wp-content/uploads/2019/07/SRE-image-720x267.png 720w, https://blog-api.algolia.com/wp-content/uploads/2019/07/SRE-image.png 910w" sizes="(max-width: 662px) 100vw, 662px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2019/07/SRE-image-320x119.png"/></p>
+<h1 class="translated"><a id="how-we-work-as-a-team" class="anchor" href="#how-we-work-as-a-team" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>我们如何作为一个团队工作</b></h1>
+<h2 class="translated"><a id="communications%c2%a0%c2%a0%c2%a0" class="anchor" href="#communications%c2%a0%c2%a0%c2%a0" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>通讯</span></h2>
+<p class="translated"><span>我在Algolia的第一天，我马上注意到我的同事们主要通过Slack交流，即使他们彼此之间只有几米远。这感觉有点冷，特别是考虑到我天生喜欢站起来和人说话。此外，团队分散在办公室各处。它不像是一个有凝聚力的单位。由于这些原因，交流很困难。</span></p>
+<p class="translated">有趣的是，我不是唯一一个有这种经历的人。新来的人也注意到了同样的问题。</p>
+<h2 class="translated"><a id="newcomers" class="anchor" href="#newcomers" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>来者</span></h2>
+<p class="translated">临界质量可能将我们推向了正确的方向:有太多的任务需要我们像以前一样继续工作。我们的第一步是为每个成员设定期望，这样每个人都会提前知道他们能从彼此身上得到什么。</p>
+<blockquote><p class="translated">新人给团队带来了老成员意想不到的好处和品质。此外，如果他们对此持开放态度，老成员实际上可以向新成员学习，并让这些新人/新品质将团队变得更好。新老的正确结合是一个团队伟大的原因。</p></blockquote>
+<p class="translated">我们采取的一项举措是创造一种每周两天的工间休息文化。在这些休息时间，我们谈论不同的事情，工作或与工作无关的。我们互相了解，更好地交流。</p>
+<h1 class="translated"><a id="pairing-creates-a-team" class="anchor" href="#pairing-creates-a-team" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>结对创建团队</b></h1>
+<p class="translated">最初，团队中的每个成员都在各自指定的项目中工作，为自己选择他们想要研究的主题。这种自主性和个人主动性并不是那么糟糕，但对于一个新人来说，这是压倒性的；它迫使我经常切换齿轮:学习 <i> <span>和</span> </i> <span>做我的日常支持</span><i><span/></i><span>想出项目点子</span> <i> <span>和</span> </i> <span>完成它们，全靠我自己。</span></p>
+<p class="translated">因为我们在成长，我们很快意识到我们需要改变这种状况，我们需要开始合作。第一步是做一些配对，两人一组。这给了我们一个与团队其他成员互动和认识的机会。</p>
+<h2 class="translated"><a id="three-projects" class="anchor" href="#three-projects" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>三个项目</strong></h2>
+<h3 class="translated"><a id="1-reverse-engineering-a-vaultconsul-server" class="anchor" href="#1-reverse-engineering-a-vaultconsul-server" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><strong>1–逆向工程一个金库/领事服务器</strong></h3>
+<p class="translated"><span>在这个项目中，Paul和我致力于了解当前的部署是如何工作的，我们如何在灾难情况下进行恢复，以及恢复需要多长时间。</span></p>
+<p class="translated">这个项目花了两个星期。一旦我们完成了，我们可以选择换搭档或者继续合作。在这两周结束时，我们有:</p>
+<ul>
+<li class="translated"><span>深入了解项目</span></li>
+<li class="translated"><span>自动化部署</span></li>
+<li class="translated"><span>复制数据</span></li>
+</ul>
+<h3 class="translated"><a id="2-load-balancer-knowledge-sharing" class="anchor" href="#2-load-balancer-knowledge-sharing" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><strong>2–负载均衡器知识分享</strong></h3>
+<p class="translated"><span>接下来的两周，我继续与Paul一起工作，深入了解新的负载平衡器。如果你还没有读过他关于<a href="https://www.algolia.com/blog/engineering/one-year-load-balancing/">一年负载均衡</a>的博文，我建议你去看看。</span></p>
+<p class="translated"><span>我们发现的主要问题是，在运营或待命期间，任何关于负载平衡器的请求都必须转发给Paul。这种知识共享有两个好处:首先，它向不止一个人提供见解；其次，它从拥有所有知识的人身上卸下任务。</span></p>
+<p class="translated"><span>最近，一名新成员加入了Algolia，开始全职从事负载平衡器的工作。对负载均衡器的专门支持不仅为新成员提供了更多的操作技能，还为团队提供了更多的咨询对象。</span></p>
+<h3 class="translated"><a id="3-backup-solution" class="anchor" href="#3-backup-solution" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><strong>3–备用方案</strong></h3>
+<p class="translated"><span>在这个项目中，基础小组的三名成员共同合作提出了一个新的备份解决方案。有趣的是，我们决定开始使用Scrum方法论。这是一个巨大的成功，因为它让我们:</span></p>
+<ul>
+<li class="translated">在更复杂的任务中定义小任务，这样我们三个人会在某个时候一起工作。</li>
+<li class="translated">建立一个时间估计，这有助于我们预见项目的进展情况。</li>
+<li class="translated"><span>自动分配任务。这对我来说是最好的部分，一旦我完成了我必须做的事情，就可以开始做其他的事情。</span></li>
+<li class="translated">由于我们几乎参与了所有部分的工作，因此对项目有了更大的了解。</li>
+</ul>
+<h1 class="translated"><a id="the-journey-continues" class="anchor" href="#the-journey-continues" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <strong>旅程继续..</strong></h1>
+<p class="translated">我们的努力非常成功，我们的团队变得非常稳定，以至于我重新审视了我刚开始时遇到的原始“问题”:过度使用Slack和分散的团队没有坐在一起。今天，这不是一个问题:我们经常使用Slack，然而谈话感觉自然而直接。我可以每天坐在不同的地板或桌子上，轻松地与我的团队合作——因为我知道我团队中的人是如何工作的。这就是一个伟大的SRE体验的组成部分:有效的沟通，高效的流程。</p>
+</div></div>    
+</body>
+</html>

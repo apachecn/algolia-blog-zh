@@ -1,0 +1,100 @@
+<html>
+<head>
+<title>Learn what an API key is, how it's used, and how it provides security | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">了解什么是API密钥，如何使用它，以及它如何提供安全性</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/search-101-what-is-an-api-key-how-does-it-provide-api-security/#0001-01-01">https://www.algolia.com/blog/engineering/search-101-what-is-an-api-key-how-does-it-provide-api-security/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated"><span>我们从标准定义开始:</span></p>
+<blockquote><p class="translated"><i>T3【API key】API key是用来标识和认证请求API(应用编程接口)服务的应用或用户的字符串。 </i></p></blockquote>
+<p class="translated">在本文中，我们为好奇的人们(技术或非技术)分解了这个定义，他们想知道API密匙是什么和做什么的内幕，以及它是如何工作的。</p>
+<h2 class="translated"><a id="an-api-key-is-the-secret-code-that-gets-you-inside" class="anchor" href="#an-api-key-is-the-secret-code-that-gets-you-inside" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><span>API密匙是进入内部的秘密代码</span></h2>
+<h3 class="translated"><a id="identification-and-authentication" class="anchor" href="#identification-and-authentication" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>识别和认证</span></h3>
+<p class="translated">API密钥是为其他应用程序提供服务的任何应用程序的标准安全机制。</p>
+<p class="translated"><span>虽然它们不是唯一的方法(API可以使用JWT，我们在这里写道:</span> <a href="https://www.algolia.com/blog/engineering/api-keys-vs-json-web-tokens/"> <span> API密钥vs JWT auth </span> </a> <span> ) <em>，</em> API密钥是保护API最常用的方法。</span></p>
+<p class="translated"><span/><a href="https://developers.google.com/maps"><b>谷歌地图API </b> </a> <span>就是一个需要API密钥的API服务(“端点”)的例子。如果您给Google的API一个物理地址(比如说“纽约州纽约市主街1001号”)，API将返回最有可能的位置的经纬度(40.73612474992504，-73.447321075)。但是，如果没有有效的API密钥，Google不会回答您的请求。你需要特别许可。API密钥让谷歌知道你是谁，你是否有权访问他们的地图服务。这称为身份验证(与授权相反，我们将在本文后面讨论授权。)</span></p>
+<p class="translated"><span>顺便说一下，为了理解这个机制是如何工作的，当我们写下</span> <i> <span>“我们给Google的API一个地址”</span> </i> <span>，或者</span> <i> <span>“我们给Google发送一个API密钥”，</span> </i> <span>我们指的是向Google服务器发送信息(通过类似Post和Get的HTTP请求方法</span>  <span>发出请求)并接收信息返回(得到响应)</span></p>
+<p class="translated">总之:</p>
+<blockquote><p class="translated">如果开发者想要使用谷歌几乎详尽的世界地址列表来创建一个地图应用程序，他们需要首先与谷歌签约，并获得一个API密钥，以便有权使用他们的谷歌地图API服务。</p></blockquote>
+<h3 class="translated"><a id="not-all-apis-require-or-use-api-keys" class="anchor" href="#not-all-apis-require-or-use-api-keys" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>不是所有的API都需要或者使用API键</span></h3>
+<p class="translated">一些API不需要API键。比如你用来看视频的 <b> Youtube URL </b> <span>其实就是一个不需要API key的API请求。所有人(不仅仅是开发者)都可以在世界任何地方、任何设备上免费使用它。也就是说，<a href="https://en.wikipedia.org/wiki/YouTube_API"> Youtube的API</a>还提供其他需要API密钥的服务，例如提供(私人或通常付费的)频道播放列表、评论历史、使用统计和数百个其他Youtube拥有的数据的信息。</span></p>
+<h3 class="translated"><a id="ease-of-use-api-first-thinking" class="anchor" href="#ease-of-use-api-first-thinking" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>易用性:API优先思维</span></h3>
+<p class="translated"><span>任何API的一个核心问题是它的易用性。正如我们将在下面的安全上下文中重复的:</span> <b>易用性对于API的使用是至关重要的。所有API优先的公司都希望在使用他们的API产品时将所有的摩擦最小化。</b> <span>这包括使访问他们的API变得容易和安全，这正是API密匙被设计来提供的。</span>T50</p>
+<h2 class="translated"><a id="api-keys-%e2%80%93-how-they-work%c2%a0" class="anchor" href="#api-keys-%e2%80%93-how-they-work%c2%a0" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span> API键——它们是如何工作的</span></h2>
+<p class="translated"><span>如上所述，API密钥使服务器能够识别试图访问其服务的任何开发者或应用程序(请求者</span>  <span>或用户</span><i><span/></i><span>)。一个API键还定义了一组</span> <b>访问权限</b> <span>。访问权限授权请求者采取特定的操作，并禁止其采取其他操作。</span></p>
+<p class="translated">让我们进入细节。</p>
+<h3 class="translated"><a id="your-api-key-is-a-unique-identifier-usually-a-long-string-of-characters" class="anchor" href="#your-api-key-is-a-unique-identifier-usually-a-long-string-of-characters" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>你的API键是一个唯一的标识符，通常是一长串字符</span></h3>
+<p class="translated"><span>您的API密钥是由数字和字母组合而成的</span> <b>唯一标识符</b> <span>。有些还包含非字母数字字符。唯一标识符本身并不代表什么；它唯一的意义就是它的独特性。</span> <b>它类似于密码或秘密代码。</b> <span> </span></p>
+<p class="translated"><span> API密匙通常包含64个以上的字符，由创建</span> <i> <span>通用唯一标识符</span> </i> <span>(通常称为</span><a href="https://en.wikipedia.org/wiki/Universally_unique_identifier"><span>GUID</span></a><span>s)的系统随机发生器生成。</span></p>
+<h3 class="translated"><a id="getting-access-authentication-or-failure" class="anchor" href="#getting-access-authentication-or-failure" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>接入:认证或失败</span></h3>
+<p class="translated"><span>把API键想象成通过API访问应用程序的数据和功能的一种方式。每个API请求者向服务器发送一个唯一的标识符，服务器使用该标识符来确定(</span> <i> <span>认证</span> </i> <span>)请求服务的个人或应用程序是否有权这样做。</span></p>
+<p class="translated"><span>如果服务器不能验证API调用(请求)的请求者，它会发回一个失败响应。这是创建API密匙背后的基本思想:如果您使用的是服务器无法识别的密匙，那么您将无法使用该服务。</span></p>
+<p class="translated"><span>然而，如果服务器</span><i><span/></i><span>识别API密钥并认证密钥的持有者，则该用户有权使用该服务。</span></p>
+<p class="translated"><span>下一步是服务器向</span> <i> <span>授权</span> </i> <span>请求者做一件或多件事情。</span></p>
+<h3 class="translated"><a id="authorization" class="anchor" href="#authorization" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>授权</span></h3>
+<p class="translated"><span>授权过程决定了请求者的</span> <b>权限</b> <span>和</span> <b>范围</b> <span>。授权定义了经过身份验证的请求者使用API的确切方式。它涉及到定义你的</span> <i> <span>权限</span> </i> <span>(可以访问哪些功能和数据)和</span> <i> <span>范围</span> </i> <span>(有多少数据，可以使用API多久等等)。</span></p>
+<h3 class="translated"><a id="rights" class="anchor" href="#rights" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>权利</span></h3>
+<p class="translated"><span>权利是关于你能做什么。如果请求者的API键包含搜索数据的权限，那么请求者可以</span> <i> <span>读取</span> </i> <span>数据来执行搜索。如果请求者有权</span> <i> <span>写</span> </i> <span>数据，那么请求者可以执行部分或全部</span><i><span/></i><span>写操作。写访问通常会有更多的细节。例如，请求者可能有权</span> <i> <span>更新</span> </i> <span>一个索引但无权</span> <i> <span>删除</span> </i> <span>记录。</span></p>
+<p class="translated"><span>也可以组合权限。例如，请求者可能既有</span><i><span/></i><span>读写能力，或者只是只读。通常，请求者有几个API来执行不同的操作。例如:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>只读用于搜索</span></li>
+<li aria-level="1" class="translated"><span>浏览和索引(添加、更新、删除)的读&amp;写权限</span></li>
+<li aria-level="1" class="translated"><b>管理员权限</b> <span>，包含一切，包括创建其他API</span></li>
+</ul>
+<h3 class="translated"><a id="admin-rights" class="anchor" href="#admin-rights" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>管理权限</span></h3>
+<p class="translated">每个API系统都有一个全局API键，它不仅允许读&amp;写操作，还允许完全访问API可以做的任何事情。例如，管理API允许应用程序和用户采取元操作，如添加、删除或修改用户、标识符、权限和范围。</p>
+<p class="translated">鉴于管理API密匙的强大功能，您会希望这个API密匙是完全安全的——也就是说，对公众是隐藏和锁定的。这同样适用于任何写级别的API键。根据使用情况，只读键可能更灵活。阅读商业敏感数据显然比在网站上搜索产品和电影需要更高的安全性。</p>
+<h3 class="translated"><a id="scope" class="anchor" href="#scope" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>范围</span></h3>
+<p class="translated">一旦请求者有权做某事，API就可以在该权限内限制或扩展请求者的能力。例如，如果请求者拥有更新索引的一般权限，API键可以限制请求者只能访问某些索引。或者，API键可以限定只读访问的范围，只允许请求者访问少量记录。</p>
+<p class="translated">通过过滤掉某些IP地址，您可以使用scope来进一步提高安全性。您还可以设置一个有效时间，也许是每天一个请求，或者在30天内每天少量的请求。</p>
+<p class="translated"><span>最后，API键可以提供基于过滤器的限制。例如，API键可以允许用户只更新“衣服”或“食物”项目。或者它可以限制只读请求者执行预定义的搜索或过滤。</span></p>
+<p class="translated"><span>关于限制性API使用的最后一点，一个很好的例子是授予只读访问权限，但使用忽略敏感数据的过滤器对其进行限制。这增加了额外的安全性，允许请求者查看仅为公共查看而设计的数据。</span></p>
+<p class="translated">但是安全性需要更多的讨论。</p>
+<h2 class="translated"><a id="securing-the-api-key" class="anchor" href="#securing-the-api-key" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>获取API密钥</span></h2>
+<p class="translated">就安全性而言，一个API密钥只能到此为止。本质上，如果一个密钥被盗或泄露，就不再安全了。</p>
+<h3 class="translated"><a id="a-stolen-or-leaked-api-key" class="anchor" href="#a-stolen-or-leaked-api-key" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>一个被盗或泄露的API密钥</span></h3>
+<p class="translated">有人可以通过许多方式获得API密钥。黑客可以拦截请求，窃取密钥，然后将请求更改为更具破坏性的内容。或者，更常见的情况是，开发人员可能会通过将API密钥发送到互联网上而意外泄露该密钥，这样任何人都可以很容易地找到它。或者不小心推到了Git回购。或者写在餐巾纸上，放在餐厅的桌子上。</p>
+<h3 class="translated"><a id="security-safeguards" class="anchor" href="#security-safeguards" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>安全保障</span></h3>
+<p class="translated">一些安全措施依赖于额外的安全检查。其中一些方法需要请求者做额外的工作，这降低了API的受欢迎程度。值得记住的是API 101: </p>
+<blockquote><p class="translated"><em>易用性对API的使用至关重要，所以你要尽量减少所有的摩擦。</em></p></blockquote>
+<p class="translated"><span>这里有一些安全保障措施，要求</span> <i> <span>没有额外的开销</span> </i> <span>或API用户的负担:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>创建速率限制，控制API被调用的次数</span></li>
+<li aria-level="1" class="translated"><span>创建其他限制或应用程序限制以最大限度地减少攻击</span></li>
+<li aria-level="1" class="translated"><span>使用攻击检测方法发出意外行为、推荐人或已知攻击行为的信号</span></li>
+<li aria-level="1" class="translated"><span>拒绝不合常规或损害隐私或数据的请求</span></li>
+<li aria-level="1" class="translated"><span>如上所述，移除对非敏感数据的访问</span></li>
+<li aria-level="1" class="translated">定期手动创建或自动生成新的API密钥</li>
+</ul>
+<p class="translated"><span>技术说明:许多安全措施可以作为API请求中的参数添加到标题中。</span></p>
+<p class="translated"><span>以下是最流行的API安全技术，它们要求开发者做的不仅仅是提供一个API密钥:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>使用一种特殊的API密钥，称为安全API密钥。</span></li>
+<li aria-level="1" class="translated"><span>登录并使用用户id和密码。</span></li>
+<li aria-level="1" class="translated"><span>使用认证令牌(例如，JWT令牌)进行认证和授权。</span></li>
+<li aria-level="1" class="translated"><span>加密。为此，用户必须拥有与API服务器相同的加密软件。加密软件将API密钥转换为不可读的数据，只有API服务器能够理解这些数据。</span></li>
+</ul>
+<h3 class="translated"><a id="the%c2%a0-secured-api-key-providing-server-based-security-with-a-temporary-api-key" class="anchor" href="#the%c2%a0-secured-api-key-providing-server-based-security-with-a-temporary-api-key" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>安全API密钥:用临时API密钥提供基于服务器的安全性</span></h3>
+<p class="translated"><span>一个</span> <a href="https://www.algolia.com/doc/guides/security/api-keys/#secured-api-keys"> <b>安全的API密钥</b> </a> <span>包含了对标准API密钥的额外安全保护:(A)它是短暂的(即时创建的和临时的)；因此，不能在仪表板上看到以任何方式对其进行修改或管理。更重要的是，(b)它包含用户的id——因此，只有一个用户可以使用这个密钥。</span></p>
+<p class="translated"><span>通常情况下，API密匙都是</span><i><span/></i><span>生成一次，对于</span> <i> <span>任何</span> </i> <span>用户，都是终身不变的。然而，永久键有两个缺点:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>一旦有人偷了钥匙，他们将能够使用它，直到盗窃被发现，钥匙被取走</span></li>
+<li aria-level="1" class="translated"><span>如果您需要10，000个用户拥有唯一的密钥，您将需要创建并维护所有的用户。虽然您可以自动生成新的API键，但您几乎总是需要手动更改代码。</span></li>
+</ul>
+<p class="translated">大多数生产级应用程序需要更安全、更易于管理的东西，而不需要任何额外的工作。</p>
+<p class="translated"><span>工作原理:安全API密钥通过将会话和/或用户id信息作为密钥生成的一部分来利用这些信息。本质上，密钥是通过将用户标识符与密钥的范围(例如，超时限制、安全过滤器)相结合而动态生成的。一旦生成了密钥，请求者必须总是发送生成的API密钥</span> <i> <span>和</span> </i> <span>其用户id和范围。然后，API服务器将使用用户id和范围重新生成密钥，然后将其与用户发送的密钥进行比较。如果它们不同，那么这显然是一个黑客。</span></p>
+<p class="translated">这种双重检查逻辑只是迈向更好安全性的一步。下一步是要求API用户登录。</p>
+<h3 class="translated"><a id="logging-in-%e2%80%93-creating-api-keys-with-user-ids-passwords-jwt-tokens-oauth-and-openid" class="anchor" href="#logging-in-%e2%80%93-creating-api-keys-with-user-ids-passwords-jwt-tokens-oauth-and-openid" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>登录–使用用户ID、密码、JWT令牌、OAuth和OpenID创建API密钥</span></h3>
+<p class="translated"><span>我们在这里提到的最后一种安全方法需要API用户登录。在这种情况下，如果登录成功，API服务器发出一个唯一的、不可读的</span> <i> <span>令牌</span> </i> <span>，API用户在保持登录时必须使用该令牌。此外，令牌包括用户凭证，使得除用户之外的任何人都难以发送令牌。</span></p>
+<p class="translated"><span>因此，我们在两个重要方面改进了临时安全API密钥方法:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span> JWT需要登录。</span></li>
+<li aria-level="1" class="translated"><span> JWT生成一个令牌，其值包含用户登录凭证的加密版本。这些用户凭证使得API服务器能够在每个</span>  <span>连续的API请求中使用</span> <i> <span>对用户进行认证。</span></i></li>
+</ul>
+<p class="translated"><span>了解更多关于</span> <a href="https://www.algolia.com/blog/engineering/api-keys-vs-json-web-tokens/"> <span> JWT令牌</span> </a> <span>以及它与API密钥的不同之处。</span></p>
+<h2 class="translated"><a id="designing-and-implementing-the-best-api-%e2%80%93-tracking-usage" class="anchor" href="#designing-and-implementing-the-best-api-%e2%80%93-tracking-usage" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>设计和实现最佳API——跟踪使用情况</span></h2>
+<p class="translated"><span>我们已经讨论了API密匙的用途，它看起来像什么，它如何操作，以及使用API密匙能做什么和不能做什么。我们还讨论了一些关于安全性的细节。我们将结束另一个方面:跟踪API的使用和改进API。</span></p>
+<p class="translated">API依靠用户体验来改进其设计和功能。一个想要在竞争日益激烈的API市场中提供绝对最好的API的公司，必须知道它的客户如何使用他们的API。通过记录每个请求——哪些请求、请求的数量、每个请求的成功和失败，API提供者将报告、调试和分析添加到API的设计和实现中。</p>
+</div></div>    
+</body>
+</html>

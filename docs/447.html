@@ -1,0 +1,46 @@
+<html>
+<head>
+<title>DX Matters - Creating Great Search for Documentation - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">DX Matters -为文档创建伟大的搜索- Algolia博客</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/dx-matters-creating-great-search-documentation/#0001-01-01">https://www.algolia.com/blog/engineering/dx-matters-creating-great-search-documentation/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated"><b> D </b> <span>开发者e </span> <b> X </b> <span>经验，被称为</span> <b> DX </b> <span>，是构建优秀软件的关键，因为它帮助你的开发者用户充分利用你的软件。</span></p>
+<p class="translated"><span>好的DX的一部分是</span> <i> <span>通过文档搜索，</span> </i> <span>不仅作为查找信息的手段，而且作为构建技术内容的工具。在本文中，我们向您展示了一个简单的项目——Algolia的免费文档搜索平台——如何解决开源社区中的一个常见难题:搜索和结构化文档。我们展示了文档搜索的积极影响以及开发它的成本。</span></p>
+<p class="translated"><span>我们还重点对比了广泛使用的</span><b><i>【Ctrl+F】</i></b><span><span>的值</span> <b> <i>。</i></b></span></p>
+<p class="translated">最后，我们提出一些关于如何让DocSearch更有帮助的想法。</p>
+<h1 class="translated"><a id="making-documentation-easy-for-developers" class="anchor" href="#making-documentation-easy-for-developers" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>让开发人员轻松编写文档</span></h1>
+<p class="translated"><span>开发者社区发展迅速。它们的影响更广更强。我们想用我们的搜索技术来帮助开发者施展他们的魔法，让这个世界变得更美好。是时候关注一个合适的DX了。</span></p>
+<blockquote><p class="translated">这就是Algolia和它的DocSearch工具的用武之地:通过边学边做的体验让搜索变得生动起来。</p></blockquote>
+<p class="translated">搜索解决了一个常见的问题:每个开发人员在需要学习或使用新技术时都需要使用文档。搜索给一个项目带来了爱。但是大多数项目资源有限，或者他们缺乏为文档创建良好搜索体验的知识。他们专注于构建一个令人惊叹的工具。DocSearch让他们的文档变得活灵活现——免费且开箱即用。</p>
+<p class="translated"><a href="https://community.algolia.com/docsearch/"> <span> DocSearch </span> </a> <span>在社区中受到了热烈欢迎。<strong>它每月自豪地帮助230万独立用户。</strong>它是自助式和可定制的，是一种完整的开箱即用体验。它适用于任何软件，如Stripe、React和jQuery。你的用户将浏览即时搜索结果，而不是猜测或翻阅页面。它还捕获对了解用户的行为和需求至关重要的分析。你现在是数据驱动，以产生伟大的文件。</span></p>
+<p class="translated"><span>但是DocSearch也提高了现代文档的标准，它标准化了一种结构良好的文档方法。这是通过它的爬行机制来实现的，它用爬行机制来给你的网站添加搜索。抓取文档要求内容遵循一定的结构。</span></p>
+<p class="translated"><span>随着时间的推移，我们还改进了DocSearch。在搜索和构建内容的过程中，我们遇到了一些基本的和永恒的开发者问题。最大的问题是选择空格还是制表符来缩进页面。当我们将DocSearch集成到jQuery时，这是唯一的负面反馈。但是我们解决了这个问题，</span> <a href="https://github.com/jquery/jquery-wp-content/pull/416"> <span>多亏了一个简单的公关</span> </a>:</p>
+<p class="translated"><img loading="lazy" class=" wp-image-8782 aligncenter" src="../Images/b144e8df2a4a6df14784baf77205aa90.png" alt="" srcset="https://blog-api.algolia.com/wp-content/uploads/2019/07/sylvainP-blogpost-320x110.png 320w, https://blog-api.algolia.com/wp-content/uploads/2019/07/sylvainP-blogpost-768x264.png 768w, https://blog-api.algolia.com/wp-content/uploads/2019/07/sylvainP-blogpost-720x248.png 720w, https://blog-api.algolia.com/wp-content/uploads/2019/07/sylvainP-blogpost.png 1600w" sizes="(max-width: 625px) 100vw, 625px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2019/07/sylvainP-blogpost-320x110.png"/></p>
+<h1 class="translated"><a id="why-is-ctrl-f-not-enough" class="anchor" href="#why-is-ctrl-f-not-enough" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>为什么Ctrl-F不够用？</span></h1>
+<p class="translated">当人们可以很容易地使用Ctrl-F时，为什么要用DocSearch走那么远？原因有很多:</p>
+<ul>
+<li class="translated">你将搜索整个文档网站，而不仅仅是一个下载页面。</li>
+<li class="translated"><span>边学边做的体验。即时搜索结果和分类下拉框使用户不仅可以搜索，还可以浏览、发现和学习。我们已经注意到，由于在搜索中所学到的东西，人们会重新措辞、纠正和删除他们最初的搜索。</span></li>
+<li class="translated"><span>速度。从一页跳到另一页，快速找到你需要的东西。毫秒很重要。</span></li>
+<li class="translated"><span>错别字宽容。我们的搜索纠正了错误的查询和打字错误。当你搜索未知概念或技术时，这是关键</span></li>
+<li class="translated"><span>平局决胜算法。Algolia的这一独特概念帮助维护者更好地重定向他们的用户，以互动的方式帮助他们的用户。更不需要支持！</span></li>
+<li class="translated"><span>分析学。我们的搜索帮助您了解您的用户在做什么。</span></li>
+</ul>
+<h1 class="translated"><a id="let%e2%80%99s-see-how-it-works" class="anchor" href="#let%e2%80%99s-see-how-it-works" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>让我们看看它是如何工作的</span></h1>
+<p class="translated"><span>我们每年24H都会对1600多个文档搜索网站进行爬网，以保持搜索与其内容同步。这一过程需要强大而安全的基础设施。我们使用可扩展的基础架构，因为我们才刚刚起步。这就是库伯内特介入的地方。Kubernetes (K8s)是一个用于自动化部署、扩展和管理容器化应用程序的开源系统。它现在是DocSearch每天抓取1600多个文档网站的基础。如果您想了解更多关于所选架构的详细信息，请联系我们🙂</span></p>
+<p class="translated">所有这些都是有代价的。当然，这个项目需要一个强大而可靠的代码库。这一切都是从葡萄牙波尔图的一个度假/异地开始的。这是一个经典的故事，我们将在另一篇博客中解释。像每个项目一样，时间是关键。我们的团队有一个主要的座右铭:自动化！我们甚至建立了一个完整的工具来收集关于项目的公共数据，以便提供最佳的定制帮助。这也是一个很好的博客，正在发展中。为了正确地自动化，我们需要重构我们工具的每一部分。这一点非常关键，帮助我们更快、更强、更远地提供搜索体验。</p>
+<p class="translated"><span> DX甚至关系到我们的交付方式。我们帮助每一个向我们伸出援手的合规项目。然而，我们注意到，帮助大项目的最佳方式是主动伸出援手。我们正在雇人来帮助我们。DocSearch的未来用户只需点击“合并”按钮，就能看到生动的“即学即用”体验。</span></p>
+<h1 class="translated"><a id="next-steps-for-dx" class="anchor" href="#next-steps-for-dx" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>下一步为DX </span></h1>
+<p class="translated">我们项目的稳定状态鼓励我们走得更远。我们总是想展示我们对社区的巨大爱。路会很长，很神奇。我们期待着它，并且我们已经为DocSearch定义了一些未来的补充。</p>
+<ul>
+<li class="translated"><span>更好的分析。</span></li>
+<li class="translated">用户界面的新版本(v3)。</li>
+<li class="translated"><span>实时:仅在触发时(即内容发生变化时)抓取网站。</span></li>
+<li class="translated"><span>仪表板:借助UI仪表板，让我们的用户创建自己的配置。</span></li>
+<li class="translated"><span>改进并公开我们的文档搜索中心。</span></li>
+</ul>
+<p class="translated">快乐编码和编写伟大的文档！</p>
+</div></div>    
+</body>
+</html>

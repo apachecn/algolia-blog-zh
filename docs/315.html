@@ -1,0 +1,184 @@
+<html>
+<head>
+<title>Multilingual search: Decompounding with language-specific lexicons | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">多语言搜索:用特定语言的词典进行分解</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/increase-decompounding-accuracy-by-generating-a-language-specific-lexicon/#0001-01-01">https://www.algolia.com/blog/engineering/increase-decompounding-accuracy-by-generating-a-language-specific-lexicon/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">分解是将一个复合词切割成有意义的部分的行为。对于多语言搜索引擎来说，这是一个重要的过程，因为在许多语言中，复合被大量用于生成新词。一个德国用户在寻找一个<i><span>hundehütte</span></i><span>(</span><i><span>狗屋</span> </i> <span>)想要得到的结果就好像他们已经输入了</span><i><span>hütte für meine Hund</span></i><span>(</span><i><span>狗屋</span> </i> <span>)一样。由于大多数电子商务搜索都是基于关键词的，一旦我们删除了停用词</span><i><span/></i><span>(</span><i><span/></i><span>)和</span><i><span>meine</span></i><span>(</span><i><span>my</span></i><span>)，打破了复合词</span> <i> <span> Hundehütte </span></i></p>
+<p class="translated">在这篇博文中，我们将定义一个复合，并讨论分解的概念。我们将讨论典型的分解方法，并向您介绍我们在Algolia使用的方法。我们还将讨论知道何时 <i> <span>而非</span> </i> <span>被分解的挑战(例如在</span> <i> <span>机场</span> </i> <span>被拆分为</span> <i> <span>航空</span> </i> <span>和</span> <i> <span>港口</span> </i> <span>的情况下)。</span></p>
+<h2 class="translated"><a id="what-is-a-compound" class="anchor" href="#what-is-a-compound" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><span>什么是复合？</span></h2>
+<p class="translated">如果你剪过头发或见过摩托车，你会对复合词很熟悉。复合词是两个或两个以上的词(词位)组合成一个新词。复合词通常由名词、形容词和动词组成。例如:</p>
+<ul>
+<li class="translated"><span>打开，如</span> <i> <span>酱油</span> </i></li>
+<li class="translated"><span>连字符，如</span> <i> <span>基于概率的</span> </i> <span>和</span> <i> <span>白发苍苍的</span> </i></li>
+<li class="translated"><span>关闭，如</span> <i> <span>快捷方式</span> </i> <span>和</span> <i> <span>白板</span> </i></li>
+</ul>
+<p class="translated"><span>在搜索的上下文中，我们感兴趣的是最后一种类型，</span>、<b>、</b>、<span>为闭合复合词，其他两种更容易拆分。</span></p>
+<p class="translated">大多数语言使用复合词来创造新词。例如:</p>
+<ul>
+<li class="translated"><span>荷兰语:</span><i><span>verjaardagskalander</span></i><span>(</span><i><span>生日日历</span></i><span>)=</span><i><span>verjaardag</span></i><span>(</span><i><span>生日</span> </i> <span> ) + </span> <i> <span>卡伦德</span> </i> <span> ( </span></li>
+<li class="translated"><span>在完成:</span><i><span>kukkakimppu</span></i><span><span>花束</span><span>)=</span><i><span>kukka</span></i><span>(</span><i><span>花</span></i><span>)+</span><i><span>kimppu</span></i></span></li>
+<li><span>In Japanese: </span><i><span>お好み焼き</span></i><span> (</span><i><span>okonomiyaki</span></i><span>) = </span><i><span>お好み </span></i><span>(</span><i><span>okonomi, preference</span></i><span>) + </span><i><span>焼き</span></i><span> (</span><i><span>yaki, cooking</span></i><span>)</span></li>
+</ul>
+<p class="translated">在某些语言中，复合词可以产生极长的单词。在德语中，复合词没有大小限制。1996年， <i> <span>吉尼斯世界纪录</span> </i> <span>认定</span><a href="https://en.wikipedia.org/wiki/Donaudampfschiffahrtselektrizit%C3%A4tenhauptbetriebswerkbauunterbeamtengesellschaft"><span>Donau dampfschifahrts elektrizitten hauptbetriebswerkbau unterbeamten Gesellschaft</span></a><span>(出自多瑙河轮船电气服务公司主要维修大楼下属官员协会)为最长公布的字。</span></p>
+<p class="translated"><span>在日耳曼语中，一个复合词通常由一个</span><span><b/></span><span>和一个或几个</span> <b> <span>修饰语</span>组成。</b> <span>头在右边(字尾)，修饰语分支在左边。他们经常使用</span> <b> <span>连接语素</span> </b>来连接。在语言学中，一个<span>语素是最小的意义单位(想想<i>狗</i> = <i>狗</i> + <i> s </i>或<i>不舒服</i> = <i> un </i> + <i>舒服</i> + <i>能干</i>)，连接语素用来连接词语</span> <i> <span>。</span> </i> <span>它们也可以用来表示某种程度的屈折，比如在使用所有格或复数时:</span></p>
+<ul>
+<li class="translated"><span> <b>洪德</b> </span> <span> <b>鄂</b> </span> <span> <b>胡特</b> </span></li>
+<li class="translated"><span><b>Voorlichting</b></span><span><b>s</b></span><span><b>systeme</b></span><span>(</span><i><span>预防系统</span> </i> <span>荷兰语)</span></li>
+<li class="translated"><span><b>Eftermiddag</b></span><span><b>s</b></span><span><b>kaffe</b></span>(丹麦语<i>下午茶</i></li>
+</ul>
+<p class="translated"><span>连接语素是语言依赖性的。以下是几种语言的例子:</span></p>
+<ul>
+<li class="translated"><span>瑞典语:o，u，e，s </span></li>
+<li class="translated"><span>荷兰语:南、东、英</span></li>
+<li class="translated"><span>德语:南、东、恩、恩、嫩、ens、ns </span></li>
+</ul>
+<p class="translated"><span>有些单词在连接时可能会被部分删减，如</span><i><span>Fahrschule</span></i><span>(</span><i><span>驾校</span></i><span>)；动词</span><i><span>Fahren</span></i><span>(</span><i><span>带动</span> </i> <span>)被削去了茎。</span></p>
+<h2 class="translated"><a id="what-is-decompounding" class="anchor" href="#what-is-decompounding" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>什么是分解？</span></h2>
+<p class="translated"><span>分解是将化合物分解成有意义的词位的行为；提取每一个有意义的单元。</span></p>
+<p class="translated">我们必须避免的一件事是过分分解单词。比如荷兰语单词<i><span>Voorlichtingssysteem</span></i><span>(</span><i><span>预防系统</span> </i> <span>)可以剪成</span><i><span>Voorlichting</span></i><span>(</span><i><span>预防</span></i><span>)+</span><i><span>s</span></i>停在那里是有意义的。我们可以把<i><span>【Voorlichting】</span></i><span/><i><span>Voor</span></i><span><span>(</span><i><span>在</span> </i> <span>前面)+</span><i><span>lichting</span></i><span>(</span>【T77)</span></p>
+<h2 class="translated"><a id="typical-methods-of-decompounding" class="anchor" href="#typical-methods-of-decompounding" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>典型的分解方法</span></h2>
+<p class="translated">大多数分解方法都是基于不应该被进一步分解的单词的 <b>词典</b> <span>。我们将这些字称为</span> <b>原子。</b> <span>例如，在德语单词</span><i><span>wissenschaftscolleg</span></i><span>(</span><i><span>理学院</span> </i> <span>)，原子是</span><i><span>Wissenschaft</span></i><span>(</span><i><span>理科</span> </i> <span>)和</span> <i> <span> Kolleg</span><i><span>Wissenschaft</span></i><span>可切割成</span><i><span>Wissen</span></i><span>(</span><i><span>知识</span> </i> <span>)和</span><i><span>Schaft</span></i><span>(</span><i><span>轴</span>使用这个词汇，我们可以很容易地通过找到最长的原子来拆分化合物。</i></i></p>
+<p class="translated">我们可以用几种方法做到这一点。分解技术应用不同的方法:</p>
+
+<p class="translated">更高级的方法使用单词的统计特性。他们查看大量数据中原子出现的频率，只有当整个单词有意义的概率比其各部分的概率低时，才拆分单词。机器学习也被用来解决分解分词问题。在一个关于<a href="#footnote1">分解查询词</a>  <span>的引用最多的资源中，作者结合了一个词的统计属性，如在大型语料库中出现的频率和在查询中的共现，并使用</span> <a href="https://en.wikipedia.org/wiki/Support-vector_machine"> <span>支持向量机(SVM) </span> </a> <span>将它们结合起来。</span></p>
+<p class="translated">最近，研究人员Martin Riedl和Chris Biemann提出了一种叫做SECOS的方法，该方法使用分布式词库上单词和距离的统计属性来将复合词分成可能的和相关的单词。</p>
+<h2 class="translated"><a id="the-algolia-approach-building-a-good-lexicon-for-decompounding" class="anchor" href="#the-algolia-approach-building-a-good-lexicon-for-decompounding" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/></svg></a><span>Algolia方法:</span> <span>为分解构建一个好的词典</span></h2>
+<p class="translated">在Algolia，速度至关重要。我们不能实现一种会显著降低搜索引擎速度的方法，从而破坏像“随键入搜索”这样的功能。因此，我们不能在查询时使用复杂或繁重的基于机器学习的方法。</p>
+<p class="translated"><span>考虑到这一点，我们得出结论，一个好的词典是一个高效的分解系统最重要的部分。下面是一个德语测试集的例子，我们使用一个仅由测试集中出现的原子组成的词典来计算下面的度量。通过使用简单的</span> <b>贪婪最长匹配</b> <span>算法进行匹配。一半的测试集由不应被分解的单词组成，例如</span> <i> <span> Handschuh，glove，</span> </i> <span>其不应被划分为</span><i><span>Hand</span></i><span>+</span><i><span>schuh</span></i><span>(</span><i><span>Hand</span></i><span>+</span><i><span>shoe【t另一半含有应该被分解的化合物。</span></i></p>
+<table>
+<tbody>
+<tr>
+<td class="translated"><b>复合</b></td>
+<td class="translated"><b>翻译</b></td>
+<td class="translated"><b>分裂</b></td>
+</tr>
+<tr>
+<td class="translated"><i><span>Wissenschaftskolleg</span>T47】</i></td>
+<td class="translated"><i> <span>理学院</span> </i></td>
+<td class="translated"><i><span>Wissenschaft+kol leg</span></i></td>
+</tr>
+<tr>
+<td class="translated"><i> <span>洪德胡特</span> </i></td>
+<td class="translated"><i> <span>狗屋</span> </i></td>
+<td class="translated"><i> <span>洪+胡</span> </i></td>
+</tr>
+<tr>
+<td class="translated"><i> <span>手抖</span> </i></td>
+<td class="translated"><i> <span>手套</span> </i></td>
+<td class="translated"><i> <span>手抖</span> </i></td>
+</tr>
+<tr>
+<td class="translated"><i><span>Hinterziehung</span></i></td>
+<td class="translated"><i>T85】闪避T87】</i></td>
+<td class="translated"><i><span>Hinterziehung</span></i></td>
+</tr>
+</tbody>
+</table>
+<p class="translated"><span>我们使用测试集的所有原子作为我们的词典(例如</span> <i> <span> Wissenschaft，Kolleg，Hunde </span> </i> <span>)，得到如下结果:</span></p>
+<table>
+<tbody>
+<tr>
+<td class="translated"><b>方法</b></td>
+<td class="translated"><b>词汇</b></td>
+<td class="translated"><b>F1-得分</b></td>
+<td class="translated"><b>精度</b></td>
+<td class="translated"><b>召回</b></td>
+<td class="translated"><b>精度</b></td>
+</tr>
+<tr>
+<td class="translated"><span>贪心最长</span></td>
+<td class="translated"><span>3702字</span></td>
+<td class="translated"><span> 0.998 </span></td>
+<td class="translated"><span> 0.998 </span></td>
+<td class="translated"><span> 0.998 </span></td>
+<td class="translated"><span> 0.999 </span></td>
+</tr>
+</tbody>
+</table>
+<p class="translated"><span>这是相当可观的，但这是作弊。在现实生活中，我们没有一套完美的原子。例如，如果测试集仅由</span><i><span>Hund</span></i><span>和</span><i><span>hütte</span></i><span>组成，那么仅由</span><i><span>Hund</span></i>Hund<span>和</span><span>hütte<span>组成的词典将会得到完美的分数，但是在真实数据上它不会表现得很好。</span></span></p>
+<p class="translated">我们需要建立一个更加可靠和详尽的词典。我们的方法包括以下步骤:</p>
+<ol>
+<li class="translated"><span>在我们的目标语言中寻找大量文本</span></li>
+<li class="translated"><span>提取频繁使用的名词、形容词和动词以创建第一词典</span></li>
+<li class="translated"><span>根据给定的分数，通过仅保留不能被其他单词分解的单词来修整词典(下面详述)</span></li>
+<li class="translated"><span>用单词的潜在变化丰富词典</span></li>
+</ol>
+<h3 class="translated"><a id="finding-a-large-quantity-of-data-in-a-target-language" class="anchor" href="#finding-a-large-quantity-of-data-in-a-target-language" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>寻找目标语言的大量数据</b></h3>
+<p class="translated">免费使用、无人监管的文本数据可以从几个来源在线获得。我们喜欢 <a href="https://dumps.wikimedia.org/"> <span>维基媒体的数据</span> </a> <span>，尤其是维基百科和维基新闻的数据。(对于维基百科没有提供足够数据的语言，</span><a href="https://oscar-corpus.com/"><span>OSCAR</span></a><span>也是一个选项，虽然我们没有用过)。当然，必须通过提取文章的文本，然后使用标准的文本预处理来清理数据，并使用语言分类器来确保我们提取的大多数句子都是所需的语言(在线选项包括</span><a href="https://github.com/facebookresearch/fastText"><span>【fast text】</span></a><span/><a href="https://pypi.org/project/langdetect/"><span>lang detect</span></a><span>，以及</span><a href="https://github.com/google/cld3"><span>CLD 3</span></a><span>)。</span></p>
+<h3 class="translated"><a id="extracting-nouns-adjectives-and-verbs" class="anchor" href="#extracting-nouns-adjectives-and-verbs" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>提取名词、形容词和动词</b></h3>
+<p class="translated">现在我们有了大量的目标语言文本，我们想在其中找到潜在的原子。我们知道化合物是由名词、形容词和动词组成的，如果我们能在数据中找到常用的名词、形容词和动词，我们就会有一组很好的潜在原子。</p>
+<p class="translated">为了提取我们的原子，我们使用了词性标注，这是一种将单词与其词性(例如，名词、代词、形容词、副词)匹配的分类任务。幸运的是，有一些图书馆拥有针对几种语言的词性标注训练的深度学习模型。最广为人知的有<a href="https://spacy.io/"><span>spaCy</span></a><span/><a href="https://stanfordnlp.github.io/stanza/"><span>Stanza</span></a><span/><a href="https://github.com/flairNLP/flair"><span>flair</span></a><span>，以及</span><a href="https://github.com/nlp-uoregon/trankit"><span>trankit</span></a><span>。我们还计算了这些潜在原子的出现次数，这在我们的下一步中是有用的。</span></p>
+<p class="translated"><span>词条解释是识别一个屈折词的基本形式或字典形式(其词条)。例如，</span> <i> <span>狗</span> </i> <span>的基本形态是</span><i><span/></i><span>狗，</span> <i> <span>的基本形态是</span> </i> <span>是</span> <i> <span> be，</span> </i> <span>和</span><i><span/></i><span>的基本形态是</span>  <span>由于词会受到形态变化的影响，我们将其词条化以得到更详尽的数量。然后我们过滤掉不常用的单词，因为它们可能是噪音或错别字，以及很长的单词，这些单词不太可能是原子。</span></p>
+<h3 class="translated"><a id="trimming-our-lexicon" class="anchor" href="#trimming-our-lexicon" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>修剪我们的词库</b></h3>
+<p class="translated">在这个阶段，我们的词汇由相对频繁使用的名词、形容词和动词组成，我们认为它们是潜在的原子。然而，许多潜在的原子很可能是化合物。为了过滤掉这些不需要的化合物，我们使用了潜在原子的统计特性。如果一个给定的单词可以被其他单词的组合分解，并且这些其他单词的概率的几何平均值(见下文)高于整个单词的概率，我们就把它从我们的词典中去掉。</p>
+<p class="translated">我们计算潜在原子的概率如下:</p>
+<p class="ql-center-displayed-equation translated"><span class="ql-right-eqno"/><span class="ql-left-eqno"/>T4】</p>
+<p class="translated"><span>其中</span><i><span>total word count</span></i><span>是我们语料库中的总字数，而</span><i><span>word count(</span></i><img loading="lazy" src="../Images/a5cd5237b8f36108329147a15fca23b8.png" class="ql-img-inline-formula quicklatex-auto-format" alt="W_{i}" title="Rendered by QuickLaTeX.com" data-original-src="https://blog-api.algolia.com/wp-content/ql-cache/quicklatex.com-57c8663e1fff39b02dd8833b73234798_l3.png"/><i><span>)</span></i><span/><img loading="lazy" src="../Images/a5cd5237b8f36108329147a15fca23b8.png" class="ql-img-inline-formula quicklatex-auto-format" alt="W_{i}" title="Rendered by QuickLaTeX.com" data-original-src="https://blog-api.algolia.com/wp-content/ql-cache/quicklatex.com-57c8663e1fff39b02dd8833b73234798_l3.png"/><span>在语料库中出现的次数。</span></p>
+<p class="translated"><span>我们计算潜在分解</span> <img loading="lazy" src="../Images/c8727462cd14f389787b9fe84680e02d.png" class="ql-img-inline-formula quicklatex-auto-format" alt="W_{d}" title="Rendered by QuickLaTeX.com" data-original-src="https://blog-api.algolia.com/wp-content/ql-cache/quicklatex.com-210151c7f86bf04f1be6b4572f98a246_l3.png"/> <span>的概率的几何平均值为:</span></p>
+<p class="ql-center-displayed-equation translated"><span class="ql-right-eqno">T33<span class="ql-left-eqno">T35】T36】</span></span></p>
+<p class="translated"><span>其中N是分裂中的原子数。</span></p>
+<p class="translated"><span>如果，对于一个给定的词</span> <span> <img loading="lazy" src="../Images/7fb06040017794e97aaba6b19dc6460f.png" class="ql-img-inline-formula quicklatex-auto-format" alt="w_{n}" title="Rendered by QuickLaTeX.com" data-original-src="https://blog-api.algolia.com/wp-content/ql-cache/quicklatex.com-c4d511545a2853f88807ed5f225f0c14_l3.png"/> </span> <span>，我们可以找到一个拆分的词</span><span/><span/><span>，其中概率的几何平均值</span><span>【p】(</span><span><img loading="lazy" src="../Images/c8727462cd14f389787b9fe84680e02d.png" class="ql-img-inline-formula quicklatex-auto-format" alt="W_{d}" title="Rendered by QuickLaTeX.com" data-original-src="https://blog-api.algolia.com/wp-content/ql-cache/quicklatex.com-210151c7f86bf04f1be6b4572f98a246_l3.png"/></span><span>)</span><span>高于全词的概率</span><span>【p】(<img loading="lazy" src="../Images/7fb06040017794e97aaba6b19dc6460f.png" class="ql-img-inline-formula quicklatex-auto-format" alt="w_{n}" title="Rendered by QuickLaTeX.com" data-original-src="https://blog-api.algolia.com/wp-content/ql-cache/quicklatex.com-c4d511545a2853f88807ed5f225f0c14_l3.png"/></span><span>)</span><span>，我们就可以去掉<span>请注意，我们在潜在的拆分中还考虑了特定语言的连接语素。</span></span></p>
+<p class="translated"><span>例如，如果在我们的语料库中，我们有</span><i><span>Akustikgitarre</span></i><span>50次，</span><i><span>Akustik</span></i><span>75次，</span><i><span>Gitarre</span></i><span>150次，总字数为5万:</span></p>
+<p class="ql-center-displayed-equation translated"><span class="ql-right-eqno"/><span class="ql-left-eqno"/>T59】</p>
+<p class="ql-center-displayed-equation translated"><span class="ql-right-eqno"/><span class="ql-left-eqno"/>T4】</p>
+<p class="translated"><span>因为</span><i><span>Akustikgitarre</span></i><span>比</span><i><span>Akustik</span></i><span>和</span><i><span>gi tarre</span></i><span/><span>加起来的概率低，我们可以把它从我们的词典里去掉。</span></p>
+<h3 class="translated"><a id="enriching-the-lexicon" class="anchor" href="#enriching-the-lexicon" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>丰富了词汇</b></h3>
+<p class="translated">对于我们的最后一步，我们恢复了我们对引理化所做的。我们有一个内部词形变化词典，列出了几种语言中给定单词的潜在变体。我们用它来把我们原子的所有变体添加到我们的原子词典中。</p>
+<h2 class="translated"><a id="decompounding-algorithm" class="anchor" href="#decompounding-algorithm" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>分解算法</span></h2>
+<p class="translated">现在我们有了词典，我们可以在索引和查询时对潜在的复合词应用分解算法。不幸的是，使用上述概率的几何平均值的分解在计算上是昂贵的(它产生了指数数量的潜在分裂)。也就是说，如果我们有一个单词，比如<a href="https://en.wikipedia.org/wiki/Donaudampfschiffahrtselektrizit%C3%A4tenhauptbetriebswerkbauunterbeamtengesellschaft"><i><span>Donau dampfschifahrts elektrizitten hauptbetriebswerkbau unterbeamten Gesellschaft</span></i></a><span>，有大约20种可能的拆分，我们就必须测试一百万种可能性。所以我们坚持简单的从右到左(从右到左，因为我们所有的目标语言都是左分支)，最长匹配算法。这种贪婪算法简单地从单词的末尾开始，尝试匹配我们词典中最长的单词，从右到左增长。然后，它继续搜索单词的剩余部分，直到匹配到单词中的所有原子。我们也允许特定语言的原子间连接语素。</span></p>
+<h2 class="translated"><a id="evaluating-the-decompounding" class="anchor" href="#evaluating-the-decompounding" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>评估分解</span></h2>
+<p class="translated">我们将我们的结果与SECOS的结果进行了比较。 <span>我们的评估指标详见附录。</span></p>
+<p class="translated"><span>作为测试集，我们使用了</span> <a href="https://github.com/riedlma/SECOS"> <span> SECOS GitHub页面</span> </a> <span>上提供的德国数据集。基础数据集只提供复合词，不提供不应分解的词(如</span><i><span>Handschuh</span></i><span>)。</span></p>
+<p class="translated">在评估我们方法的精确度时，拥有不应被分解的单词是很重要的。我们利用测试集中不被其他原子分解的至少7个字符的原子作为我们不应该被分裂的集合。最终的测试集由3702个单词组成，包括1851个复合词和1851个不应分解的单词。它有点嘈杂，但对于比较方法来说已经足够好了。</p>
+<p class="translated"><span>通过修改生成的词典的大小(使用词频作为过滤标准)来制作下面的图。请注意，随着词典的增长，召回率会增加(我们能够分解更多的化合物)，但精确度会下降(我们开始分解不应该被拆分的单词)。</span></p>
+
+<p> </p>
+<p class="translated"><i> <span>组合</span> </i> <span>在通过我们的方法建立的词典上使用上述组合方法(使用几何平均)直到第三点(在用我们的变格词典扩充词典之前)。</span> <i> <span>贪婪</span> </i> <span>代表使用同一词典的贪婪方法。</span> <i> <span>贪婪+替代</span> </i> <span>是我们的词形变化词典(到第4点为止)充实的全词库。注意，</span> <i> <span>贪婪+另类</span> </i> <span>的词汇量不对，因为它没有计入附加词形变化。SECOS词汇表没有变化，我们使用了他们的GitHub页面上提供的预训练模型。</span></p>
+<p class="translated"><span>再一次，我们不能在实践中使用组合方法，因为它的计算成本。我们的方法(</span> <i> <span>贪婪+选择</span> </i> <span>)以快得多的计算时间达到接近的F1分数。</span></p>
+<p class="translated"><span>你可能已经注意到SECOS的结果与研究人员文章中报道的结果并不相似。那是因为我们的评估比他们用的更严格。我们按照</span>一篇关于<a href="#footnote3"> <span>复合拆分方法</span> </a> <span>的文章中定义的评估，认为拆分是错误的，即使它是部分正确的。例如，虽然</span><i><span>Wissenschaftskolleg</span></i><span>-&gt;</span><i><span>Wissen+Schaft+kol leg</span></i><span>对我们来说是完全错误的，但对SECOS的评价却是部分正确的。然而，在德国测试集上使用他们的评估脚本，他们的方法的F1得分为0.87，而我们的方法(</span> <i> <span>贪婪</span> </i> <span> + </span> <i> <span>备选方案</span> </i> <span>)的F1得分为0.92。</span></p>
+<h2 class="translated"><a id="the-decompounding-feature-in-action" class="anchor" href="#the-decompounding-feature-in-action" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>动作中的分解特性</span></h2>
+<p class="translated"><span> Algolia支持六种语言的分解:荷兰语(nl)、德语(de)、芬兰语(fi)、丹麦语(da)、瑞典语(sv)和挪威语博克马尔语(no)。要了解更多关于分解的内容，请看一下我们关于分解复合词</span>  <span>的</span> <a href="https://www.algolia.com/doc/guides/managing-results/optimize-search-results/handling-natural-languages-nlp/in-depth/language-specific-configurations/#splitting-compound-words"> <span>文档。</span></a></p>
+<p class="translated">生成的词汇对于一般数据来说是很好的，但是我们的许多客户工作在具有非常特殊词汇的利基领域。使用我们的 <a href="https://www.algolia.com/doc/api-reference/api-methods/save-dictionary-entries/#save-compound-entries"> <span>客户词典</span> </a> <span>，你可以以任何你想要的方式强制分解一个给定的单词。</span></p>
+<h2 class="translated"><a id="in-summary" class="anchor" href="#in-summary" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>总之</span></h2>
+<p class="translated"><span>我们证明了找到合适的词典是一个好的分解算法的最重要的部分。我们实现了一种计算好词典的方法，它只需要:</span></p>
+<ul>
+<li class="translated"><span>大量目标语言文本</span></li>
+<li class="translated"><span>目标语言的词性标注分类器</span></li>
+<li class="translated"><span>特定语言连接语素列表</span></li>
+</ul>
+<p class="translated">这个词典，结合贪婪的最长匹配分解算法，击败了更复杂的实现，并且没有牺牲查询和索引速度。</p>
+<p class="translated"><a href="https://www.aclweb.org/anthology/P08-2064.pdf"> <span>从复合语言中分解查询关键字</span> </a> <span>。E. Alfonseca等人，ACL-08会议录:HLT，短文，2008年。</span></p>
+<p class="translated"><a href="https://www.inf.uni-hamburg.de/en/inst/ab/lt/publications/2016-riedletal-naacl.pdf"> <span>无监督复合分裂与分布语义的有监督方法</span> </a> <span>。M. Riedl，C. Biemann，HLT-NAACL，2016年。</span></p>
+<p class="translated"><a href="https://www.aclweb.org/anthology/E03-1076/"> <span>复合拆分的经验方法</span> </a> <span>。P. Koehn，K. Knight，计算语言学协会欧洲分会第10届会议，2003年。</span></p>
+<h2 class="translated"><a id="appendix" class="anchor" href="#appendix" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>附录</span></h2>
+<h3 class="translated"><a id="a-1-measures" class="anchor" href="#a-1-measures" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b> A.1措施</b></h3>
+<p class="translated"><span>为了评估一个分解的质量，我们使用了精确度、召回率、F1值和准确度的常规测试。对于精确度、召回率和F1分数，我们遵循Koehn和Knight </span> <span>在他们关于分解的大多数论文中使用的定义:</span></p>
+<ul>
+<li class="translated"><i> <span>正确拆分= #应拆分且被正确拆分的字数</span> </i></li>
+</ul>
+<ul>
+<li class="translated"><i/></li>
+</ul>
+<ul>
+<li class="translated"><i> <span>错不= #字该拆却未拆</span> </i></li>
+</ul>
+<ul>
+<li class="translated"><i> <span>错误拆分= #单词本不该拆分却被</span> </i></li>
+</ul>
+<ul>
+<li class="translated"><i> <span>错了错了= #本该拆分的字，被拆分了，却错了</span> </i></li>
+</ul>
+<ul>
+<li class="translated"><i> <span>正确=正确泼+正确非</span> </i></li>
+</ul>
+<ul>
+<li class="translated"><i> <span>错=错不+错拆分+错错</span> </i></li>
+</ul>
+<p class="translated"><span>这让我们想到:</span></p>
+
+<p class="translated"><span>我们也认为一个拆分是正确的，如果它匹配期望的拆分+/-连接语素。例如，在分解</span><i><span>Adressen Liste</span></i><span>时，如果我们找到</span><i><span>Adressen</span></i><span>+</span><i><span>Liste</span></i><span>而不是</span><i><span>Adresse</span></i><span>+</span><i><span>list请注意，我们使用的是严格的评估，因为它认为分割是错误的，即使它是部分正确的。</span></i></p>
+</div></div>    
+</body>
+</html>

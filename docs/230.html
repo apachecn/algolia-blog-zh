@@ -1,0 +1,181 @@
+<html>
+<head>
+<title>Build a React Search App with fast, instant inventory updates | Algolia | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">使用快速、即时的库存更新构建React搜索应用程序| Algolia </h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/build-a-react-app-with-fast-indexing-and-instant-inventory-updates/#0001-01-01">https://www.algolia.com/blog/engineering/build-a-react-app-with-fast-indexing-and-instant-inventory-updates/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><p class="translated">我和一个朋友最近集思广益，在Covid继续限制他们现场演出的时候，我们如何支持我们的当地乐队。我们想出了一个网站的主意，乐队可以在那里出售限量版海报和t恤。该网站旨在通过在社交媒体上推广新产品(也称为“drops ”)来创造一种社区感和紧迫感，这与时尚品牌和运动鞋界的成功做法类似。</p>
+<p class="translated"><span>我们选择Algolia作为我们的主要工具，因为它提供了前端库，可以轻松地为客户提供顶级搜索和发现体验的电子商务网站。我们决定为React </span>  <span>利用</span> <a href="https://www.algolia.com/developers/mobile-web-instantsearch-react/"> <span>的搜索功能和模块性。这里有一个我们想要构建的草图:</span></a></p>
+<h2 class="translated"><a id="the-challenge-of-instant-inventory-updates" class="anchor" href="#the-challenge-of-instant-inventory-updates" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>挑战即时库存更新</h2>
+<p class="translated">这个项目的目标是在新产品发布时营造一种紧迫感。因此，技术挑战是向我们的用户显示最新的库存。从Algolia索引中搜索和检索信息的速度快如闪电，提供即时搜索结果。另一方面，在后端更新数据可能会花费更多的时间。然而，我们发现，如果我们在每次库存发生变化时都更新索引，就会降低搜索结果和一些前端组件的呈现时间。</p>
+<p class="translated"><span>我们将看看我们是如何使用和调整InstantSearch来为一个电子商务网站构建几乎是即时的搜索功能的。</span></p>
+<h2 class="translated"><a id="using-algolia-widgets-for-instantsearch" class="anchor" href="#using-algolia-widgets-for-instantsearch" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>使用Algolia小工具进行即时搜索</h2>
+<p class="translated"><span><a href="https://www.algolia.com/doc/guides/building-search-ui/what-is-instantsearch/js/">Algolia instant search</a>提供了令人难以置信的快速搜索结果，它允许我们快速浏览设计，以产生所需的紧迫感。InstantSearch中的自动完成功能增加了发现功能，因为用户可以看到他们可能没有考虑过的建议。</span></p>
+<p class="translated"><span>我想在React中建立网站，因为它为电子商务设计和跨平台兼容性提供了很好的选择。React的InstantSearch是一个预先构建的前端</span> <a href="https://www.algolia.com/doc/guides/building-search-ui/widgets/showcase/js/"> <span> React小部件</span> </a> <span>库，它可以让你快速开始一个站点布局。上面的组件图很好地映射了其中的一些小部件:</span></p>
+
+<p class="translated"><span>如果你没有Algolia索引，<a href="https://www.algolia.com/users/sign_up?utm_source=blog&amp;utm_medium=main-blog&amp;utm_campaign=devrel-jamstack&amp;utm_id=11ty-serverless">创建一个账户和app </a>。我们创建了一个包含前三个小部件(SearchBox、RefinementList和Autocomplete)的<code>&lt;SearchBox&gt;</code>组件，以及一个用于Hits小部件的<code>&lt;Hits&gt;</code>组件，显示我们的产品列表。<code>&lt;ProductDetail&gt;</code>组件使用我们自己的数据和代码，因为它不是来自Algolia索引。</span></p>
+<p class="translated">然而，我们在这个设计上有一个问题，那就是它要求我们不断地更新和检索Algolia索引中的数据。正如我们上面提到的，Algolia索引针对<em>检索进行了优化。他们的引擎优先搜索，快速索引紧随其后。我们不想让服务器充斥着索引更新，这可能会降低搜索速度、<code>&lt;Hits&gt;</code>的渲染速度，或者限制<code>&lt;SearchBox&gt;</code>的功能，所有这些都依赖于每次按键的超快速数据检索。我们想出了一个解决方案——将我们的库存数据更新从我们的搜索处理中分离出来，这样我们就可以在不触及我们的主索引的情况下更新库存。</em></p>
+<p class="translated"><span>我们回到我们的网站模型，发现我们可以通过定制即时搜索小部件来解决这个问题</span></p>
+<h2 class="translated"><a id="create-a-second-algolia-index-for-inventory" class="anchor" href="#create-a-second-algolia-index-for-inventory" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>为库存创建第二个Algolia指标</h2>
+<p class="translated"><span>让我们同时拥有as-you-type即时搜索结果</span> <i> <span>和</span> </i> <span>即时库存的解决方案是拥有两个独立的Algolia索引。</span> <span>如果你还没有Algolia Index，<a href="https://www.algolia.com/users/sign_up?utm_source=blog&amp;utm_medium=main-blog&amp;utm_campaign=devrel-jamstack&amp;utm_id=11ty-serverless">创建一个账户和app </a>。</span></p>
+<p class="translated"><span>其中一个指数是典型的产品指数。JSON看起来是这样的:</span></p>
+<pre class="lang:json decode:true">[
+ {
+  "objectID": 42,
+  "title": "Return to Paranormal",
+  "band": “Out In The Cold”,
+  "designer": “Jamie Deer”,
+  "introduction_date": “2021-09-23T18:25:43.511Z”,
+  "sizes": [“adults”, “kids”, “pets”],
+  "_tags": ["Seattle", "aliens", “punk”]
+ }
+]
+</pre>
+<p class="translated"><span>这只是简单的记录。最终，我们将在索引中包含更多信息，如乐队和设计师网站的链接、图片URL等。</span></p>
+<p class="translated"><span>第二个指标更简单:</span></p>
+<pre class="lang:json decode:true ">[
+ {
+   “objectID”: 42,
+   “remaining_editions”: 18
+ }
+]
+</pre>
+<p class="translated"><span>现在我们可以更新较小的库存指数，而不会影响用于<code>&lt;Hits&gt;</code>的主要指数。</span></p>
+<p class="translated"><span>使用两个索引也需要为每个点击结果将UI分成两个独立的组件，但这是一个简单的调整:</span></p>
+<p class="translated"><span>我们将<code>remaining_editions</code>数字从<code>&lt;Hits&gt;</code>组件中移出，放入它自己单独的</span> <a href="https://www.algolia.com/doc/guides/building-search-ui/widgets/create-your-own-widgets/js/"> <span>自定义小部件</span> </a> <span>，我们将其渲染为一个单独的组件，称为<code>&lt;Inventory&gt;</code>。两个索引和两个组件使用相同的<code>objectID</code>。</span></p>
+<p class="translated">需要注意的是，我们没有让<code>&lt;Inventory&gt;</code>成为<code>&lt;Hits&gt;</code>的子元素，因为我们需要将这两个组件的渲染分开。这就是为什么<code>&lt;SearchPage&gt;</code>组件持有<code>&lt;SearchBox&gt;</code>、<code>&lt;Hits&gt;</code>、<code>&lt;Inventory&gt;</code>、<code>&lt;ProductDetail&gt;</code>处于同一级别的原因。</p>
+<h2 class="translated"><a id="using-react-hooks-to-keep-everything-available" class="anchor" href="#using-react-hooks-to-keep-everything-available" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>使用React钩子保持一切可用</h2>
+<p class="translated"><span>您可能已经注意到，我们依赖三个数据来源:</span></p>
+<ol>
+<li aria-level="1" class="translated"><b> Algolia索引</b> <span>(在Algolia的服务器上)–该索引提供填充<code>&lt;Hits&gt;</code>和<code>&lt;SearchBox&gt;</code>组件的数据。这里的数据摘自我们的后台数据库(3)，当产品列表发生变化时，该数据库会定期更新。</span></li>
+<li aria-level="1" class="translated"><b> Algolia库存索引</b> <span>(在Algolia的服务器上)——该索引提供了显示在<code>&lt;Inventory&gt;</code>组件中的更新后的<code>remaining_editions</code>属性。<code>remaining_editions</code>属性来自我们的后台数据库(3)。</span></li>
+<li aria-level="1" class="translated"><b>我们的后台数据库</b> <span>(在我们的服务器上)–我们维护着一个详细的产品后台数据库，其中包括更长的产品描述和购买数据。我们从这个数据库中提取库存变化，并异步更新<code>&lt;ProductDetail&gt;</code>组件</span><i><span/></i><span>，除了<code>remaining_editions</code>、</span>显示给<span> <code>&lt;Inventory&gt;</code>组件</span>。</li>
+</ol>
+<p class="translated">我们在这个应用程序中有两个目标:第一，提供“即时”库存数字，第二，保持随时输入即时搜索结果。以下是我们实现这两个目标的方法。</p>
+<h3 class="translated"><a id="instantsearch-never-slows-down" class="anchor" href="#instantsearch-never-slows-down" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>即时搜索从不减速</h3>
+<p class="translated"><span>保持即时搜索完全可用是没有商量余地的。客户可以理解库存中几秒钟的延迟，但他们不会容忍缓慢或故障的搜索功能。我们是这样构建这部分的:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>我们使用InstantSearch的一个非常标准的实现，其中一个变化是需要我们为<code>Hits</code>连接一个</span> <a href="https://www.algolia.com/doc/api-reference/widgets/hits/react/#connector"> <span>定制组件</span> </a> <span>。</span></li>
+<li aria-level="1" class="translated"><span>在我们的<code>&lt;SearchPage&gt;</code>组件中，我们使用了React状态挂钩，并为传递给<code>&lt;Hits&gt;</code>组件的<code>setObjectIDs</code>创建了一个setter方法。</span></li>
+<li aria-level="1" class="translated">当点击渲染时，我们用一个处理程序方法捕获数组中的<code>objectIDs</code>，然后将它传递回<code>&lt;SearchPage&gt;</code>。</li>
+<li aria-level="1" class="translated"><span>在管理</span> <i> <span>异步</span> </i> <span> API调用方面，这是我们的第一要务，所以唯一的Hits widget是</span> <i> <span>等待</span> </i> <span>的是InstantSearch API。我们可以用<code>&lt;Hits&gt;</code>中的<code>useEffect()</code>钩子来完成这个任务，但是Algolia </span> <a href="https://www.algolia.com/doc/guides/building-search-ui/going-further/routing-urls/react/#onsearchstatechangenextsearchstate"> <span>在InstantSearch中提供了一个方法</span> </a> <span>来实现同样的目标:<code>onSearchStateChange</code>。</span></li>
+</ul>
+<p class="translated"><span>这些步骤从<code>&lt;Hits&gt;</code>中获取我们需要的信息，而不会中断即时搜索功能的UI或数据流——我们只需在中间插入我们连接的组件，并使用内置方法来触发更新。</span></p>
+<p class="translated"><b>代码为<code>SearchBox.js</code> : </b></p>
+<pre class="lang:javascript decode:true ">import { InstantSearch } from 'react-instantsearch-dom';
+import SearchBox from './SearchBox.js';
+import CustomHits from './Hits.js';
+import Inventory from './Inventory.js';
+import ProductDetail from './ProductDetail.js';
+ 
+const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+ 
+function SearchPage() {
+ const [objectIDs, setObjectIDs] = useState([]);
+ const [selectedObject, setSelectedObject] = useState({
+   objectID: null,
+ });
+ 
+ return (
+   &lt;React.Fragment&gt;
+     &lt;InstantSearch
+       indexName="product_index"
+       searchClient={searchClient}
+       searchState={{
+         query: '',
+       }}
+       onSearchStateChange={searchState =&gt; {
+         if (searchState) {
+           setObjectIDs();
+         }
+       }}
+     &gt;
+       &lt;SearchBox /&gt;
+       &lt;CustomHits
+         objectIDs={objectIDs}
+         setObjectIDs={setObjectIDs}
+         selectedObject={selectedObject}
+         setSelectedObject={setSelectedObject}
+       /&gt;
+       &lt;Inventory objectIDs={objectIDs} /&gt;
+       &lt;ProductDetail selectedObject={selectedObject} /&gt;
+     &lt;/InstantSearch&gt;
+   &lt;/React.Fragment&gt;
+ );
+}
+ 
+export default SearchPage;
+</pre>
+<p class="translated"><b>代码为<code>Hits.js</code> `: </b></p>
+<pre class="lang:javascript decode:true ">import React from 'react';
+import PropTypes from 'prop-types';
+import { connectHits } from 'react-instantsearch-dom';
+ 
+function Hits({ hits, objectIDs, setObjectIDs }) {
+ const handleSearch = () =&gt; {
+   hits.map(hit =&gt; objectIDs.push(hit.objectID));
+   setObjectIDs(hits);
+ };
+ return (
+   &lt;ol&gt;
+     {handleSearch}
+     {hits.map(hit =&gt; (
+       &lt;li key={hit.objectID}&gt;{hit.name}&lt;/li&gt;
+     ))}
+   &lt;/ol&gt;
+ );
+}
+ 
+Hits.propTypes = {
+ hits: PropTypes.arrayOf(PropTypes.object),
+ objectIDs: PropTypes.arrayOf(PropTypes.string),
+ setObjectIDs: PropTypes.func,
+};
+ 
+const CustomHits = connectHits(Hits);
+export default CustomHits;
+</pre>
+<h3 class="translated"><a id="%e2%80%9cinstant%e2%80%9d-inventory-updates-are-close-to-real-time" class="anchor" href="#%e2%80%9cinstant%e2%80%9d-inventory-updates-are-close-to-real-time" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a>【即时】库存更新接近实时</h3>
+<p class="translated"><span>既然我们已经设置好捕获<code>objectIDs</code>，我们需要设置我们的库存更新。我们将在三种不同的情况下调用我们的库存指数:两个用于<code>&lt;Inventory&gt;</code>组件，一个用于<code>&lt;ProductDetail&gt;</code>组件。</span></p>
+<p class="translated"><span>为了显示最新的库存信息，我们需要两个数据点:<code>&lt;Hits&gt;</code>中当前结果的数组<code>objectIDs</code>,以及库存指数中的最新数字。<code>objectIDs</code>现在保存在<code>&lt;SearchPage&gt;</code>中，每次<code>searchState</code>改变时都会更新，所以将它们传递给<code>&lt;Inventory&gt;</code>很容易。为了从我们的库存索引中获取信息，我们使用另一个</span> <a href="https://www.algolia.com/doc/api-reference/api-methods/get-objects/"> <span>内置的Algolia方法</span> </a> <span> : <code>index.getObjects()</code>。这让我们可以直接找到我们想要的对象，而不必创建另一个InstantSearch实例。</span></p>
+<p class="translated"><span>注意，从<code>algoliasearch@4.0.0</code>开始，<code>getObject()</code>和<code>getObjects()</code>方法在<code>lite</code>构建中不可用，这是默认的导入——您只需要更新import语句。</span></p>
+<p class="translated">一旦我们建立了初始连接，建立对库存索引的第二次调用就很简单了。我们在一个<code>useEffect()</code>钩子中添加了一个<code>setInterval()</code>函数，每两秒钟调用一次库存指数。这样，即使用户不更新他们的搜索词，库存数量也会继续快速刷新，确保实时库存。我们可能会调整生产中的时间间隔，但这对我们的目的来说已经足够快了。</p>
+<p class="translated"><b>代码为<code>Inventory.js</code> : </b></p>
+<pre class="lang:javascript decode:true ">import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
+import algoliasearch from 'algoliasearch';
+ 
+const searchClient = algoliasearch('YourApplicationID', 'YourSearchOnlyAPIKey');
+ 
+function Inventory({ objectIDs }) {
+ const index = searchClient.initIndex('inventory_index');
+ let results = index.getObjects(objectIDs);
+ useEffect(() =&gt; {
+   const timer = setInterval(() =&gt; {
+     results = index.getObjects(objectIDs);
+   }, 2000);
+   return () =&gt; clearTimeout(timer);
+ }, []);
+ return (
+   &lt;ol&gt;
+     {results.map(result =&gt; (
+       &lt;li key={result.objectID}&gt;Remaining: {result.remaining_editions}&lt;/li&gt;
+     ))}
+   &lt;/ol&gt;
+ );
+}
+ 
+Inventory.propTypes = {
+ objectIDs: PropTypes.arrayOf(PropTypes.string),
+};
+ 
+export default Inventory;
+</pre>
+<p class="translated"><span>组件内部的代码也是如此。该组件将从我们的产品数据库(非Algolia数据源)获取大部分数据。对于库存编号，它会像上面一样调用<code>inventory_index</code>，只使用<code>selectedObject</code>的<code>objectID</code>。采用这种设计，在<code>&lt;Hits&gt;</code>中产品结果旁边显示的库存编号和<code>&lt;ProductDetail&gt;</code>组件中的库存编号之间应该只有非常小的延迟，不超过两秒钟。这样，<code>&lt;ProductDetail&gt;</code>将总是显示更新的数据。</span></p>
+<p class="translated">现在我们有了一个<code>&lt;SearchPage&gt;</code>，显示近乎即时的库存更新，同时仍然允许充分利用即时搜索结果。</p>
+<p class="translated"><span>我们设想这个项目是独立艺术家和音乐家将他们的社交媒体与电子商务平台联系起来的一种方式。作为音乐迷，在过去的几年里，我们已经错过了当地音乐界的社区意识和活力。我们的希望是，这个网站设计将感觉真实和令人兴奋，足以捕捉一些能量。</span></p>
+<p class="translated">Algolia的 <a href="https://www.algolia.com/doc/guides/building-search-ui/widgets/showcase/js/"> <span>快速实现的小部件</span> </a> <span>和适应性强的组件使其易于构建原型。你可能有其他“即时库存”有用的想法——也许是黑色星期五销售！我们希望了解您用Algolia构建了什么，以及它如何改变您的项目！</span></p>
+</div></div>    
+</body>
+</html>

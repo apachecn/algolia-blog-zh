@@ -1,0 +1,356 @@
+<html>
+<head>
+<title>The anatomy of high-performance recommender systems - Part III - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">高性能推荐系统剖析-第三部分- Algolia博客</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-3/#0001-01-01">https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-3/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><h1 class="translated"><span>进入推荐系统的工程特征</span></h1>
+<p class="translated"><span>在本系列</span>  <span>的第一篇</span> <a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-1/"> <span>中，我们谈到了一个高性能推荐系统的关键组件:(1) <a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-2/">数据源、</a> (2) <strong>特征库</strong>、(3) <a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-iv/">机器学习模型</a>、(4 &amp; 5) <a href="https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-v/">预测&amp;行动</a>、(6)结果、(7)评估和(8) AI伦理。</span></a></p>
+<p class="translated"><span>在这第三篇文章中，我们将深入探讨推荐系统的特征工程这一主题。虽然从原始数据到推荐的路径要经过各种工具和系统，但该过程涉及两个数学实体，它们是任何推荐系统的面包和黄油:</span> <b>特征</b> <span>和</span> <b>模型。</b></p>
+<p class="translated"><img loading="lazy" class="alignnone wp-image-12184" src="../Images/3f60fea7ca1c66bab6b7c07b1d84380b.png" alt="image from data to recommendations" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/06/from-data-to-recommendations-320x154.jpg 320w, https://blog-api.algolia.com/wp-content/uploads/2021/06/from-data-to-recommendations-720x346.jpg 720w, https://blog-api.algolia.com/wp-content/uploads/2021/06/from-data-to-recommendations-768x369.jpg 768w, https://blog-api.algolia.com/wp-content/uploads/2021/06/from-data-to-recommendations-1536x738.jpg 1536w, https://blog-api.algolia.com/wp-content/uploads/2021/06/from-data-to-recommendations-2048x983.jpg 2048w" sizes="(max-width: 603px) 100vw, 603px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/06/from-data-to-recommendations-320x154.jpg"/></p>
+<p class="translated"><span>特征是原始数据的数字表示。特征工程是在给定数据、模型和任务的情况下组合最合适的特征的过程。在基本的协同过滤场景中，我们实际上没有特征，因为评级实际上是标签。</span></p>
+<p class="translated">基于内容的系统处理各种各样的物品描述和关于用户的知识。特征工程包括将这些不同类型的非结构化数据转换成标准化的描述。尽管可以使用任何类型的表示，比如多维数据表示，但最常见的方法是从底层数据中提取关键字。</p>
+<p class="translated"><span>项目有多个字段，其中列出了各种属性。例如，书籍有描述、标题和作者。在某些情况下，这些描述和属性可以转换成关键字。</span></p>
+<table>
+<tbody>
+<tr>
+<td class="translated"><b> ItemID </b></td>
+<td class="translated"><b>标题</b></td>
+<td class="translated"><b>作者</b></td>
+<td class="translated"><b>描述</b></td>
+<td class="translated"><b>流派</b></td>
+<td class="translated"><b>价格</b></td>
+</tr>
+<tr>
+<td class="translated"><span> 0000031852 </span></td>
+<td class="translated"><span> 2034:下一次世界大战的小说</span></td>
+<td class="translated">美国海军上将詹姆斯·斯塔夫里迪斯·阿克曼号</td>
+<td class="translated">来自两位前军官和获奖作家，这是一部令人毛骨悚然的真实地缘政治惊悚片，想象了2034年美国和中国在南中国海的海军冲突，以及从那里通往噩梦般的全球大灾难的道路。</td>
+<td class="translated"><span>惊悚片&amp;悬疑片</span></td>
+<td class="translated"><span>17.84美元</span></td>
+</tr>
+</tbody>
+</table>
+<p class="translated"><span>另一方面，当属性包含数字量(如价格)或从可能性的小宇宙(如类型)中提取的字段时，您可以直接使用多维(结构化)表示。</span></p>
+<p class="translated">除了描述商品，你还需要收集用户资料。比如<a href="https://grouplens.org/datasets/movielens/1m/"><span>movie lens</span></a><span>，一个经典的用户属性推荐数据集，</span> <span>包含了性别、年龄、职业三个用户属性。因为这些是单标签属性，所以可以在预处理过程中使用</span> <a href="https://en.wikipedia.org/wiki/One-hot"> <span>一键</span> </a> <span>编码对它们进行编码。</span></p>
+<table>
+<tbody>
+<tr>
+<td class="translated"><b>用户标识</b></td>
+<td class="translated"><b>性别</b></td>
+<td class="translated"><b>年龄</b></td>
+<td class="translated"><b>职业</b></td>
+</tr>
+<tr>
+<td/>
+<td class="translated"><span>男/女</span></td>
+<td class="translated"><span>* 1:“18岁以下”</span><span><br/></span><span>* 18:“18-24岁”</span><span><br/></span><span>* 25:“25-34岁”</span><span><br/></span><span>* 35:“35-44岁”</span><span><br/></span><span>* 45:“45</span></td>
+<td class="translated"><span> * 0:“其他”或未指定</span> <br/> <span> * 1:“学术/教育工作者”</span> <br/> <span> * 2:“艺术家”</span> <br/> <span> * 3:“文书/行政”</span> <br/> <span> * 4:“学院/研究生”</span> <br/> <span> * 5:“客服”</span> <br/> <span> * 6:“医生/保健”</span> 12:“程序员” <br/> <span> * 13:“退休”</span> <br/> <span> * 14:“销售/营销”</span> <br/> <span> * 15:“科学家”</span> <br/> <span> * 16:“个体户”</span> <br/> <span> * 17:“技术员/工程师”</span> <br/> <span> * 18:“工匠”</span></td>
+</tr>
+</tbody>
+</table>
+<p class="translated">最后，并不是所有的特征都是平等的。您可以应用特性 <b>权重、</b> <span>根据特性的重要性给出不同的权重，或者应用特性</span> <b>选择、</b> <span>根据相关性包括或排除属性。</span></p>
+<p class="translated"><span>现在让我们探索推荐引擎中最常见的项目和用户属性的特征工程方法。</span></p>
+<h2 class="translated"><a id="numerical-features" class="anchor" href="#numerical-features" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>数字特征</span></h2>
+<h3 class="translated"><a id="discretization" class="anchor" href="#discretization" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>离散化</span></h3>
+<p class="translated"><span>项目数据集中包含的价格属性是一个</span> <b>连续变量</b> <span>，因为它可以取不可数的一组值，并且可以包含给定范围内的任何值。为了将这种原始特征转换成机器学习模型可以接受的格式，您将使用</span> <b>量化:</b> <span>本质上，将连续值映射到离散值。从概念上讲，这可以被认为是</span> <a href="https://en.wikipedia.org/wiki/Data_binning"> <span>统计箱</span> </a> <span>的有序序列。</span></p>
+<p class="translated"><img loading="lazy" class="alignnone wp-image-12118" src="../Images/50c0b5674b199f4c61a5fa0b65d79e61.png" alt="image of the discretization process" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/06/discretization_process-320x143.jpeg 320w, https://blog-api.algolia.com/wp-content/uploads/2021/06/discretization_process-720x322.jpeg 720w, https://blog-api.algolia.com/wp-content/uploads/2021/06/discretization_process-768x343.jpeg 768w, https://blog-api.algolia.com/wp-content/uploads/2021/06/discretization_process-1536x686.jpeg 1536w, https://blog-api.algolia.com/wp-content/uploads/2021/06/discretization_process.jpeg 1600w" sizes="(max-width: 689px) 100vw, 689px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/06/discretization_process-320x143.jpeg"/></p>
+<p class="translated"><span>宁滨有三种典型的方法:</span></p>
+<ul>
+<li aria-level="1" class="translated"><b>统一:</b> <span>所有箱柜宽度相同</span></li>
+<li aria-level="1" class="translated"><b>基于分位数:</b> <span>所有箱都有相同数量的值</span></li>
+<li aria-level="1" class="translated"><b>基于K-均值:</b> <span>每个仓属于最近的一维K-均值聚类</span></li>
+</ul>
+<p class="translated"><span>统一宁滨是最简单的方法。它使用公式</span>将一系列可能的值划分为宽度相同的 <i> <span> N </span> </i> <span>个箱</span></p>
+<p class="ql-center-displayed-equation translated"><span class="ql-right-eqno"> </span> <span class="ql-left-eqno"> </span> <img loading="lazy" src="../Images/65e5d34736595027f681850c6fbce337.png" class="ql-img-displayed-equation quicklatex-auto-format" alt="\[width = \frac{maxvalue-minvalue}{N}\]" title="Rendered by QuickLaTeX.com" data-original-src="https://blog-api.algolia.com/wp-content/ql-cache/quicklatex.com-b1780b80e5da994f06aee0d31ee6a34d_l3.png"/></p>
+<p class="translated"><span>其中</span> <i> <span> N </span> </i> <span>为区间数。</span></p>
+<p class="translated"><i> <span> N </span> </i> <span>通常是通过实验确定的——这里没有经验法则。</span></p>
+<p class="translated"><span>例如，如果变量interval为[10，110]，并且您想要创建5个容器，这意味着<code>110-10 / 5 = 20</code>，因此每个容器的宽度为20，间隔为[10，30]，[30，50]，[50，70]，[70–90]和[90，110]。</span></p>
+<p class="translated"><span>统一、分位数或k均值宁滨的代码和直方图如下:</span></p>
+<pre class="lang:python decode:true ">from sklearn.preprocessing import KBinsDiscretizer&#13;
+# create the discretizer object with strategy uniform&#13;
+discretizer = KBinsDiscretizer(bins, encode='ordinal', strategy='uniform') # replace "uniform" with "quantile" or "kmeans" to change discretization strategies&#13;
+data_disc= discretizer.fit_transform(data)</pre>
+<table>
+<tbody>
+<tr>
+<td class="translated"><b>统一(垃圾箱= 10) </b></td>
+<td class="translated"><b>分位数(仓= 10) </b></td>
+<td class="translated"><b>K-均值(仓= 10) </b></td>
+</tr>
+<tr>
+<td class="translated"><img loading="lazy" class="alignnone size-medium wp-image-12115" src="../Images/50d2e645a4e8d2b1bd80d15a1914787a.png" alt="image of bins" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/06/bins_uniform-273x178.png 273w, https://blog-api.algolia.com/wp-content/uploads/2021/06/bins_uniform.png 381w" sizes="(max-width: 273px) 100vw, 273px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/06/bins_uniform-273x178.png"/></td>
+<td class="translated"><img loading="lazy" class="alignnone size-medium wp-image-12114" src="../Images/2991152ee4891b4be4546f15a7cadf89.png" alt="image of bins" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/06/bins_quantile-269x178.png 269w, https://blog-api.algolia.com/wp-content/uploads/2021/06/bins_quantile.png 381w" sizes="(max-width: 269px) 100vw, 269px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/06/bins_quantile-269x178.png"/></td>
+<td class="translated"><img loading="lazy" class="alignnone size-medium wp-image-12113" src="../Images/a9892a752acff426d65a05abc98fc363.png" alt="image of bins" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/06/bins_kmeans-273x178.png 273w, https://blog-api.algolia.com/wp-content/uploads/2021/06/bins_kmeans.png 381w" sizes="(max-width: 273px) 100vw, 273px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/06/bins_kmeans-273x178.png"/></td>
+</tr>
+</tbody>
+</table>
+<h3 class="translated"><a id="normalization-and-standardization" class="anchor" href="#normalization-and-standardization" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>规范化和标准化</span></h3>
+<p class="translated"><span>讨论最多的两种缩放方法是</span><b/><span>(将值重新缩放到[0，1]的范围内)和</span> <b>标准化</b> <span>(将数据重新缩放到平均值为0，标准差为1)。以下是数据经过规范化和标准化后的可视化表示:</span></p>
+<p class="translated"><img loading="lazy" class="alignnone wp-image-12117" src="../Images/9c130aed8bd1042f8940c5019a25cd11.png" alt="image of the difference-between-normalization-standardization" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/06/difference-between-normalization-standardization-1-320x147.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/06/difference-between-normalization-standardization-1-720x331.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/06/difference-between-normalization-standardization-1.png 744w" sizes="(max-width: 737px) 100vw, 737px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/06/difference-between-normalization-standardization-1-320x147.png"/></p>
+<p class="translated"><span>您可以对页面浏览量、点击量和交易量等特征使用归一化，因为这些值不是正态(高斯)分布的，大多数时候它们是长尾。</span></p>
+<p class="translated">这是归一化的公式:</p>
+<p class="ql-center-displayed-equation translated"><span class="ql-right-eqno"> </span> <span class="ql-left-eqno"> </span> <img loading="lazy" src="../Images/32490b73ed2bbcbcf446b1229a8f358c.png" class="ql-img-displayed-equation quicklatex-auto-format" alt="\[{X}' = \frac{X-X_{min} }{X_{max}-X_{min}}\]" title="Rendered by QuickLaTeX.com" data-original-src="https://blog-api.algolia.com/wp-content/ql-cache/quicklatex.com-21a819ab6a927c6b0a228c8b094c6525_l3.png"/></p>
+<p class="translated"><span>其中</span><i><span>Xmax</span></i><span>和</span><i><span>Xmin</span></i><span>分别为特征的最大值和最小值。</span></p>
+<pre class="lang:python decode:true "># data normalization with sklearn&#13;
+from sklearn.preprocessing import MinMaxScaler&#13;
+&#13;
+# fit scaler on training data&#13;
+norm = MinMaxScaler().fit(X_train)&#13;
+&#13;
+# transform training data&#13;
+X_train_norm = norm.transform(X_train)&#13;
+&#13;
+# transform testing data&#13;
+X_test_norm = norm.transform(X_test)&#13;
+</pre>
+<p class="translated"><span>标准化对客户评论很有用，因为数据遵循高斯(正态)分布:</span></p>
+<p class="ql-center-displayed-equation translated"><span class="ql-right-eqno"/><span class="ql-left-eqno"/>T4】</p>
+<p class="translated"><span>其中<em> μ </em>是特征值的平均值，𝝈是特征值的标准差。注意，在这种情况下，这些值不限于特定的范围。</span></p>
+<pre class="lang:python decode:true ">from sklearn.preprocessing import StandardScaler&#13;
+&#13;
+# fit on training data&#13;
+scale = StandardScaler().fit(X_train)&#13;
+    &#13;
+# transform the training data &#13;
+X_train_stand = scale.transform(X_train)&#13;
+    &#13;
+# transform the testing data &#13;
+X_test_stand = scale.transform(X_test)&#13;
+</pre>
+<h2 class="translated"><a id="categorical-features" class="anchor" href="#categorical-features" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>分类特征</span></h2>
+<p class="translated"><span>通常，特征被表示为分类值，而不是连续值。在上面的例子中，用户可以拥有诸如性别([男性、女性])、年龄([18岁以下、18-24岁、25-34岁])和职业([其他、学术/教育工作者、艺术家、职员/管理人员]，…)等特征。这样的特征可以有效地编码为整数，例如，[男性，18-24岁，文书/管理]可以表示为[0，1，3]，而[女性，25-34岁，学术/教育工作者]可以表示为[1，2，1]。</span></p>
+<p class="translated"><span>我们有几个将分类特征转换成整数的选项:</span></p>
+<ul>
+<li class="translated">使用普通编码器。 <span>该估计器将每个分类特征转换为一个新的整数特征(0到n _ categories–1)</span></li>
+</ul>
+<pre class="lang:python decode:true ">from sklearn.preprocessing import OrdinalEncoder&#13;
+ &#13;
+user_data = [['male', '18-24', 'clerical/admin'], ['female', '25-34', 'academic/educator']]&#13;
+encoder = OrdinalEncoder().fit(user_data)&#13;
+encoder.transform([['female', '25-34', 'clerical/admin']])&#13;
+ &#13;
+# array([[0., 1., 1.]]&#13;
+</pre>
+<ul>
+<li aria-level="1" class="translated">使用scikit-learn估计器。这个估计器使用一个“K选一”的方案，也称为一键编码或虚拟编码，将类别转换为整数。</li>
+</ul>
+<pre class="lang:python decode:true ">from sklearn.preprocessing import OneHotEncoder&#13;
+ &#13;
+user_data = [['male', '18-24', 'clerical/admin'], ['female', '25-34', 'academic/educator']]&#13;
+encoder = OneHotEncoder().fit(user_data)&#13;
+encoder.transform([['female', '25-34', 'clerical/admin'],['male', '25-34', 'academic/educator']]).toarray()&#13;
+ &#13;
+# array([[1., 0., 0., 1., 0., 1.], [0., 1., 0., 1., 1., 0.]])&#13;
+</pre>
+<h2 class="translated"><a id="text-embedding" class="anchor" href="#text-embedding" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>文字嵌入</span></h2>
+<p class="translated"><span>这些方法——标准化、规范化和分类特征——用于组合特征。它们都依赖于对语言的语义理解。让我们来看看如何阅读基于文本的内容。</span></p>
+<p class="translated"><span>自然语言处理(NLP)是人工智能的一个子领域，它使计算机能够理解和处理人类语言。有两种技术可以完成这项任务:对未处理的文本应用词袋模型，并对文本进行预处理，以便稍后使用神经网络模型。</span></p>
+<h3 class="translated"><a id="bag-of-words" class="anchor" href="#bag-of-words" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>袋字</span></h3>
+<p class="translated"><span>词汇袋模型是最常用的流程，因为它易于实施和理解。这个想法是为句子和文档创建一个出现矩阵，而不考虑语法或词序。</span></p>
+<pre class="lang:python decode:true ">from sklearn.feature_extraction.text import CountVectorizer&#13;
+ &#13;
+corpus = ["From two former military officers and award-winning authors, a chillingly authentic geopolitical thriller that imagines a naval clash between the US and China in the South China Sea in 2034–and the path from there to a nightmarish global conflagration."]&#13;
+ &#13;
+vectorizer = CountVectorizer(stop_words=None, ngram_range=(1, 1), min_df=1, max_df=1)&#13;
+# stop_words - Please see the following guidelines before choosing a value for this param: https://scikit-learn.org/stable/modules/feature_extraction.html#stop-words&#13;
+# ngram_range - Provides the range of n-values for the word n-grams to be extracted. (1, 1) means the vectorizer will only take into account unigrams, thus implementing the Bag-of-Words model&#13;
+# min_df &amp;&amp; max_df - The minimum and maximum document frequency required for a term to be included in the vocabulary&#13;
+ &#13;
+X = vectorizer.fit_transform(corpus)&#13;
+ &#13;
+print(vectorizer.get_feature_names())&#13;
+'''&#13;
+['2034', 'and', 'authentic', 'authors', 'award', 'between', 'chillingly', 'china', 'clash', 'conflagration', 'former', 'from', 'geopolitical', 'global', 'imagines', 'in', 'military', 'naval', 'nightmarish', 'officers', 'path', 'sea', 'south', 'that', 'the', 'there', 'thriller', 'to', 'two', 'us', 'winning']&#13;
+'''&#13;
+ &#13;
+print(X.toarray())&#13;
+#[[1 3 1 1 1 1 1 2 1 1 1 2 1 1 1 2 1 1 1 1 1 1 1 1 3 1 1 1 1 1 1]]&#13;
+</pre>
+<p class="translated"><span>产生的频率用于训练分类器。请注意，因为不需要对句子进行预处理，所以这种方法会带来一系列缺点，比如结果向量的稀疏表示、理解文本数据的能力差，以及在处理大量文档时性能不佳。</span></p>
+<h3 class="translated"><a id="preprocessing-text" class="anchor" href="#preprocessing-text" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>预处理文本</span></h3>
+<p class="translated"><span>预处理句子的标准顺序是记号化、去掉不必要的标点和停用词、词干化、词条化。</span></p>
+
+<p class="translated">标记化包括把句子变成单词。来自<code>nltk package</code>的<code>word_tokenizer</code>对字符串进行标记，以分离除句点以外的标点符号。</p>
+<pre class="lang:python decode:true ">import nltk&#13;
+nltk.download('punkt') # a pre-trained Punkt tokenizer for English&#13;
+from nltk.tokenize import word_tokenize&#13;
+ &#13;
+text = "From two former military officers and award-winning authors, a chillingly authentic geopolitical thriller that imagines a naval clash between the US and China in the South China Sea in 2034–and the path from there to a nightmarish global conflagration."&#13;
+ &#13;
+tokens = word_tokenize(text)&#13;
+print(tokens)&#13;
+'''&#13;
+['From', 'two', 'former', 'military', 'officers', 'and', 'award-winning', 'authors', ',', 'a', 'chillingly', 'authentic', 'geopolitical', 'thriller', 'that', 'imagines', 'a', 'naval', 'clash', 'between', 'the', 'US', 'and', 'China', 'in', 'the', 'South', 'China', 'Sea', 'in', '2034–and', 'the', 'path', 'from', 'there', 'to', 'a', 'nightmarish', 'global', 'conflagration', '.']&#13;
+''' &#13;
+</pre>
+
+<h4 class="translated"><span>不同的包都有预定义的停用词。另一种方法是定义一个与语料库相关的自定义停用词列表。</span></h4>
+<pre class="lang:python decode:true ">nltk.download('stopwords') # 2,400 stopwords for 11 languages&#13;
+from nltk.corpus import stopwords&#13;
+stop_words = set(stopwords.words('english'))&#13;
+tokens = [w for w in tokens if not w in stop_words]&#13;
+&#13;
+print(tokens)&#13;
+'''&#13;
+['From', 'two', 'former', 'military', 'officers', 'award-winning', 'authors', ',', 'chillingly', 'authentic', 'geopolitical', 'thriller', 'imagines', 'naval', 'clash', 'US', 'China', 'South', 'China', 'Sea', '2034–and', 'path', 'nightmarish', 'global', 'conflagration', '.']&#13;
+'''&#13;
+</pre>
+
+<p class="translated">通过去除后缀和前缀，将语料库中的单词缩减到它们的根。词干分析器查找常见后缀和前缀的列表，并删除它们。</p>
+<pre class="lang:python decode:true ">from nltk.stem.porter import PorterStemmer #there are more available&#13;
+&#13;
+porter = PorterStemmer()&#13;
+stems = []&#13;
+for t in tokens:    &#13;
+    stems.append(porter.stem(t))&#13;
+&#13;
+print(stems)&#13;
+'''&#13;
+['from', 'two', 'former', 'militari', 'offic', 'award-win', 'author', ',', 'chillingli', 'authent', 'geopolit', 'thriller', 'imagin', 'naval', 'clash', 'us', 'china', 'south', 'china', 'sea', '2034–and', 'path', 'nightmarish', 'global', 'conflagr', '.']&#13;
+'''&#13;
+</pre>
+
+<p class="translated">词汇化与词干化有相同的预期输出:将单词简化为一个公共基或其词根。然而，lemmatizer考虑到了单词的形态分析，对所有词形变化使用相同的词根。</p>
+<pre class="lang:python decode:true ">nltk.download('wordnet') # a dictionary is needed for a Lemmatizer&#13;
+from nltk.stem import WordNetLemmatizer&#13;
+  &#13;
+lemmatizer = WordNetLemmatizer()&#13;
+lemmas = []&#13;
+for t in tokens:    &#13;
+    lemmas.append(lemmatizer.lemmatize(t))&#13;
+print(lemmas)&#13;
+&#13;
+'''&#13;
+['From', 'two', 'former', 'military', 'officer', 'award-winning', 'author', ',', 'chillingly', 'authentic', 'geopolitical', 'thriller', 'imago', 'naval', 'clash', 'US', 'China', 'South', 'China', 'Sea', '2034–and', 'path', 'nightmarish', 'global', 'conflagration', '.']&#13;
+'''&#13;
+</pre>
+<h2 class="translated"><a id="image-encoding" class="anchor" href="#image-encoding" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>图像编码</span></h2>
+<p class="translated">在进入这个话题之前，你必须了解计算机“看”图像的方式。每个图像被表示为1或3个像素矩阵。每个矩阵代表一个 <b>通道。</b> <span>对于黑白图像，只有一个通道，而对于彩色图像，有三个:红、绿、蓝。每个像素依次由0到255之间的数字表示，表示颜色的强度。</span></p>
+<p class="translated"><img loading="lazy" class="alignnone wp-image-12116" src="../Images/d33de02c46263dec66d8b62ac48afefc.png" alt="image of black and white" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/06/black_and_white_eight-129x178.png 129w, https://blog-api.algolia.com/wp-content/uploads/2021/06/black_and_white_eight-289x400.png 289w, https://blog-api.algolia.com/wp-content/uploads/2021/06/black_and_white_eight.png 606w" sizes="(max-width: 348px) 100vw, 348px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/06/black_and_white_eight-129x178.png"/></p>
+<h3 class="translated"><a id="pixel-values-as-features" class="anchor" href="#pixel-values-as-features" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>像素值作为特征</span></h3>
+<p class="translated"><span>从图像中检索特征最简单的方法是重新排列所有像素，生成一个特征向量。对于灰度图像，这可以使用NumPy: </span>轻松实现</p>
+<pre class="lang:python decode:true ">import skimage&#13;
+from skimage import data, io # data has standard test images&#13;
+import numpy as np&#13;
+from matplotlib import pyplot as plt&#13;
+%matplotlib inline&#13;
+&#13;
+camera = data.camera() &#13;
+io.imshow(camera)&#13;
+plt.show()&#13;
+&#13;
+<img loading="lazy" class="alignnone wp-image-12112" src="../Images/77d6b90421fcceba025bbc083d850151.png" alt="black and white image " srcset="https://blog-api.algolia.com/wp-content/uploads/2021/06/photographer-184x178.png 184w, https://blog-api.algolia.com/wp-content/uploads/2021/06/photographer-413x400.png 413w, https://blog-api.algolia.com/wp-content/uploads/2021/06/photographer.png 512w" sizes="(max-width: 333px) 100vw, 333px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/06/photographer-184x178.png"/>&#13;
+&#13;
+print(camera.shape) # (height, width)&#13;
+# (512, 512)&#13;
+features = np.reshape(camera, (512*512))&#13;
+print(features.shape, features)&#13;
+# ((262144,), array([156, 157, 160, ..., 121, 113, 111], dtype=uint8))&#13;
+</pre>
+<p class="translated"><span>相同的技术可用于RGB图像。然而，更合适的方法是通过使用来自所有通道的像素的平均值来创建特征向量。</span></p>
+<pre class="lang:python decode:true ">import skimage&#13;
+from skimage import data, io # data has standard test images&#13;
+import numpy as np&#13;
+from matplotlib import pyplot as plt&#13;
+%matplotlib inline&#13;
+&#13;
+astronaut = data.astronaut() &#13;
+io.imshow(astronaut)&#13;
+plt.show()&#13;
+&#13;
+&#13;
+<img loading="lazy" class="alignnone wp-image-12111" src="../Images/6cda909efe5c3dbc24c7a1210c68f594.png" alt="color image" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/06/astronaut-186x178.png 186w, https://blog-api.algolia.com/wp-content/uploads/2021/06/astronaut-418x400.png 418w, https://blog-api.algolia.com/wp-content/uploads/2021/06/astronaut.png 568w" sizes="(max-width: 325px) 100vw, 325px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/06/astronaut-186x178.png"/>&#13;
+&#13;
+print(astronaut.shape) # (height, width, no. of channels)&#13;
+# (512, 512, 3)&#13;
+feature_matrix = np.zeros((512, 512)) # matrix initialized with 0&#13;
+for i in range(0, astronaut.shape[0]):&#13;
+    for j in range(0, astronaut.shape[1]):&#13;
+        feature_matrix[i][j] = ((astronaut[i, j, 0]) +(astronaut[i, j, 1]) + (astronaut[i, j, 2])) / 3&#13;
+&#13;
+print(feature_matrix)&#13;
+'''&#13;
+array([[65.33333333, 26.66666667, 74.33333333, ..., 35.33333333,&#13;
+        29.        , 32.66666667],&#13;
+       [ 2.33333333, 57.33333333, 31.66666667, ..., 33.66666667,&#13;
+        30.33333333, 28.66666667],&#13;
+       [25.33333333,  7.66666667, 80.33333333, ..., 36.33333333,&#13;
+        32.66666667, 30.33333333],&#13;
+       ...,&#13;
+       [ 6.66666667,  7.        ,  3.        , ...,  0.        ,&#13;
+         0.33333333,  0.        ],&#13;
+       [ 3.33333333,  2.66666667,  4.33333333, ...,  0.33333333,&#13;
+         1.        ,  0.        ],&#13;
+       [ 3.66666667,  1.66666667,  0.33333333, ...,  0.        ,&#13;
+         1.        ,  0.        ]])&#13;
+'''&#13;
+</pre>
+<h3 class="translated"><a id="edge-detection" class="anchor" href="#edge-detection" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>边缘检测</span></h3>
+<p class="translated"><span>边缘是图像中亮度和颜色急剧变化的一组点。有不同的边缘检测技术，最常用的是Canny边缘检测算法。下面是它如何工作的概述:</span></p>
+<ol>
+<li aria-level="1" class="translated"><span>使用高斯滤波器降噪</span></li>
+<li aria-level="1" class="translated"><span>梯度计算</span></li>
+<li aria-level="1" class="translated"><span>非最大值抑制(该算法遍历梯度强度矩阵上的所有点，并找到边缘方向上具有最大值的像素)</span></li>
+<li aria-level="1" class="translated"><span>双阈值(将像素分为两类:强和弱)</span></li>
+<li aria-level="1" class="translated"><span>滞后边缘跟踪(当且仅当有另一个强像素作为其邻居时，将弱像素转换为强像素)</span></li>
+</ol>
+<pre class="lang:python decode:true ">import skimage&#13;
+from skimage import data # data has standard test images&#13;
+import cv2&#13;
+from matplotlib import pyplot as plt&#13;
+%matplotlib inline&#13;
+&#13;
+camera = data.camera() &#13;
+# from skimage import color # the image should be grayscale for Canny&#13;
+# camera = color.rgb2gray(camera) # however this one already is&#13;
+edges = cv2.Canny(camera,100,200) # thresholds for the hysteresis procedure&#13;
+&#13;
+plt.subplot(121), plt.imshow(camera, cmap = 'gray')&#13;
+plt.title('Original Image')&#13;
+plt.subplot(122), plt.imshow(edges, cmap = 'gray')&#13;
+plt.title('Edge Image')&#13;
+plt.show()&#13;
+&#13;
+<img loading="lazy" class="alignnone wp-image-12119" src="../Images/b611843357cabd1a24f057caa749f93a.png" alt="image of the an edge image" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/06/edge_image-320x168.png 320w, https://blog-api.algolia.com/wp-content/uploads/2021/06/edge_image-720x378.png 720w, https://blog-api.algolia.com/wp-content/uploads/2021/06/edge_image.png 740w" sizes="(max-width: 590px) 100vw, 590px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/06/edge_image-320x168.png"/>&#13;
+&#13;
+</pre>
+<h2 class="translated"><a id="final-word-and-feature-stores" class="anchor" href="#final-word-and-feature-stores" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a></h2>
+<p class="translated">不同的项目和团队维护和提供特性的方式可能会有很大的不同。这增加了基础架构的复杂性，并经常导致重复工作。分布式组织面临的一些挑战包括:</p>
+<ul>
+<li aria-level="1" class="translated"><span>特征未被重用</span></li>
+<li aria-level="1" class="translated"><span>特性定义不同</span></li>
+<li aria-level="1" class="translated"><span>计算特征需要很长时间</span></li>
+<li aria-level="1" class="translated"><span>训练和发球不一致</span></li>
+<li aria-level="1" class="translated"><span>特征衰减未知</span></li>
+</ul>
+<p class="translated"><span>为了解决这些问题，一个</span> <b>特征库</b> <span>作为一个中心库，用于存储一个组织内的文档化的、管理的和访问受控的特征。</span></p>
+<table>
+<tbody>
+<tr>
+<td colspan="4" class="translated"><b>特征存储</b></td>
+</tr>
+<tr>
+<td class="translated"><b>名称</b></td>
+<td class="translated"><b>描述</b></td>
+<td class="translated"><b>元数据</b></td>
+<td class="translated"><b>定义</b></td>
+</tr>
+<tr>
+<td class="translated"><i> <span>平均_用户_订单_价值</span> </i></td>
+<td class="translated"><i> <span>一个用户的平均订单值。</span> </i></td>
+<td class="translated"><span>为什么将特征添加到模型中，它如何有助于概化，负责维护特征数据源的组织中的工程师姓名，输入类型，输出类型。</span></td>
+<td class="translated">在运行时环境中执行并应用于输入以计算特征值的版本化代码。</td>
+</tr>
+</tbody>
+</table>
+<p> </p>
+<p class="translated"><span>本质上，特征库允许数据工程师插入特征。反过来，数据分析师和机器学习工程师使用API来获取他们认为相关的特征值。</span></p>
+<p class="translated"><span>此外，应对要素存储中的要素值进行版本化，以确保数据分析师能够使用与用于训练先前模型版本的要素值相同的要素值来重新构建模型。给定输入的特征值更新后，先前的值不会被删除；相反，它是用时间戳保存的，表明它是何时生成的。</span></p>
+<p class="translated"><span>在过去的几年里，分析师和工程师发明、试验并验证了各种适用于特性工程的最佳实践。在本文中，我们研究了规范化、标准化和分类特性。其他实践包括生成简单的特性、重用遗留系统、在需要时使用id作为特性、尽可能减少基数、谨慎使用计数、在必要时进行特性选择、仔细测试代码、保持代码、模型和数据同步、隔离特性提取代码、将模型和特性提取器序列化在一起，以及记录特性的值。</span></p>
+<p class="translated"><span>功能工程是一个创造性的过程，作为一名机器学习工程师，你最有资格确定哪些功能适合你的推荐模型。</span></p>
+<p class="translated"><span>在本系列的下一篇文章中，我们将专注于构建协同过滤推荐模型，这将是一件轻而易举的事情，因为我们已经解决了特征工程的问题。敬请期待！还有如果有什么问题，可以在</span><a href="https://twitter.com/cborodescu"><span>Twitter</span></a><span>上问我。</span></p>
+</div></div>    
+</body>
+</html>

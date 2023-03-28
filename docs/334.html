@@ -1,0 +1,206 @@
+<html>
+<head>
+<title>Implementing faceted search with dynamic faceting (code included) - Part 3 - Algolia Blog | Algolia Blog</title>
+<link href="../Styles/Style.css" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<h1 class="translated">用动态分面实现分面搜索(包括代码)-第3部分- Algolia博客</h1>
+<blockquote>原文：<a href="https://www.algolia.com/blog/engineering/implementing-faceted-search-with-dynamic-faceting-with-code/#0001-01-01">https://www.algolia.com/blog/engineering/implementing-faceted-search-with-dynamic-faceting-with-code/#0001-01-01</a></blockquote><div><div class="css-t54cg4"><blockquote>
+<p class="p1 translated">这是描述刻面和刻面搜索的技术和数据方面的三篇系列博文的第三篇也是最后一篇。在第3部分中，我们看一下搜索过程，从查询到执行再到响应，并展示如何动态生成方面。</p>
+</blockquote>
+<p class="translated"><span>这是我们刻面&amp;数据系列的第三篇文章。本系列的重点是技术性的，概述了方面搜索的逻辑和方面数据模型。第一部分和第二部分在我们的科技博客中。在文章</span><a href="https://www.google.com/url?q=https://www.algolia.com/developers-tech-blog/code-and-deep-dives/facets-and-faceted-search-making-every-attribute-count&amp;sa=D&amp;source=editors&amp;ust=1677685982116423&amp;usg=AOvVaw05YQkLctaODCh5nGg3Z6O7"><span>Facets and faceted search，every JSON attribute counts</span></a><span>中，我们定义了什么是刻面，并解释了刻面在结构化数据中的重要作用。它还说明了JSON是表示包括方面在内的索引数据的最灵活的方式。第二篇文章— </span> <a href="https://www.algolia.com/blog/engineering/facets-data-model-of-json-records/"> <span>一个使用JSON的facets数据模型</span> </a> <span> —介绍了facets最常见的数据结构:简单的facet值、嵌套facet、层次类别以及用户和AI标记，所有这些都用于facet搜索的不同方面。查看我们的文档，了解更多关于索引和刻面的信息。</span></p>
+<p class="translated"><span>在本文中——本系列的第三篇也是最后一篇——数据仍然是我们关注的焦点，但我们也讨论流程。这次</span> <b>我们深入到查询周期中使用的数据和流程:从请求，到执行，再到响应</b> <span>，所有这些都在一个高级刻面用例的上下文中:</span> <i> <span>动态刻面</span> </i> <span>。</span></p>
+<p class="translated"><span>在深入研究技术细节之前，让我们看看动态刻面是怎么回事。</span></p>
+<h2 class="translated"><a id="overview-of-dynamic-faceting" class="anchor" href="#overview-of-dynamic-faceting" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>动态刻面概述</span></h2>
+<p class="translated">动态刻面根据用户的意图向用户显示一组不同的刻面。为了理解这一点，考虑一个销售两类商品的电子商务音乐商店:CD和音频设备。该业务希望显示一组 <i> <span>相关的</span> </i> <span>刻面。当用户的意图是找到自己喜欢的音乐时，提出“品牌”有什么好处？同样，当用户的意图是寻找音频设备时，建议“音乐流派”有什么好处呢？动态刻面确保只显示最合适的刻面。</span></p>
+<p class="translated"><span>在我们的</span> <a href="https://codesandbox.io/s/lryxzp4yvm" target="_blank" rel="noopener"> <span>动态分面沙箱</span> </a> <span>上，观看动态分面的现场演示，并获得完整的代码库。</span></p>
+<p class="translated"><span/></p>
+<ul>
+<li aria-level="1" class="translated"><span>制药公司展示了其医疗和化妆品产品的不同方面。</span></li>
+<li aria-level="1" class="translated">报纸在娱乐版和政治版展现了不同的一面。</li>
+<li aria-level="1" class="translated">在线市场，就像下面的亚马逊例子，随着人们浏览他们的大量不同的产品，改变了方面列表。</li>
+</ul>
+<h2 class="translated"><a id="example-use-case-ecommerce-marketplaces-dynamic-faceting%c2%a0%c2%a0" class="anchor" href="#example-use-case-ecommerce-marketplaces-dynamic-faceting%c2%a0%c2%a0" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>示例用例:电子商务市场&amp;动态刻面</span></h2>
+<p class="translated"><span>亚马逊在其许多类别中使用动态面。在下图中，您会看到两个查询:“音乐”在左边，“电影”在右边。如您所见，两边都包括“价格”方面，但是音乐查询包括“客户评论”、“艺术家”和“音乐格式”，而电影查询包括“导演”、“视频格式”和“电影类型”。</span></p>
+<p class="translated"><img loading="lazy" class="alignnone wp-image-11523" src="../Images/8adce30e488826840458074a41ba1e39.png" alt="Picture of Amazon dynamic facets" srcset="https://blog-api.algolia.com/wp-content/uploads/2021/03/amazon-dynamic-faceting-199x178.png 199w, https://blog-api.algolia.com/wp-content/uploads/2021/03/amazon-dynamic-faceting-447x400.png 447w, https://blog-api.algolia.com/wp-content/uploads/2021/03/amazon-dynamic-faceting-768x687.png 768w, https://blog-api.algolia.com/wp-content/uploads/2021/03/amazon-dynamic-faceting.png 1066w" sizes="(max-width: 462px) 100vw, 462px" data-original-src="https://blog-api.algolia.com/wp-content/uploads/2021/03/amazon-dynamic-faceting-199x178.png"/></p>
+<p class="translated"><span>亚马逊使用动态面创建了一个</span> <b>增强的搜索体验，根据用户正在搜索的</b> <span>产品，以智能和有计划的方式引导用户。</span></p>
+<p class="translated">让我们来看看这是怎么做到的。</p>
+<h2 class="translated"><a id="the-query-cycle-and-the-logic-behind-facet-search" class="anchor" href="#the-query-cycle-and-the-logic-behind-facet-search" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>查询循环和刻面搜索背后的逻辑</span></h2>
+<p class="translated"><span>首先，一些术语:</span></p>
+<ul>
+<li aria-level="1" class="translated"><b>刻面</b> <b> <i>按键</i> </b> <span>是类似“颜色”、“价格”、“鞋类”、“袖子”等属性。</span></li>
+<li aria-level="1" class="translated"><b>刻面</b> <b> <i>值</i> </b> <span>是关键点的值。比如“色”包含“红”和“绿”；“袖”包含“短”和“长”。</span></li>
+</ul>
+<h3 id="the-dataset" class="translated">数据集</h3>
+<p class="translated">我们将使用包含两种产品的数据集:衬衫和鞋子。以下示例包含两个典型项目。这两项都包括“价格”、“颜色”和“服装类型”方面。但是，衬衫包含“袖子”方面，鞋子包含“鞋子类别”方面。</p>
+<pre><code>{&#13;
+    "name": "Bold Shirt",&#13;
+    "desc": “Be bold, wear a t-shirt with only one color”,&#13;
+    “Image_url”: “images/shirt-123.jpg”&#13;
+   “Price”: 49.99,&#13;
+    "color": “white”,&#13;
+    "gender": “male”,&#13;
+    “clothing_type”: “shirt”,&#13;
+    "sleeves": "short"&#13;
+},&#13;
+{&#13;
+    "name": "Blazing Speed Sneakers",&#13;
+    "desc": “Sneakers to win races!”,&#13;
+    “Image_url”: “images/sneakers-789.jpg”&#13;
+    "brand": “nike”,&#13;
+    “Price”: 189.99,&#13;
+    "color": "red",&#13;
+    "clothing_type": "shoe",&#13;
+    "shoe_category": "sneaker"&#13;
+}&#13;
+</code></pre>
+<h3 class="translated"><a id="the-query-cycle" class="anchor" href="#the-query-cycle" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>查询周期</b></h3>
+<p class="translated"><span>搜索查询遵循4部分循环。这里有一个概述。我们将在下一节给出更多的细节和代码示例。</span></p>
+<ol>
+<li aria-level="1" class="translated"><span>将用户的查询发送到搜索引擎。</span></li>
+<li aria-level="1" class="translated"><span>执行搜索，检索符合查询条件的</span> <a href="https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/#algolia-records"> <span>记录</span> </a> <span>。在这一步中，您将从检索到的记录中派生出方面。</span></li>
+<li aria-level="1" class="translated"><span>发回结果和刻面。</span></li>
+<li aria-level="1" class="translated"><span>在屏幕上呈现结果和方面。</span></li>
+</ol>
+<p class="translated"><span>正如您将看到的，逻辑在于为每个查询动态生成一个新列表，而不是使用预定义的方面列表。这可以通过执行以下操作来实现:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>在后端，您将从每组查询结果中提取方面。</span></li>
+<li aria-level="1" class="translated"><span>在前端，你将使用未定义的容器占位符来代替预定义的容器。</span></li>
+</ul>
+<h2 class="translated"><a id="the-query-request-sending-the-query-with-or-without-a-filter" class="anchor" href="#the-query-request-sending-the-query-with-or-without-a-filter" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>查询请求:发送有无过滤的查询</span></h2>
+<p class="translated"><span>循环的起点是发送一个查询和用户选择的任何方面值来过滤他们的结果。过滤结果会创建一个内聚的结果集，进而生成一个与结果中出现的所有项目相关的方面列表。另一方面，如果用户不选择一个方面，项目将更加多样化，因此，这些方面可能不适用于所有产品。</span></p>
+<p class="translated">然而，这完全没问题。正如您将在下一步中看到的，呈现前5个最常见的方面确保了大多数项目将包含这些方面。</p>
+<p class="translated"><span>现在为代码。下面是Algolia的API如何实现查询“</span> <i> <span>【获取所有短袖夏季t恤】</span> </i> <span>”。(因为所有的搜索工具都允许过滤，下面的代码只是众多方法中的一种)。</span></p>
+<pre><code>results = index.search('summer t-shirt', {&#13;
+  filters: 'clothing_type:shirt AND sleeve:short'&#13;
+});&#13;
+</code></pre>
+<h2 class="translated"><a id="the-query-execution-creating-the-list-of-top-5-facets" class="anchor" href="#the-query-execution-creating-the-list-of-top-5-facets" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>查询执行:创建前5个面的列表</span></h2>
+<p class="translated"><span>我们在本文中使用的<a href="#the-dataset">数据集</a>包含两种产品，每种产品都有一组独特的方面属性。执行查询后，搜索引擎提取每个记录中出现的每个方面键，然后选择最常出现的5个方面。</span></p>
+<p class="translated"><span>为什么是前5？因为一个屏幕有5个面通常就够了。十是一个上限——再多就太多了，会造成无用的混乱。</span></p>
+<p class="translated"><span>有两种方法可以创建面列表:</span></p>
+<ol>
+<li aria-level="1" class="translated"><span>预定义列表:直接在代码中或在单独的数据集或本地存储中保存一个面键列表。</span></li>
+<li aria-level="1" class="translated"><span>一个动态生成的列表:从查询结果中提取一个不同的面键列表，并将它们作为一个单独的记录放入查询响应中。</span></li>
+</ol>
+<p class="translated"><span>我们已经选择使用方法2，但是有些实现使用方法1。</span></p>
+<h3 class="translated"><a id="method-1-hardcoding-the-list-of-facet-keys" class="anchor" href="#method-1-hardcoding-the-list-of-facet-keys" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>方法一——硬编码刻面键列表</b></h3>
+<p class="translated">对于这种方法，你根据你对产品的了解创建一组固定的方面。该列表可以是硬编码的，也可以放在数据库中的文件或表格中，只要添加或修改了新产品，就可以手动更新该列表。</p>
+<p class="translated"><span>无论固定列表的存储方式如何，列表必须包含以下类型的示例:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>对于每一个“服装_类型=衬衫”，返回以下方面:“颜色、价格、服装_类型、袖子、性别”。</span></li>
+<li aria-level="1" class="translated"><span>对于每一个“服装_类型=鞋子”，返回以下方面:“颜色、价格、服装_类型、鞋子_类别、品牌”。</span></li>
+</ul>
+<p class="translated">这不是首选方法，因为和所有硬编码或半硬编码一样，它的可伸缩性有限。如果您想添加更多的关系，例如“shoe _ styles”=“high-top，leisure，and cross-fit”，您需要手动向列表添加一个新行。手动维护是额外的工作，容易出错和延迟。</p>
+<p class="translated"><span>我们在本文剩余部分提出的方法(方法2)从过程中去除了人工维护，使得过程是演绎的，因此完全是动态的。</span></p>
+<h3 class="translated"><a id="method-2-dynamically-generate-the-list-of-facets" class="anchor" href="#method-2-dynamically-generate-the-list-of-facets" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>方法二——动态生成刻面列表</b></h3>
+<p class="translated"><span>在这个方法中，我们将从产品本身提取方面列表。</span></p>
+<p class="translated"><span>在某种意义上，手动和动态方法之间的唯一区别在于生成的前5个方面的列表是动态的。结果列表本身将以同样的方式格式化。</span></p>
+<p class="translated"><span>以下是步骤:</span></p>
+<ol>
+<li class="translated"><span>获取查询结果:</span><ul>
+<li class="translated"><span>执行查询，找到X数量的产品。</span></li>
+<li class="translated"><span>保存那些记录，作为搜索结果发送回去。</span></li>
+</ul>
+</li>
+<li class="translated">获取前5个面键及其所有值:<ul>
+<li class="translated"><span>从结果中，收集所有方面属性(我们将在下面展示如何将属性识别为方面)。</span></li>
+<li class="translated"><span>创建一个包含提取的面密钥的完整列表的记录。</span></li>
+<li class="translated">确定哪些方面最常出现。按最高记录数对列表进行排序。</li>
+<li class="translated">从这个列表中只取前5名。这些是最常见的方面。</li>
+<li class="translated"><span>将产品的值添加到各自的关键字中。</span></li>
+</ul>
+</li>
+</ol>
+<p class="translated"><span>搞定。</span></p>
+<p class="translated"><span>生成的列表将与方法1相同:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>对于每个“服装_类型=衬衫”，返回以下方面:“颜色、价格、服装_类型、袖子、性别”。</span></li>
+<li aria-level="1" class="translated"><span>对于每一个“服装_类型=鞋子”，返回以下方面:“颜色、价格、服装_类型、鞋子_类别、品牌”。</span></li>
+</ul>
+<p class="translated"><span>因此，如果大多数产品是衬衫，我们会将“袖子”和“性别”作为第4和第5个方面来显示。如果它们是鞋，那么第4和第5个方面将是“鞋类”和“品牌”。</span></p>
+<h2 class="translated"><a id="the-query-response-sending-back-the-response" class="anchor" href="#the-query-response-sending-back-the-response" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>查询响应:发回响应</span></h2>
+<p class="translated"><span>这里我们将简单地发送回搜索结果和生成的5个面键的列表，以及它们各自的值。</span></p>
+<p class="translated"><span>响应应该包括任何前端需要建立其搜索结果页面。在所有刻面搜索查询周期中，前端需要:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>包含“名称”、“描述”、“价格”和“图片_网址”的产品列表。(不要发送图像</span> <i> <span>文件</span> </i> <span>，因为它们的大小会降低搜索的整体响应时间)。</span></li>
+<li aria-level="1" class="translated"><span>刻面键及其值的列表。</span></li>
+</ul>
+<p class="translated"><span>响应还将包含显示目的或业务逻辑所需的附加信息。我们不展示这些。<a href="https://www.algolia.com/doc/api-reference/api-methods/search/#response">点击此处查看完整的查询响应</a>。</span></p>
+<p class="translated"><b>结果:</b></p>
+<p class="translated">下面是我们如何退回这一套衬衫。所有属性都将被用作搜索结果中的信息，除了“objectID”，它将被用于出于技术原因( <a href="https://www.algolia.com/doc/guides/getting-analytics/search-analytics/advanced-analytics/"> <span>点击分析</span> </a> <span>、详细页面查看或其他原因)来标识产品。</span></p>
+<pre><code>"results": [&#13;
+{&#13;
+    "objectID": "123",&#13;
+    "name": "Bold Shirt",&#13;
+    "desc": “Be bold, wear a t-shirt with only one color”,&#13;
+    “Image_url”: “images/shirt-123.jpg”&#13;
+   “Price”: 49.99,&#13;
+    "color": “white”,&#13;
+    "sleeves": "short"&#13;
+}&#13;
+]&#13;
+</code></pre>
+<p class="translated"><b>刻面:</b></p>
+<p class="translated"><span>面响应是面键及其值的组合。这里有一小段摘录。该示例不包括所有方面:</span></p>
+<pre><code>"facets": {&#13;
+    "Clothing Type": {&#13;
+      "Shirts": 100,&#13;
+      "Sneakers": 50&#13;
+    },&#13;
+    "Sleeves": {&#13;
+      "Short": 30,&#13;
+      "Long": 10&#13;
+    },&#13;
+}&#13;
+</code></pre>
+<p class="translated"><span>需要注意的两件事:</span></p>
+<ul>
+<li aria-level="1" class="translated"><span>只显示“袖子”和“性别”，不显示“鞋_品类”和“品牌”。如前所述，这是因为衬衫比鞋子多。</span></li>
+<li aria-level="1" class="translated"><span>每个方面后的数字表示具有该值的记录数。我们将在添加面的部分对此进行更多的讨论。</span></li>
+</ul>
+<h2 class="translated"><a id="the-front-end-display-dynamically-displaying-the-list-of-facets" class="anchor" href="#the-front-end-display-dynamically-displaying-the-list-of-facets" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>前端显示:动态显示刻面列表</span></h2>
+<p class="translated">这里的工作是在屏幕上渲染结果和切面。就UX设计而言，行业标准是结果在中间，面在左边。</p>
+<p class="translated"><span>首先，HTML。为结果和方面添加占位符容器:</span></p>
+<pre><code>&lt;div id="wrapper"&gt;&#13;
+    &lt;div id="app-container"&gt;&#13;
+      &lt;div id="left-side"&gt;&#13;
+        &lt;div class="sidebar"&gt;&#13;
+          &lt;div id="facet-lists"&gt;&lt;/div&gt;&#13;
+        &lt;/div&gt;&#13;
+      &lt;/div&gt;&#13;
+      &lt;div id="center-side"&gt;&#13;
+        &lt;div id="results-container"&gt;&lt;/div&gt;&#13;
+      &lt;/div&gt;&#13;
+    &lt;/div&gt;&#13;
+&lt;/div&gt;&#13;
+</code></pre>
+<p class="translated"><span>有一个容器("</span> <b> facet-lists" </b> <span>)用于5个方面。呈现代码生成一个无序列表来显示该容器中的方面。</span></p>
+<p class="translated"><span>结果放入</span> <b>结果-容器</b> <span>。</span></p>
+<p class="translated"><span>接下来，渲染数据。由于这可以采取多种形式，并且本文严格来说不是教程，所以请看一下我们的<a href="https://github.com/algolia/dynamic-faceting-instant-search-guide" target="_blank" rel="noopener">动态刻面GitHub repo </a>以获得完整的前端实现。</span></p>
+<h2 class="translated"><a id="making-the-solution-more-robust" class="anchor" href="#making-the-solution-more-robust" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>使解决方案更加强大</span></h2>
+<h3 id="adding-number-of-facets" class="translated"><b>增加刻面数量</b></h3>
+<p class="translated">你需要让你的用户知道有多少记录有给定的方面值。获取方面的数量是有用的，因为它们通知用户搜索结果。比如知道短袖衬衫比长袖衬衫多就很有用。这些方面的数量通常在查询执行期间在后端进行计算。</p>
+<h3 class="translated"><a id="adding-facet-metadata" class="anchor" href="#adding-facet-metadata" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>添加刻面元数据</b></h3>
+<p class="translated"><span>每条记录都需要包含有助于流程知道哪些属性是方面的信息。要做到这一点，您需要通过使用一个定义记录方面的附加属性来向每个记录添加方面元数据:</span></p>
+<pre><code>“facets”: [“sleeves”, “price”, ..]&#13;
+</code></pre>
+<p class="translated"><span>更进一步，包含属性</span>的 <i> <span>类型</span> </i> <span>也很有用</span></p>
+<pre><code>“facets”: [ &#13;
+  [“sleeves”, “string”], &#13;
+  [“price”, “numeric”] &#13;
+]&#13;
+</code></pre>
+<p class="translated"><span>有了这些信息，前端代码可以应用价格的范围滑块和袖子的下拉列表。</span></p>
+<h3 class="translated"><a id="grouping-items-using-facets" class="anchor" href="#grouping-items-using-facets" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <b>分组项使用刻面</b></h3>
+<p class="translated"><span>你会希望将颜色与其他刻面属性区别对待。这是因为</span> <i> <span>不同的</span> </i> <span>颜色出现在</span> <i> <span>相同的</span> </i> <span>衬衫上。对于这一点，逻辑问题是:你需要每件衬衫</span> <i> <span> 1条记录</span> </i> <span>包括所有可用颜色的属性吗？还是</span> <i> <span>每种颜色1条记录</span> </i> <span>，每件衬衫需要多条记录？典型的数据库思维会说，当然，只有1条记录。然而，正如我们在第一篇文章中详细讨论的那样，<a href="https://www.google.com/url?q=https://www.algolia.com/developers-tech-blog/code-and-deep-dives/facets-and-faceted-search-making-every-attribute-count&amp;sa=D&amp;source=editors&amp;ust=1677685982116423&amp;usg=AOvVaw05YQkLctaODCh5nGg3Z6O7">分面搜索不同于</a>。</span></p>
+<p class="translated">我们将所有可搜索的项目放在单独的记录中。这使得人们可以使用搜索栏找到“红衫军”，而不需要点击颜色方面。为了实现这一点，我们将每个项目设置为一种颜色。但是，在响应中，我们不需要返回3条衬衫记录。我们可以将3个记录合并成1个记录，创建一个新的元属性:“available _ colors”:</p>
+<pre><code>“available_colors”: “red, green, blue”&#13;
+</code></pre>
+<h2 class="translated"><a id="parting-words" class="anchor" href="#parting-words" aria-hidden="true"> <svg aria-hidden="true" class="octicon octicon-link" version="1.1" viewbox="0 0 16 16"> <path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"/> </svg> </a> <span>离别赠言</span></h2>
+<p class="translated"><span>我们在本文中的主要目标是在我们的facets &amp;数据系列中为数据添加流程。我们描述了一种特定的方法来执行搜索并显示一组方面，遵循请求、执行、响应和显示的查询循环。</span></p>
+<p class="translated">为了扩展您对方面的理解，我们在一个高级用例的上下文中这样做了:我们使我们的方面搜索是动态的。动态分面创建了更直观和有用的分面搜索体验，特别是对于提供各种产品和服务的企业。</p>
+<p class="translated"><span>查看特性live我们的</span> <a href="https://codesandbox.io/s/lryxzp4yvm" target="_blank" rel="noopener"> <span>动态刻面沙箱</span> </a> <span>，查看我们在GitHub上的动态刻面实现:</span> <a href="https://github.com/algolia/dynamic-faceting-instant-search-guide" target="_blank" rel="noopener"> <span>前端动态刻面</span> </a> <span>和</span> <a href="https://github.com/algolia/dynamic-faceting-guide" target="_blank" rel="noopener"> <span>动态刻面使用查询规则</span> </a> <span>。你也可以在我们关于刻面</span>  <span>的</span> <a href="https://www.algolia.com/doc/guides/managing-results/refine-results/faceting/"> <span>文档中找到更多关于索引和刻面的信息。</span></a></p>
+</div></div>    
+</body>
+</html>
