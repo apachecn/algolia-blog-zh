@@ -1,4 +1,4 @@
-# 让企业搜索更加“智能”| Algolia
+# 让企业搜索更加“智能”
 
 > 原文：<https://www.algolia.com/blog/ai/what-is-cognitive-search-and-what-could-it-mean-for-your-business/>
 

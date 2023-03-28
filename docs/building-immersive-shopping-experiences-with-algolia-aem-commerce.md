@@ -1,4 +1,4 @@
-# 构建身临其境的购物体验:通过 Adobe Experience Manager 和任何商务平台使用 Algolia 搜索- Algolia 博客
+# 构建身临其境的购物体验:通过 Adobe Experience Manager 和任何商务平台使用 Algolia 搜索
 
 > 原文：<https://www.algolia.com/blog/ecommerce/building-immersive-shopping-experiences-with-algolia-aem-commerce/>
 

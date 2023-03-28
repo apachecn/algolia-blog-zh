@@ -1,4 +1,4 @@
-# Blogcast:使用 Alex Patterson coding catdev \n 搜索教育/媒体
+# Blogcast:使用 Alex Patterson coding catdev 搜索教育/媒体
 
 > 原文：<https://www.algolia.com/blog/engineering/blogcast-building-search-for-education-and-media-with-alex-patterson-from-codingcatdev/>
 

@@ -1,4 +1,4 @@
-# 宣布面向 Salesforce 商务云的 Algolia 无头商务集成- Algolia 博客
+# 宣布面向 Salesforce 商务云的 Algolia 无头商务集成
 
 > 原文：<https://www.algolia.com/blog/ecommerce/announcing-algolia-headless-commerce-integration-for-salesforce-commerce-cloud/>
 

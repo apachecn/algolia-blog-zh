@@ -1,4 +1,4 @@
-# 更好的移动语音搜索工具:Android 和 iOS 语音覆盖- Algolia 博客
+# 更好的移动语音搜索工具:Android 和 iOS 语音覆盖
 
 > 原文：<https://www.algolia.com/blog/algolia/better-voice-search-tools-mobile-voiceoverlay-android-ios/>
 

@@ -1,4 +1,4 @@
-# 如何创建一个出色的多面搜索和导航体验| Algolia
+# 如何创建一个出色的多面搜索和导航体验
 
 > 原文：<https://www.algolia.com/blog/ux/faceted-search-and-navigation/>
 

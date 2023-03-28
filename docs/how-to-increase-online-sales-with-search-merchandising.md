@@ -1,4 +1,4 @@
-# 如何通过搜索营销增加在线销售- Algolia 博客
+# 如何通过搜索营销增加在线销售
 
 > 原文：<https://www.algolia.com/blog/customers/how-to-increase-online-sales-with-search-merchandising/>
 

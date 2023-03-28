@@ -1,4 +1,4 @@
-# 用动态分面实现分面搜索(包括代码)-第 3 部分- Algolia 博客
+# 用动态分面实现分面搜索(包括代码)-第 3 部分
 
 > 原文：<https://www.algolia.com/blog/engineering/implementing-faceted-search-with-dynamic-faceting-with-code/>
 

@@ -1,4 +1,4 @@
-# DX Matters -为文档创建伟大的搜索- Algolia 博客
+# DX Matters -为文档创建伟大的搜索
 
 > 原文：<https://www.algolia.com/blog/engineering/dx-matters-creating-great-search-documentation/>
 

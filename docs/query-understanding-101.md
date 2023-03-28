@@ -1,4 +1,4 @@
-# 查询理解 101 -阿尔戈利亚博客|阿尔戈利亚博客
+# 查询理解 101 
 
 > 原文：<https://www.algolia.com/blog/product/query-understanding-101/>
 

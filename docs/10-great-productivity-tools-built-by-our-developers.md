@@ -1,4 +1,4 @@
-# 由我们的开发人员构建的 10 大搜索生产力工具- Algolia 博客
+# 由我们的开发人员构建的 10 大搜索生产力工具
 
 > 原文：<https://www.algolia.com/blog/engineering/10-great-productivity-tools-built-by-our-developers/>
 

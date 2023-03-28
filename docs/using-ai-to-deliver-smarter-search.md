@@ -1,4 +1,4 @@
-# Algolia 如何使用人工智能提供更智能的搜索- Algolia 博客
+# Algolia 如何使用人工智能提供更智能的搜索
 
 > 原文：<https://www.algolia.com/blog/ai/using-ai-to-deliver-smarter-search/>
 

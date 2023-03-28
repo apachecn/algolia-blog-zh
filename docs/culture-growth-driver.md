@@ -1,4 +1,4 @@
-# 作为增长动力的文化- Algolia 博客
+# 作为增长动力的文化
 
 > 原文：<https://www.algolia.com/blog/algolia/culture-growth-driver/>
 

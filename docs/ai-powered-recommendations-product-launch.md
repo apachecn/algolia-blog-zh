@@ -1,4 +1,4 @@
-# 发现我们新的人工智能推荐产品| Algolia
+# 发现我们新的人工智能推荐产品
 
 > 原文：<https://www.algolia.com/blog/product/ai-powered-recommendations-product-launch/>
 

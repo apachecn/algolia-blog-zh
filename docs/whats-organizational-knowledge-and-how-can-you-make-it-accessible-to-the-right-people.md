@@ -1,4 +1,4 @@
-# 让合适的人掌握组织知识| Algolia
+# 让合适的人掌握组织知识
 
 > 原文：<https://www.algolia.com/blog/product/whats-organizational-knowledge-and-how-can-you-make-it-accessible-to-the-right-people/>
 

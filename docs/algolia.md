@@ -1,4 +1,4 @@
-# 阿尔戈利亚|阿尔戈利亚博客
+# 阿尔戈利亚
 
 > 原文：<https://www.algolia.com/blog/algolia/>
 

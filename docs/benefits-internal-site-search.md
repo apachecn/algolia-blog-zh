@@ -1,4 +1,4 @@
-# 自定义内部网站搜索的好处| Algolia
+# 自定义内部网站搜索的好处
 
 > 原文：<https://www.algolia.com/blog/ux/benefits-internal-site-search/>
 

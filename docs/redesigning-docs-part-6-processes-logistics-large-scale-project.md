@@ -1,4 +1,4 @@
-# 重新设计我们的文档-第 6 部分-大型项目的流程和物流- Algolia 博客
+# 重新设计我们的文档-第 6 部分-大型项目的流程和物流
 
 > 原文：<https://www.algolia.com/blog/algolia/redesigning-docs-part-6-processes-logistics-large-scale-project/>
 

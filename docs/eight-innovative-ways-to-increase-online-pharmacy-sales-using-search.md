@@ -1,4 +1,4 @@
-# 使用搜索增加网上药店销售的八种创新方法- Algolia 博客
+# 使用搜索增加网上药店销售的八种创新方法
 
 > 原文：<https://www.algolia.com/blog/ecommerce/eight-innovative-ways-to-increase-online-pharmacy-sales-using-search/>
 

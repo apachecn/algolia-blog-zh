@@ -1,4 +1,4 @@
-# 通过搜索微服务| Algolia \n 发现难以访问的媒体档案
+# 通过搜索微服务 发现难以访问的媒体档案
 
 > 原文：<https://www.algolia.com/blog/product/internal-search-unleashing-media-content-at-scale-with-headless/>
 

@@ -1,4 +1,4 @@
-# 用利润计算器估算电子商务转化率和收入| Algolia
+# 用利润计算器估算电子商务转化率和收入
 
 > 原文：<https://www.algolia.com/blog/product/measuring-ecommerce-conversion-rates-and-revenue-with-a-profit-calculator/>
 

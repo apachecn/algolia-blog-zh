@@ -1,4 +1,4 @@
-# 语义搜索及其对电子商务的重要性- Algolia 博客
+# 语义搜索及其对电子商务的重要性
 
 > 原文：<https://www.algolia.com/blog/ai/semantic-search-and-why-it-matters-for-e-commerce/>
 

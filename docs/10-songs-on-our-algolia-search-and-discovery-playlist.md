@@ -1,4 +1,4 @@
-# 我们的 Algolia 搜索和发现播放列表中的 10 首歌曲- Algolia 博客
+# 我们的 Algolia 搜索和发现播放列表中的 10 首歌曲
 
 > 原文：<https://www.algolia.com/blog/algolia/10-songs-on-our-algolia-search-and-discovery-playlist/>
 

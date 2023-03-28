@@ -1,4 +1,4 @@
-# 什么是智能搜索，它是如何工作的？阿尔戈利亚|阿尔戈利亚博客
+# 什么是智能搜索，它是如何工作的？
 
 > 原文：<https://www.algolia.com/blog/ux/what-is-intelligent-search-and-how-does-it-work/>
 

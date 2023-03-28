@@ -1,4 +1,4 @@
-# 最佳和最先进的搜索和发现体验| Algolia
+# 最佳和最先进的搜索和发现体验
 
 > 原文：<https://www.algolia.com/blog/product/top-6-tips-for-delivering-a-next-level-search-and-discovery-experience/>
 

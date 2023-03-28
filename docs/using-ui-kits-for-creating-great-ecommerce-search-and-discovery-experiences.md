@@ -1,4 +1,4 @@
-# 使用 UI 套件创建出色的电子商务搜索和发现体验- Algolia 博客
+# 使用 UI 套件创建出色的电子商务搜索和发现体验
 
 > 原文：<https://www.algolia.com/blog/ecommerce/using-ui-kits-for-creating-great-ecommerce-search-and-discovery-experiences/>
 

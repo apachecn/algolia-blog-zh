@@ -1,4 +1,4 @@
-# 重新设计我们的文档-第 3 部分-UX/UI 阶段- Algolia 博客
+# 重新设计我们的文档-第 3 部分-UX/UI 阶段
 
 > 原文：<https://www.algolia.com/blog/ux/redesigning-our-docs-part-3-the-ux-ui-phase/>
 

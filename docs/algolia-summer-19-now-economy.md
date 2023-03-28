@@ -1,4 +1,4 @@
-# 为现在的经济而建——阿尔戈利亚夏季 19——阿尔戈利亚博客|阿尔戈利亚博客
+# 为现在的经济而建——阿尔戈利亚夏季 19——阿尔戈利亚博客
 
 > 原文：<https://www.algolia.com/blog/algolia/algolia-summer-19-now-economy/>
 

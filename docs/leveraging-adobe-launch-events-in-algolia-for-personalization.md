@@ -1,4 +1,4 @@
-# 了解如何在 Adobe Launch \n 中个性化您的 Algolia 搜索
+# 了解如何在 Adobe Launch 中个性化您的 Algolia 搜索
 
 > 原文：<https://www.algolia.com/blog/product/leveraging-adobe-launch-events-in-algolia-for-personalization/>
 

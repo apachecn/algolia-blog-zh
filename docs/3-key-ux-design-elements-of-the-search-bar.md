@@ -1,4 +1,4 @@
-# 3 键搜索框 UX 设计元素| Algolia
+# 3 键搜索框 UX 设计元素
 
 > 原文：<https://www.algolia.com/blog/ux/3-key-ux-design-elements-of-the-search-bar/>
 

@@ -1,4 +1,4 @@
-# 迁移到无头架构的 5 个理由| Algolia
+# 迁移到无头架构的 5 个理由
 
 > 原文：<https://www.algolia.com/blog/product/5-reasons-why-retailers-move-from-a-monolithic-to-headless-architecture/>
 

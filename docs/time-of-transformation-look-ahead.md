@@ -1,4 +1,4 @@
-# 一个变革的时代，一个展望-阿尔戈利亚博客|阿尔戈利亚博客
+# 一个变革的时代，一个展望
 
 > 原文：<https://www.algolia.com/blog/algolia/time-of-transformation-look-ahead/>
 

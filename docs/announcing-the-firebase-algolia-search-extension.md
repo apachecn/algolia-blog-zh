@@ -1,4 +1,4 @@
-# 宣布 Firebase + Algolia 搜索扩展- Algolia 博客
+# 宣布 Firebase + Algolia 搜索扩展
 
 > 原文：<https://www.algolia.com/blog/product/announcing-the-firebase-algolia-search-extension/>
 

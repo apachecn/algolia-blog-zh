@@ -1,4 +1,4 @@
-# 什么是基于搜索的应用？阿尔戈利亚|阿尔戈利亚博客
+# 什么是基于搜索的应用？
 
 > 原文：<https://www.algolia.com/blog/ux/what-are-search-based-applications/>
 

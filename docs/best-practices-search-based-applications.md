@@ -1,4 +1,4 @@
-# 基于搜索的应用程序的最佳实践| Algolia
+# 基于搜索的应用程序的最佳实践
 
 > 原文：<https://www.algolia.com/blog/product/best-practices-search-based-applications/>
 

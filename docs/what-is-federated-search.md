@@ -1,4 +1,4 @@
-# 什么是联合搜索？阿尔戈利亚|阿尔戈利亚博客
+# 什么是联合搜索？
 
 > 原文：<https://www.algolia.com/blog/ux/what-is-federated-search/>
 

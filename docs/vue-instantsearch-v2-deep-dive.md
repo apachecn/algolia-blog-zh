@@ -1,4 +1,4 @@
-# 深入研究 Vue 即时搜索版本 2 - Algolia 博客
+# 深入研究 Vue 即时搜索版本 2 
 
 > 原文：<https://www.algolia.com/blog/engineering/vue-instantsearch-v2-deep-dive/>
 

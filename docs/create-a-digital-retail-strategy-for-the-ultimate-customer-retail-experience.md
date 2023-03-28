@@ -1,4 +1,4 @@
-# 创建零售战略，为在线购物者提供成功的零售体验| Algolia
+# 创建零售战略，为在线购物者提供成功的零售体验
 
 > 原文：<https://www.algolia.com/blog/ecommerce/create-a-digital-retail-strategy-for-the-ultimate-customer-retail-experience/>
 

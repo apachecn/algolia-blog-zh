@@ -1,4 +1,4 @@
-# 阿尔戈利亚的面孔:认识史蒂文·梅里诺-阿尔戈利亚博客|阿尔戈利亚博客
+# 阿尔戈利亚的面孔:认识史蒂文·梅里诺
 
 > 原文：<https://www.algolia.com/blog/algolia/faces-algolia-meet-steven-merlino/>
 

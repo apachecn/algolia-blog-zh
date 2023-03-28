@@ -1,4 +1,4 @@
-# Algolia AI 如何帮助零售商创造更好的转换体验- Algolia 博客
+# Algolia AI 如何帮助零售商创造更好的转换体验
 
 > 原文：<https://www.algolia.com/blog/ai/how-algolia-ai-helps-retailers-create-better-converting-experiences/>
 

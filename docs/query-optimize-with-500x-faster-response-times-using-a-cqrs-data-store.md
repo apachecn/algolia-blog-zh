@@ -1,4 +1,4 @@
-# 使用 CQRS 数据存储优化查询，响应速度提高 500 倍- Algolia Blog | Algolia Blog
+# 使用 CQRS 数据存储优化查询，响应速度提高 500 倍
 
 > 原文：<https://www.algolia.com/blog/engineering/query-optimize-with-500x-faster-response-times-using-a-cqrs-data-store/>
 

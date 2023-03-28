@@ -1,4 +1,4 @@
-# 神经搜索 101 |阿尔戈利亚|阿尔戈利亚博客
+# 神经搜索 101 
 
 > 原文：<https://www.algolia.com/blog/ai/what-is-neural-search-and-how-does-it-work/>
 

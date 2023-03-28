@@ -1,4 +1,4 @@
-# 可组合商务:如何将你的产品目录整合到微信、谷歌主页和 Alexa - Algolia 博客中
+# 可组合商务:如何将你的产品目录整合到微信、谷歌主页和 Alexa 中
 
 > 原文：<https://www.algolia.com/blog/ecommerce/composable-commerce-how-to-integrate-your-product-catalog-into-wechat-google-home-and-alexa/>
 

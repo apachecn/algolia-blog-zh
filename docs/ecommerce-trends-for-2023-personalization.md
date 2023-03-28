@@ -1,4 +1,4 @@
-# 2023 年电子商务趋势:个性化- Algolia 博客
+# 2023 年电子商务趋势:个性化
 
 > 原文：<https://www.algolia.com/blog/ecommerce/ecommerce-trends-for-2023-personalization/>
 

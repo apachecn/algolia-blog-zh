@@ -1,4 +1,4 @@
-# 使用 11ty Serverless、Netlify 和 Algolia-Algolia Blog | Algolia Blog 为静态网站构建服务器呈现的搜索
+# 使用 11ty Serverless、Netlify 和 Algolia-Algolia Blog  Blog 为静态网站构建服务器呈现的搜索
 
 > 原文：<https://www.algolia.com/blog/engineering/building-server-rendered-search-for-static-sites-with-11ty-serverless-netlify-and-algolia/>
 

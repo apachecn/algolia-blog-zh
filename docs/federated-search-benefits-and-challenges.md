@@ -1,4 +1,4 @@
-# 联合搜索的优势和挑战| Algolia
+# 联合搜索的优势和挑战
 
 > 原文：<https://www.algolia.com/blog/product/federated-search-benefits-and-challenges/>
 

@@ -1,4 +1,4 @@
-# 如何使用正确的设计功能改进您的移动搜索用户界面| Algolia
+# 如何使用正确的设计功能改进您的移动搜索用户界面
 
 > 原文：<https://www.algolia.com/blog/ux/mobile-search-ux-part-two-deconstructing-mobile-search/>
 

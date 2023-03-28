@@ -1,4 +1,4 @@
-# 五大语音搜索趋势值得关注| Algolia
+# 五大语音搜索趋势值得关注
 
 > 原文：<https://www.algolia.com/blog/product/5-voice-search-trends-to-look-out-for/>
 

@@ -1,4 +1,4 @@
-# 在线商品优化的优势| Algolia
+# 在线商品优化的优势
 
 > 原文：<https://www.algolia.com/blog/ecommerce/how-to-increase-your-sales-and-roi-with-optimized-ecommerce-merchandising/>
 

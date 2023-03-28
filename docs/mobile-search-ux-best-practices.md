@@ -1,4 +1,4 @@
-# 应用内移动搜索的最佳实践 UX 设计| Algolia
+# 应用内移动搜索的最佳实践 UX 设计
 
 > 原文：<https://www.algolia.com/blog/ux/mobile-search-ux-best-practices/>
 

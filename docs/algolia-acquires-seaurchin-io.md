@@ -1,4 +1,4 @@
-# 阿尔戈利亚+海胆。IO - Algolia 博客
+# 阿尔戈利亚+海胆。IO 
 
 > 原文：<https://www.algolia.com/blog/algolia/algolia-acquires-seaurchin-io/>
 

@@ -1,4 +1,4 @@
-# 如何避免“无结果”页面| Algolia
+# 如何避免“无结果”页面
 
 > 原文：<https://www.algolia.com/blog/product/avoid-no-results-pages/>
 

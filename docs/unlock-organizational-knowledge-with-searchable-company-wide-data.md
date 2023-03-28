@@ -1,4 +1,4 @@
-# 通过可搜索的全公司数据访问组织知识| Algolia
+# 通过可搜索的全公司数据访问组织知识
 
 > 原文：<https://www.algolia.com/blog/product/unlock-organizational-knowledge-with-searchable-company-wide-data/>
 

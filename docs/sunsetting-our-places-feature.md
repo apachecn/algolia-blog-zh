@@ -1,4 +1,4 @@
-# 日落我们的地方功能-阿尔戈利亚博客|阿尔戈利亚博客
+# 日落我们的地方功能
 
 > 原文：<https://www.algolia.com/blog/product/sunsetting-our-places-feature/>
 

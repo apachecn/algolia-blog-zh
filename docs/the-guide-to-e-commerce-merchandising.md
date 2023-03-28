@@ -1,4 +1,4 @@
-# 电子商务营销指南| Algolia
+# 电子商务营销指南
 
 > 原文：<https://www.algolia.com/blog/ecommerce/the-guide-to-e-commerce-merchandising/>
 

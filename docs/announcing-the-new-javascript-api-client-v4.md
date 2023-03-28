@@ -1,4 +1,4 @@
-# 宣布新的 JavaScript API 客户端 v4 - Algolia 博客
+# 宣布新的 JavaScript API 客户端 v4 
 
 > 原文：<https://www.algolia.com/blog/engineering/announcing-the-new-javascript-api-client-v4/>
 

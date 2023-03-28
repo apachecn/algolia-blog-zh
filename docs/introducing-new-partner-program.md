@@ -1,4 +1,4 @@
-# 介绍 Algolia 的新合作伙伴计划- Algolia 博客
+# 介绍 Algolia 的新合作伙伴计划
 
 > 原文：<https://www.algolia.com/blog/algolia/introducing-new-partner-program/>
 

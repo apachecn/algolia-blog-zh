@@ -1,4 +1,4 @@
-# 6 种利用电子商务推荐的方法，作为搜索\n 的一部分
+# 6 种利用电子商务推荐的方法，作为搜索的一部分
 
 > 原文：<https://www.algolia.com/blog/product/6-ways-to-leverage-recommendations-for-ecommerce-retailers/>
 

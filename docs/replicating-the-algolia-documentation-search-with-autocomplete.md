@@ -1,4 +1,4 @@
-# 使用自动完成功能复制 Algolia 文档搜索- Algolia 博客
+# 使用自动完成功能复制 Algolia 文档搜索
 
 > 原文：<https://www.algolia.com/blog/ux/replicating-the-algolia-documentation-search-with-autocomplete/>
 

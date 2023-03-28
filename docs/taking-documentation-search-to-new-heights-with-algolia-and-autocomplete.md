@@ -1,4 +1,4 @@
-# 使用 Algolia 和自动完成功能将文档搜索提升到新的高度- Algolia 博客
+# 使用 Algolia 和自动完成功能将文档搜索提升到新的高度
 
 > 原文：<https://www.algolia.com/blog/ux/taking-documentation-search-to-new-heights-with-algolia-and-autocomplete/>
 

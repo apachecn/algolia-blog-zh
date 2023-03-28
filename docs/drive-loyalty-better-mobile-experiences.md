@@ -1,4 +1,4 @@
-# 通过更好的移动体验提高忠诚度- Algolia 博客
+# 通过更好的移动体验提高忠诚度
 
 > 原文：<https://www.algolia.com/blog/ux/drive-loyalty-better-mobile-experiences/>
 

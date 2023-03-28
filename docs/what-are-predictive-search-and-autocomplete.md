@@ -1,4 +1,4 @@
-# 什么是预测搜索和自动完成？阿尔戈利亚|阿尔戈利亚博客
+# 什么是预测搜索和自动完成？
 
 > 原文：<https://www.algolia.com/blog/ux/what-are-predictive-search-and-autocomplete/>
 

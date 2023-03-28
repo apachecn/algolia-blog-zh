@@ -1,4 +1,4 @@
-# 图片搜索是如何工作的？阿尔戈利亚|阿尔戈利亚博客
+# 图片搜索是如何工作的？
 
 > 原文：<https://www.algolia.com/blog/product/picture-search-how-does-an-image-finder-search-engine-work/>
 

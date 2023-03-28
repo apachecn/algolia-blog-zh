@@ -1,4 +1,4 @@
-# 更好的 DX 之旅:创建即时搜索应用程序- Algolia 博客
+# 更好的 DX 之旅:创建即时搜索应用程序
 
 > 原文：<https://www.algolia.com/blog/engineering/journey-better-dx-create-instantsearch-app/>
 

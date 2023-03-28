@@ -1,4 +1,4 @@
-# 地理搜索如何改进搜索和发现- Algolia 博客
+# 地理搜索如何改进搜索和发现
 
 > 原文：<https://www.algolia.com/blog/product/how-geo-search-improves-search-and-discovery/>
 

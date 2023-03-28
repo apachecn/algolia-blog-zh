@@ -1,4 +1,4 @@
-# 使用 NetInfo API 改进 Algolia 的 JavaScript 客户端- Algolia Blog | Algolia Blog
+# 使用 NetInfo API 改进 Algolia 的 JavaScript 客户端
 
 > 原文：<https://www.algolia.com/blog/engineering/netinfo-api-algolia-javascript-client/>
 

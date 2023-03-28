@@ -1,4 +1,4 @@
-# 让杂乱无章的内容被发现的 2 个步骤| Algolia
+# 让杂乱无章的内容被发现的 2 个步骤
 
 > 原文：<https://www.algolia.com/blog/product/make-disorganized-content-discoverable/>
 

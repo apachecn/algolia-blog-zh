@@ -1,4 +1,4 @@
-# 阿尔戈利亚女性领导者给科技行业女性的建议:第二部分-阿尔戈利亚博客
+# 阿尔戈利亚女性领导者给科技行业女性的建议:第二部分
 
 > 原文：<https://www.algolia.com/blog/algolia/advice-to-women-in-tech-from-algolias-female-leaders-part-2/>
 

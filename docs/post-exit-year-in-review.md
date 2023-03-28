@@ -1,4 +1,4 @@
-# 从企业家到内部企业家，一篇文章发表在评论\n 上
+# 从企业家到内部企业家，一篇文章发表在评论上
 
 > 原文：<https://www.algolia.com/blog/algolia/post-exit-year-in-review/>
 

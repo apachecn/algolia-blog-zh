@@ -1,4 +1,4 @@
-# 如何在拥挤的流媒体领域脱颖而出- Algolia 博客
+# 如何在拥挤的流媒体领域脱颖而出
 
 > 原文：<https://www.algolia.com/blog/ux/stand-out-crowded-streaming-media-landscape/>
 

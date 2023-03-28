@@ -1,4 +1,4 @@
-# 我们正在将我们的基础设施扩展到英国- Algolia 博客
+# 我们正在将我们的基础设施扩展到英国
 
 > 原文：<https://www.algolia.com/blog/algolia/expanding-our-infrastructure-to-the-uk/>
 

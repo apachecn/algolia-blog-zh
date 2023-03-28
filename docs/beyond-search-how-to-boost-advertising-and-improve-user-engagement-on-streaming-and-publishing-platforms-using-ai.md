@@ -1,4 +1,4 @@
-# 通过内容发现 AI | Algolia \n 在媒体平台上增加广告
+# 通过内容发现 AI  在媒体平台上增加广告
 
 > 原文：<https://www.algolia.com/blog/ai/beyond-search-how-to-boost-advertising-and-improve-user-engagement-on-streaming-and-publishing-platforms-using-ai/>
 

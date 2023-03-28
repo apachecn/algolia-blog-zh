@@ -1,4 +1,4 @@
-# 为什么 Shopify 过滤器和 Shopify 分面搜索还不够| Algolia
+# 为什么 Shopify 过滤器和 Shopify 分面搜索还不够
 
 > 原文：<https://www.algolia.com/blog/ux/filters-vs-facets-in-site-search/>
 

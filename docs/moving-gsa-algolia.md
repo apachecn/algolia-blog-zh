@@ -1,4 +1,4 @@
-# 从 GSA 转移到 Algolia - Algolia 博客
+# 从 GSA 转移到 Algolia 
 
 > 原文：<https://www.algolia.com/blog/product/moving-gsa-algolia/>
 

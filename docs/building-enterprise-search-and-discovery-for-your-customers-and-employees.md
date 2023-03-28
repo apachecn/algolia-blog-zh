@@ -1,4 +1,4 @@
-# 为客户和员工构建企业搜索| Algolia
+# 为客户和员工构建企业搜索
 
 > 原文：<https://www.algolia.com/blog/product/building-enterprise-search-and-discovery-for-your-customers-and-employees/>
 

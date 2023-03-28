@@ -1,4 +1,4 @@
-# 网站搜索关键绩效指标的主要发现—2020 年数字商务 360 度调查—Algolia 博客
+# 网站搜索关键绩效指标的主要发现—2020 年数字商务 360 度调查
 
 > 原文：<https://www.algolia.com/blog/ecommerce/2020-survey-site-search-kpis/>
 

@@ -1,4 +1,4 @@
-# 战胜新冠肺炎|阿尔戈利亚|阿尔戈利亚博客
+# 战胜新冠肺炎
 
 > 原文：<https://www.algolia.com/blog/algolia/overcoming-covid-19-live-projects-and-efforts-to-help-get-through-this-time/>
 

@@ -1,4 +1,4 @@
-# 什么是 REST API？-阿尔戈利亚博客|阿尔戈利亚博客
+# 什么是 REST API？
 
 > 原文：<https://www.algolia.com/blog/product/what-is-a-rest-api/>
 

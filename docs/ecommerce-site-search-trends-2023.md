@@ -1,4 +1,4 @@
-# 2023 年电子商务网站搜索趋势- Algolia 博客
+# 2023 年电子商务网站搜索趋势
 
 > 原文：<https://www.algolia.com/blog/ecommerce/ecommerce-site-search-trends-2023/>
 

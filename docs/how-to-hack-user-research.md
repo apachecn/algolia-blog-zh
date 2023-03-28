@@ -1,4 +1,4 @@
-# 如何黑掉用户研究- Algolia 博客
+# 如何黑掉用户研究
 
 > 原文：<https://www.algolia.com/blog/ux/how-to-hack-user-research/>
 

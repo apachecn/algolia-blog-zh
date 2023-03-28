@@ -1,4 +1,4 @@
-# 相关内容推荐如何提高用户保留率| Algolia
+# 相关内容推荐如何提高用户保留率
 
 > 原文：<https://www.algolia.com/blog/ux/how-related-content-recommendations-keep-users-engaged/>
 

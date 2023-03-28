@@ -1,4 +1,4 @@
-# 介绍 Algolia 最人性化的定价- Algolia 博客
+# 介绍 Algolia 最人性化的定价
 
 > 原文：<https://www.algolia.com/blog/algolia/introducing-algolias-most-customer-friendly-pricing/>
 

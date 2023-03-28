@@ -1,4 +1,4 @@
-# 使用 Algolia 索引减价内容- Algolia 博客
+# 使用 Algolia 索引减价内容
 
 > 原文：<https://www.algolia.com/blog/engineering/indexing-markdown-content-with-algolia/>
 

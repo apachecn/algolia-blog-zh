@@ -1,4 +1,4 @@
-# 期待 Algolia 在 NRF 2023 零售大展上的表现——Algolia 博客
+# 期待 Algolia 在 NRF 2023 零售大展上的表现—
 
 > 原文：<https://www.algolia.com/blog/algolia/what-to-expect-from-algolia-at-nrf-2023-retails-big-show/>
 

@@ -1,4 +1,4 @@
-# 新冠肺炎网站和应用程序的免费专业搜索计划- Algolia 博客
+# 新冠肺炎网站和应用程序的免费专业搜索计划
 
 > 原文：<https://www.algolia.com/blog/algolia/supporting-our-communities-during-this-time-of-need/>
 

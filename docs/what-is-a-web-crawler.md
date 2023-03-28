@@ -1,4 +1,4 @@
-# 什么是网络爬虫？-阿尔戈利亚博客|阿尔戈利亚博客
+# 什么是网络爬虫？
 
 > 原文：<https://www.algolia.com/blog/engineering/what-is-a-web-crawler/>
 

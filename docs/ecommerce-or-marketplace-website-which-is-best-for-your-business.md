@@ -1,4 +1,4 @@
-# 电子商务或市场网站:哪个最适合你的企业？-阿尔戈利亚博客|阿尔戈利亚博客
+# 电子商务或市场网站:哪个最适合你的企业？
 
 > 原文：<https://www.algolia.com/blog/ecommerce/ecommerce-or-marketplace-website-which-is-best-for-your-business/>
 

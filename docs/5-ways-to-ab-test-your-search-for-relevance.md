@@ -1,4 +1,4 @@
-# A/B 测试你的搜索相关性的 5 种方法| Algolia
+# A/B 测试你的搜索相关性的 5 种方法
 
 > 原文：<https://www.algolia.com/blog/ux/5-ways-to-ab-test-your-search-for-relevance/>
 

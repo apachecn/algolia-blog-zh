@@ -1,4 +1,4 @@
-# 网站搜索的 5 个最佳实践- Algolia 博客
+# 网站搜索的 5 个最佳实践
 
 > 原文：<https://www.algolia.com/blog/product/learn-about-site-search-best-practices/>
 

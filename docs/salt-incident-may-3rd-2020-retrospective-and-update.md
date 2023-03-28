@@ -1,4 +1,4 @@
-# 盐事件:2020 年 5 月 3 日回顾和更新-阿尔戈利亚博客|阿尔戈利亚博客
+# 盐事件:2020 年 5 月 3 日回顾和更新
 
 > 原文：<https://www.algolia.com/blog/engineering/salt-incident-may-3rd-2020-retrospective-and-update/>
 

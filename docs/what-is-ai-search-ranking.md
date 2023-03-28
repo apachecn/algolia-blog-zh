@@ -1,4 +1,4 @@
-# 什么是 AI 搜索排名？-阿尔戈利亚博客|阿尔戈利亚博客
+# 什么是 AI 搜索排名？
 
 > 原文：<https://www.algolia.com/blog/ai/what-is-ai-search-ranking/>
 

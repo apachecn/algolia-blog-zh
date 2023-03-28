@@ -1,4 +1,4 @@
-# 使用 Algolia 在 Adobe PWA Studio 中支持高级搜索- Algolia 博客
+# 使用 Algolia 在 Adobe PWA Studio 中支持高级搜索
 
 > 原文：<https://www.algolia.com/blog/product/powering-advanced-search-in-adobe-pwa-studio-using-algolia/>
 

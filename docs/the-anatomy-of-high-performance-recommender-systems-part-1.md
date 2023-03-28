@@ -1,4 +1,4 @@
-# 高性能推荐系统剖析-第 1 部分- Algolia 博客
+# 高性能推荐系统剖析-第 1 部分
 
 > 原文：<https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-1/>
 

@@ -1,4 +1,4 @@
-# 构建、购买以及两者之间的一切:市场技术领导的 5 个关键问题- Algolia 博客
+# 构建、购买以及两者之间的一切:市场技术领导的 5 个关键问题
 
 > 原文：<https://www.algolia.com/blog/ecommerce/build-vs-buy-5-key-questions-for-marketplace-tech-leads/>
 

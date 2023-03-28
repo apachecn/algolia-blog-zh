@@ -1,4 +1,4 @@
-# NRF 2023 回顾:面对挑战的弹性-阿尔戈利亚博客|阿尔戈利亚博客
+# NRF 2023 回顾:面对挑战的弹性
 
 > 原文：<https://www.algolia.com/blog/ecommerce/nrf-2023-recap/>
 

@@ -1,4 +1,4 @@
-# 用人工智能的无头方法优化购物者的旅程- Algolia 博客
+# 用人工智能的无头方法优化购物者的旅程
 
 > 原文：<https://www.algolia.com/blog/ai/optimizing-shoppers-journey-with-a-headless-approach-to-ai/>
 

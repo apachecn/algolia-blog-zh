@@ -1,4 +1,4 @@
-# 用 Zapier 和 Algolia 教英语- Algolia 博客
+# 用 Zapier 和 Algolia 教英语
 
 > 原文：<https://www.algolia.com/blog/engineering/teaching-english-with-zapier-and-algolia/>
 

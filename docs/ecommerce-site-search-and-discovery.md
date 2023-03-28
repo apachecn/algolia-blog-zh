@@ -1,4 +1,4 @@
-# 电子商务搜索和发现:有何不同？阿尔戈利亚|阿尔戈利亚博客
+# 电子商务搜索和发现:有何不同？
 
 > 原文：<https://www.algolia.com/blog/ecommerce/ecommerce-site-search-and-discovery/>
 

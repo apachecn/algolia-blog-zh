@@ -1,4 +1,4 @@
-# 使用快速、即时的库存更新构建 React 搜索应用程序| Algolia
+# 使用快速、即时的库存更新构建 React 搜索应用程序
 
 > 原文：<https://www.algolia.com/blog/engineering/build-a-react-app-with-fast-indexing-and-instant-inventory-updates/>
 

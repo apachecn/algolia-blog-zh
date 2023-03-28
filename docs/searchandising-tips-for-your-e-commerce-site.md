@@ -1,4 +1,4 @@
-# 为您的电子商务网站| Algolia \n 提供搜索和使用技巧
+# 为您的电子商务网站 提供搜索和使用技巧
 
 > 原文：<https://www.algolia.com/blog/ecommerce/searchandising-tips-for-your-e-commerce-site/>
 

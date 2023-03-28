@@ -1,4 +1,4 @@
-# B2B 商务数字化转型:个性化- Algolia 博客
+# B2B 商务数字化转型:个性化
 
 > 原文：<https://www.algolia.com/blog/ecommerce/b2b-commerce-digital-transformation-personalization/>
 

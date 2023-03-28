@@ -1,4 +1,4 @@
-# 发布我们的官方 API 客户端规范和通用测试| Algolia
+# 发布我们的官方 API 客户端规范和通用测试
 
 > 原文：<https://www.algolia.com/blog/engineering/release-api-client-specifications-common-test-suite/>
 

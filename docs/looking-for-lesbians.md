@@ -1,4 +1,4 @@
-# 寻找“女同性恋者”-阿尔戈利亚博客|阿尔戈利亚博客
+# 寻找“女同性恋者”
 
 > 原文：<https://www.algolia.com/blog/algolia/looking-for-lesbians/>
 

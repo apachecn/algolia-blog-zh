@@ -1,4 +1,4 @@
-# 要避免的 7 个自助客服错误| Algolia
+# 要避免的 7 个自助客服错误
 
 > 原文：<https://www.algolia.com/blog/product/help-yourself-avoid-these-7-mistakes-and-rock-your-self-serve-customer-service/>
 

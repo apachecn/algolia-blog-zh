@@ -111,7 +111,7 @@ algolia objects import new_index_name -F ./path_to_file.ndjson
 我们还可以将`-F` 标志替换为`-` ，通过 stdin 将内容传递给 CLI 进行上传。让我们一起用管道发送一些命令吧！以下命令产生与上一个命令相同的结果(读取文件并将内容上传到指定的索引)，但是使用 cat 将文件的内容传递到 CLI 工具的 stdin ，而不是将文件路径作为参数传递。整洁！
 
 ```
-cat ./path_to_file.ndjson | algolia objects import new_index_name -F -
+cat ./path_to_file.ndjson  objects import new_index_name -F -
 ```
 
 [什么是 ndjson？](https://ndjson.org/) 换行符分隔的 JSON 是 Algolia CLI 读取和写入文件的格式。这意味着，任何将 ndjson 格式的数据作为输出传递或作为输入接受的命令都可以与 Algolia CLI 命令连接在一起！我们将在下一个例子中看到更多
@@ -153,7 +153,7 @@ algolia settings import pills_treatments -F ./pt_settings_snapshot.ndjson
 我们还可以在一行中将设置从一个索引转移到另一个索引！让我们将 `pills_treatments` 指标的设置复制到 `pills_cures` 指标中！在导入命令中，我们将使用 `-F` 标志后的 `-` 值来告诉 CLI 从 `stdin` 而不是指定的文件中读取输入。
 
 ```
-algolia settings get pills_treatments | algolia settings import pills_cures -F -
+algolia settings get pills_treatments  settings import pills_cures -F -
 ```
 
 ```
@@ -163,7 +163,7 @@ algolia settings get pills_treatments | algolia settings import pills_cures -F -
 简单！还有一个场景…我们已经在测试应用中的所有指数上测试过了，现在我们准备将这些设置迁移到我们的生产应用中！我们将 `prod_pharm_app` 配置文件中的 `pills_treatments_prod` 索引作为目标。
 
 ```
-algolia settings get pills_treatments | algolia settings import pills_treatments_prod -F - -p prod_pharm_app
+algolia settings get pills_treatments  settings import pills_treatments_prod -F - -p prod_pharm_app
 ```
 
 ```

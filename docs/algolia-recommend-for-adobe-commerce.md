@@ -1,4 +1,4 @@
-# 如何在 Adobe Commerce \n 中使用 Algolia 推荐
+# 如何在 Adobe Commerce 中使用 Algolia 推荐
 
 > 原文：<https://www.algolia.com/blog/product/algolia-recommend-for-adobe-commerce/>
 

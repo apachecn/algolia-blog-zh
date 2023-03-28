@@ -1,4 +1,4 @@
-# 搜索过滤器:一个伟大的 UX |阿尔戈利亚|阿尔戈利亚博客的 5 个最佳实践
+# 搜索过滤器:一个伟大的 UX 的 5 个最佳实践
 
 > 原文：<https://www.algolia.com/blog/ux/search-filter-ux-best-practices/>
 

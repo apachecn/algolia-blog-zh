@@ -1,4 +1,4 @@
-# 通过预测用户的下一个购物阶段来提高您的电子商务投资回报率- Algolia 博客
+# 通过预测用户的下一个购物阶段来提高您的电子商务投资回报率
 
 > 原文：<https://www.algolia.com/blog/ai/increase-your-ecommerce-roi-by-predicting-users-next-shopping-stages/>
 

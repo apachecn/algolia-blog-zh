@@ -1,4 +1,4 @@
-# 通过 Algolia \n 的个性化增加相关性
+# 通过 Algolia 的个性化增加相关性
 
 > 原文：<https://www.algolia.com/blog/product/personalization-announcement/>
 

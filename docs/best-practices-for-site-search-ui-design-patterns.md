@@ -1,4 +1,4 @@
-# 网站和应用程序搜索可用性秘密| Algolia
+# 网站和应用程序搜索可用性秘密
 
 > 原文：<https://www.algolia.com/blog/ux/best-practices-for-site-search-ui-design-patterns/>
 

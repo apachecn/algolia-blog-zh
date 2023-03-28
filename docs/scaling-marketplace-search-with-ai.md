@@ -1,4 +1,4 @@
-# 用人工智能扩展市场搜索- Algolia 博客
+# 用人工智能扩展市场搜索
 
 > 原文：<https://www.algolia.com/blog/ai/scaling-marketplace-search-with-ai/>
 

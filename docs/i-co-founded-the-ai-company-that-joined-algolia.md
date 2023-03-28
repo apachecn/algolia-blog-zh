@@ -1,4 +1,4 @@
-# 我联合创立了加入 Algolia 的人工智能公司——这是故事——Algolia 博客
+# 我联合创立了加入 Algolia 的人工智能公司——这是故事—
 
 > 原文：<https://www.algolia.com/blog/algolia/i-co-founded-the-ai-company-that-joined-algolia/>
 

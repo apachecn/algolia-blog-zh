@@ -1,4 +1,4 @@
-# 以客户为中心的网站搜索趋势- Algolia 博客
+# 以客户为中心的网站搜索趋势
 
 > 原文：<https://www.algolia.com/blog/ecommerce/customer-centric-site-search-trends/>
 

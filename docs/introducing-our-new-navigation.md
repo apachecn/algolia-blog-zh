@@ -1,4 +1,4 @@
-# 介绍我们的新导航- Algolia 博客
+# 介绍我们的新导航
 
 > 原文：<https://www.algolia.com/blog/product/introducing-our-new-navigation/>
 

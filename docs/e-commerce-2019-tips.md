@@ -1,4 +1,4 @@
-# 给零售商的建议，以正确的方式开始 2019 年- Algolia 博客
+# 给零售商的建议，以正确的方式开始 2019 年
 
 > 原文：<https://www.algolia.com/blog/ecommerce/e-commerce-2019-tips/>
 

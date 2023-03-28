@@ -1,4 +1,4 @@
-# 什么是自然语言处理(NLP) | Algolia
+# 什么是自然语言处理(NLP) 
 
 > 原文：<https://www.algolia.com/blog/product/what-is-natural-language-processing-and-how-is-it-leveraged-by-search-tools-software/>
 

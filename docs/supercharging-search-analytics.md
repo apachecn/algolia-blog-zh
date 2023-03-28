@@ -1,4 +1,4 @@
-# 搜索分析:从用户搜索数据中获得洞察力- Algolia 博客
+# 搜索分析:从用户搜索数据中获得洞察力
 
 > 原文：<https://www.algolia.com/blog/product/supercharging-search-analytics/>
 

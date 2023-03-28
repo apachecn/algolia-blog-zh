@@ -1,4 +1,4 @@
-# Adobe 体验管理器上的 Algolia 支持的搜索组件| Algolia
+# Adobe 体验管理器上的 Algolia 支持的搜索组件
 
 > 原文：<https://www.algolia.com/blog/product/algolia-powered-search-components-on-adobe-experience-manager/>
 

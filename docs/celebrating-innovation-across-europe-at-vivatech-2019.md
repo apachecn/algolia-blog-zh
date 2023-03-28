@@ -1,4 +1,4 @@
-# 在 VivaTech 2019 \n 上庆祝整个欧洲的创新
+# 在 VivaTech 2019 上庆祝整个欧洲的创新
 
 > 原文：<https://www.algolia.com/blog/algolia/celebrating-innovation-across-europe-at-vivatech-2019/>
 

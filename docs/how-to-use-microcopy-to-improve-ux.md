@@ -1,4 +1,4 @@
-# 如何使用 microcopy 改进搜索 UX |阿尔戈利亚|阿尔戈利亚博客
+# 如何使用 microcopy 改进搜索 UX 
 
 > 原文：<https://www.algolia.com/blog/ux/how-to-use-microcopy-to-improve-ux/>
 

@@ -1,4 +1,4 @@
-# 2023 年黑色星期五准备工作的 5 个考虑事项- Algolia 博客
+# 2023 年黑色星期五准备工作的 5 个考虑事项
 
 > 原文：<https://www.algolia.com/blog/ecommerce/5-considerations-for-black-friday-readiness/>
 

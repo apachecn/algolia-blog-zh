@@ -1,4 +1,4 @@
-# 什么是概念搜索？-阿尔戈利亚博客|阿尔戈利亚博客
+# 什么是概念搜索？
 
 > 原文：<https://www.algolia.com/blog/ai/what-is-concept-search/>
 

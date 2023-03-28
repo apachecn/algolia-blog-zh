@@ -1,4 +1,4 @@
-# 为电子商务和媒体建立推荐，有或没有 AI | Algolia
+# 为电子商务和媒体建立推荐，有或没有 AI 
 
 > 原文：<https://www.algolia.com/blog/ai/building-recommendations-for-ecommerce-media-with-without-ai/>
 

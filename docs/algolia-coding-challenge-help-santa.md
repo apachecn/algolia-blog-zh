@@ -1,4 +1,4 @@
-# Algolia 编码挑战:帮助圣诞老人获得灵感！🎅-阿尔戈利亚博客|阿尔戈利亚博客
+# Algolia 编码挑战:帮助圣诞老人获得灵感！🎅
 
 > 原文：<https://www.algolia.com/blog/engineering/algolia-coding-challenge-help-santa/>
 

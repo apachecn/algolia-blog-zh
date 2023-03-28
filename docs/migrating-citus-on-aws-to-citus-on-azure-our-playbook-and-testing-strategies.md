@@ -1,4 +1,4 @@
-# 将 AWS 上的 Citus 迁移到 Azure \n 上的 Citus 的剧本和测试策略
+# 将 AWS 上的 Citus 迁移到 Azure 上的 Citus 的剧本和测试策略
 
 > 原文：<https://www.algolia.com/blog/engineering/migrating-citus-on-aws-to-citus-on-azure-our-playbook-and-testing-strategies/>
 

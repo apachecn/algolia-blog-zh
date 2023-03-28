@@ -1,4 +1,4 @@
-# 如何利用人工智能优化和个性化来提高体育行业的客户忠诚度- Algolia 博客
+# 如何利用人工智能优化和个性化来提高体育行业的客户忠诚度
 
 > 原文：<https://www.algolia.com/blog/ecommerce/how-to-use-ai-optimization-and-personalization-to-improve-customer-loyalty-in-the-sports-industry/>
 

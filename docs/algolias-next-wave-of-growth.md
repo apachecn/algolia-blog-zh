@@ -1,4 +1,4 @@
-# Algolia 的下一波增长- Algolia 博客
+# Algolia 的下一波增长
 
 > 原文：<https://www.algolia.com/blog/algolia/algolias-next-wave-of-growth/>
 

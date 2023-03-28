@@ -1,4 +1,4 @@
-# NLU 和 NLP | Algolia \n 有什么区别
+# NLU 和 NLP  有什么区别
 
 > 原文：<https://www.algolia.com/blog/product/what-is-natural-language-understanding-and-how-is-it-different-from-nlp/>
 

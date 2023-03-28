@@ -1,4 +1,4 @@
-# 扫除我们的环境足迹- Algolia 博客
+# 扫除我们的环境足迹
 
 > 原文：<https://www.algolia.com/blog/algolia/sweeping-away-our-environmental-footprint/>
 

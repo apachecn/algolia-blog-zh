@@ -1,4 +1,4 @@
-# 电子商务现场搜索的 15 个最佳实践- Algolia 博客
+# 电子商务现场搜索的 15 个最佳实践
 
 > 原文：<https://www.algolia.com/blog/ecommerce/15-best-practices-for-ecommerce-on-site-search/>
 

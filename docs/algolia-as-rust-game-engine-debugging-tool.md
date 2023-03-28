@@ -1,4 +1,4 @@
-# 如何在 Rust \n 中使用 Algolia 作为游戏引擎调试工具
+# 如何在 Rust 中使用 Algolia 作为游戏引擎调试工具
 
 > 原文：<https://www.algolia.com/blog/engineering/algolia-as-rust-game-engine-debugging-tool/>
 

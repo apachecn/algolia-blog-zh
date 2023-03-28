@@ -1,4 +1,4 @@
-# Endeca 迁移-为什么是现在，为什么是 Algolia - Algolia 博客
+# Endeca 迁移-为什么是现在，为什么是 Algolia 
 
 > 原文：<https://www.algolia.com/blog/product/endeca-migration-why-now-why-algolia/>
 

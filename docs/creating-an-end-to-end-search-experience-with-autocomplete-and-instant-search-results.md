@@ -1,4 +1,4 @@
-# 使用自动完成\n 创建端到端搜索体验
+# 使用自动完成创建端到端搜索体验
 
 > 原文：<https://www.algolia.com/blog/product/creating-an-end-to-end-search-experience-with-autocomplete-and-instant-search-results/>
 

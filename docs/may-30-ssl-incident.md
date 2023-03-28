@@ -1,4 +1,4 @@
-# 5 月 30 日 SSL 事件- Algolia 博客
+# 5 月 30 日 SSL 事件
 
 > 原文：<https://www.algolia.com/blog/engineering/may-30-ssl-incident/>
 

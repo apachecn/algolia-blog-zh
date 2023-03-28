@@ -1,4 +1,4 @@
-# 如何使用搜索和浏览功能在体育行业赢得客户忠诚度- Algolia 博客
+# 如何使用搜索和浏览功能在体育行业赢得客户忠诚度
 
 > 原文：<https://www.algolia.com/blog/ecommerce/how-to-use-search-and-browse-features-to-win-customer-loyalty-in-the-sports-industry/>
 

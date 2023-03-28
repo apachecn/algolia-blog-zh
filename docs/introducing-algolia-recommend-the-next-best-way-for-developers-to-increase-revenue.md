@@ -1,4 +1,4 @@
-# 介绍 Algolia 推荐:开发者增加收入的下一个最佳方式- Algolia 博客
+# 介绍 Algolia 推荐:开发者增加收入的下一个最佳方式
 
 > 原文：<https://www.algolia.com/blog/product/introducing-algolia-recommend-the-next-best-way-for-developers-to-increase-revenue/>
 

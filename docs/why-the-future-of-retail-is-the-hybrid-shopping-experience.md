@@ -1,4 +1,4 @@
-# 为什么零售业的未来是混合购物体验——在 eTail East \n 了解
+# 为什么零售业的未来是混合购物体验——在 eTail East 了解
 
 > 原文：<https://www.algolia.com/blog/ecommerce/why-the-future-of-retail-is-the-hybrid-shopping-experience/>
 

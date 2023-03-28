@@ -1,4 +1,4 @@
-# 将 OCR 集成到搜索包标签扫描应用程序中- Algolia Blog | Algolia Blog
+# 将 OCR 集成到搜索包标签扫描应用程序中
 
 > 原文：<https://www.algolia.com/blog/engineering/integrate-ocr-into-search-in-a-package-label-scanning-app/>
 

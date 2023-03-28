@@ -1,4 +1,4 @@
-# 4 种类型的联合搜索| Algolia
+# 4 种类型的联合搜索
 
 > 原文：<https://www.algolia.com/blog/product/federated-search-types/>
 

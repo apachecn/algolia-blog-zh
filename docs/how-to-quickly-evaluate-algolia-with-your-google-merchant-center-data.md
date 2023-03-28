@@ -1,4 +1,4 @@
-# 如何用你的谷歌商业中心数据快速评估 Algolia-Algolia 博客
+# 如何用你的谷歌商业中心数据快速评估 Algolia
 
 > 原文：<https://www.algolia.com/blog/ecommerce/how-to-quickly-evaluate-algolia-with-your-google-merchant-center-data/>
 

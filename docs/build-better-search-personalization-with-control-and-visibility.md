@@ -1,4 +1,4 @@
-# 通过控制和可见性构建更好的搜索个性化- Algolia 博客
+# 通过控制和可见性构建更好的搜索个性化
 
 > 原文：<https://www.algolia.com/blog/ux/build-better-search-personalization-with-control-and-visibility/>
 

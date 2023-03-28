@@ -1,4 +1,4 @@
-# Salesforce 商务云+ Algolia =无处不在的卓越客户体验- Algolia 博客
+# Salesforce 商务云+ Algolia =无处不在的卓越客户体验
 
 > 原文：<https://www.algolia.com/blog/ecommerce/salesforce-commerce-cloud-algolia-great-customer-experiences/>
 

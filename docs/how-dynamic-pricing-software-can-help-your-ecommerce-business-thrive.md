@@ -1,4 +1,4 @@
-# 动态定价电子商务应用程序的优势| Algolia
+# 动态定价电子商务应用程序的优势
 
 > 原文：<https://www.algolia.com/blog/ecommerce/how-dynamic-pricing-software-can-help-your-ecommerce-business-thrive/>
 

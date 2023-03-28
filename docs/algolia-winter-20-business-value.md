@@ -1,4 +1,4 @@
-# Algolia Winter '20 —通过搜索体验管理增加收入- Algolia 博客
+# Algolia Winter '20 —通过搜索体验管理增加收入
 
 > 原文：<https://www.algolia.com/blog/product/algolia-winter-20-business-value/>
 

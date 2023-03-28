@@ -1,4 +1,4 @@
-# 3 个例子帮助你改变“无结果”搜索页面| Algolia
+# 3 个例子帮助你改变“无结果”搜索页面
 
 > 原文：<https://www.algolia.com/blog/ux/3-examples-to-help-you-transform-the-no-results-search-results-page/>
 

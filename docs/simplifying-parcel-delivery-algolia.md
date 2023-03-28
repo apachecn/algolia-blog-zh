@@ -1,4 +1,4 @@
-# 简化 Algolia 的包裹递送- Algolia 博客
+# 简化 Algolia 的包裹递送
 
 > 原文：<https://www.algolia.com/blog/engineering/simplifying-parcel-delivery-algolia/>
 

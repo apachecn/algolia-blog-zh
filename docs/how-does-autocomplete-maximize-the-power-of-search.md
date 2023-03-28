@@ -1,4 +1,4 @@
-# 自动完成搜索:完美用户体验的点睛之笔| Algolia
+# 自动完成搜索:完美用户体验的点睛之笔
 
 > 原文：<https://www.algolia.com/blog/ux/how-does-autocomplete-maximize-the-power-of-search/>
 

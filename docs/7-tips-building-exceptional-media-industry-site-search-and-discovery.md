@@ -1,4 +1,4 @@
-# 如何建立顶级媒体行业网站搜索体验| Algolia
+# 如何建立顶级媒体行业网站搜索体验
 
 > 原文：<https://www.algolia.com/blog/product/7-tips-building-exceptional-media-industry-site-search-and-discovery/>
 

@@ -1,4 +1,4 @@
-# Tapcart + Algolia:为您的移动应用程序提供强大的 Shopify 搜索- Algolia 博客
+# Tapcart + Algolia:为您的移动应用程序提供强大的 Shopify 搜索
 
 > 原文：<https://www.algolia.com/blog/algolia/how-to-create-an-easy-search-experience-for-your-mobile-app/>
 

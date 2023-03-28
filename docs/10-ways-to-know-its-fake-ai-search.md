@@ -1,4 +1,4 @@
-# 10 种方法知道它是假的人工智能搜索- Algolia 博客
+# 10 种方法知道它是假的人工智能搜索
 
 > 原文：<https://www.algolia.com/blog/ai/10-ways-to-know-its-fake-ai-search/>
 

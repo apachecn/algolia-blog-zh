@@ -1,4 +1,4 @@
-# 突出流行产品如何增加销售额| Algolia
+# 突出流行产品如何增加销售额
 
 > 原文：<https://www.algolia.com/blog/ecommerce/trending-products-the-benefits-of-showing-online-shoppers-whats-hot/>
 

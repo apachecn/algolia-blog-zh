@@ -1,4 +1,4 @@
-# 超越搜索栏:高级电子商务搜索体验- Algolia 博客
+# 超越搜索栏:高级电子商务搜索体验
 
 > 原文：<https://www.algolia.com/blog/ecommerce/advanced-search-experience-for-e-commerce/>
 

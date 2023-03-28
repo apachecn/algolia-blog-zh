@@ -1,4 +1,4 @@
-# 企业搜索对消费者和员工的好处| Algolia
+# 企业搜索对消费者和员工的好处
 
 > 原文：<https://www.algolia.com/blog/product/what-is-enterprise-search-and-how-does-it-benefit-your-organizations-employees-and-consumers/>
 

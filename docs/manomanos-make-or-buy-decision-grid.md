@@ -1,4 +1,4 @@
-# 马诺马诺的“制造或购买”决策网格-阿尔戈利亚博客|阿尔戈利亚博客
+# 马诺马诺的“制造或购买”决策网格
 
 > 原文：<https://www.algolia.com/blog/customers/manomanos-make-or-buy-decision-grid/>
 

@@ -1,4 +1,4 @@
-# 为您的商店提供便捷而强大的 Shopify 搜索- Algolia 博客
+# 为您的商店提供便捷而强大的 Shopify 搜索
 
 > 原文：<https://www.algolia.com/blog/ecommerce/shopify-search-experience/>
 

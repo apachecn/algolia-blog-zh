@@ -1,4 +1,4 @@
-# 全频道与多频道| Algolia
+# 全频道与多频道
 
 > 原文：<https://www.algolia.com/blog/ecommerce/omnichannel-vs-multichannel-whats-the-difference-and-which-is-best-for-retail-success/>
 

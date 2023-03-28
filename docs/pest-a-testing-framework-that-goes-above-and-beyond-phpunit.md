@@ -1,4 +1,4 @@
-# Pest，一个简单而优雅的 PHP 测试框架，它扩展了 PHPUnit | Algolia Blog
+# Pest，一个简单而优雅的 PHP 测试框架，它扩展了 PHPUnit  Blog
 
 > 原文：<https://www.algolia.com/blog/engineering/pest-a-testing-framework-that-goes-above-and-beyond-phpunit/>
 

@@ -1,4 +1,4 @@
-# 什么是自然语言搜索？阿尔戈利亚|阿尔戈利亚博客
+# 什么是自然语言搜索？
 
 > 原文：<https://www.algolia.com/blog/product/what-is-natural-language-search/>
 

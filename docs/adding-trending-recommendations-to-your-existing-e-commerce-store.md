@@ -1,4 +1,4 @@
-# 向您现有的电子商务商店添加趋势推荐- Algolia 博客
+# 向您现有的电子商务商店添加趋势推荐
 
 > 原文：<https://www.algolia.com/blog/engineering/adding-trending-recommendations-to-your-existing-e-commerce-store/>
 

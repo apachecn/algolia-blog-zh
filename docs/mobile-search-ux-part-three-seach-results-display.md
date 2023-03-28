@@ -1,4 +1,4 @@
-# 如何增强用户的移动搜索结果| Algolia
+# 如何增强用户的移动搜索结果
 
 > 原文：<https://www.algolia.com/blog/ux/mobile-search-ux-part-three-seach-results-display/>
 

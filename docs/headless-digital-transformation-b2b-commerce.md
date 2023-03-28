@@ -1,4 +1,4 @@
-# BioIVT 的数字化转型:Algolia 和 Zaelab 如何合作创建简化的 B2B 客户体验- Algolia 博客
+# BioIVT 的数字化转型:Algolia 和 Zaelab 如何合作创建简化的 B2B 客户体验
 
 > 原文：<https://www.algolia.com/blog/product/headless-digital-transformation-b2b-commerce/>
 

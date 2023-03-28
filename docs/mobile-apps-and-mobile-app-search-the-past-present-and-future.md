@@ -1,4 +1,4 @@
-# 移动设备、应用和应用搜索的历史| Algolia
+# 移动设备、应用和应用搜索的历史
 
 > 原文：<https://www.algolia.com/blog/ux/mobile-apps-and-mobile-app-search-the-past-present-and-future/>
 

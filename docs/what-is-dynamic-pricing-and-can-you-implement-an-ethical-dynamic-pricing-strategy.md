@@ -1,4 +1,4 @@
-# 什么是动态定价？阿尔戈利亚|阿尔戈利亚博客
+# 什么是动态定价？
 
 > 原文：<https://www.algolia.com/blog/ecommerce/what-is-dynamic-pricing-and-can-you-implement-an-ethical-dynamic-pricing-strategy/>
 

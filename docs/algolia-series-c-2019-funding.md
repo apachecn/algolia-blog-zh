@@ -1,4 +1,4 @@
-# 前进！宣布 Algolia 的 1.1 亿美元的新资金- Algolia 博客
+# 前进！宣布 Algolia 的 1.1 亿美元的新资金
 
 > 原文：<https://www.algolia.com/blog/algolia/algolia-series-c-2019-funding/>
 

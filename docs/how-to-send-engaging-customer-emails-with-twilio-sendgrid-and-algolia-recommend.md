@@ -1,4 +1,4 @@
-# 如何使用 Twilio SendGrid 和 Algolia 推荐发送引人入胜的客户电子邮件- Algolia 博客
+# 如何使用 Twilio SendGrid 和 Algolia 推荐发送引人入胜的客户电子邮件
 
 > 原文：<https://www.algolia.com/blog/engineering/how-to-send-engaging-customer-emails-with-twilio-sendgrid-and-algolia-recommend/>
 

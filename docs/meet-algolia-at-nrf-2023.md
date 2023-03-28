@@ -1,4 +1,4 @@
-# 通过 Algolia 让你的搜索更有价值——我们将在 NRF - Algolia 博客\n 向你展示
+# 通过 Algolia 让你的搜索更有价值——我们将在 NRF 向你展示
 
 > 原文：<https://www.algolia.com/blog/algolia/meet-algolia-at-nrf-2023/>
 

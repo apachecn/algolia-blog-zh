@@ -1,4 +1,4 @@
-# Algolia AI:宣布业界最智能的搜索平台- Algolia 博客
+# Algolia AI:宣布业界最智能的搜索平台
 
 > 原文：<https://www.algolia.com/blog/ai/launching-an-industry-leading-artificially-intelligent-search-platform/>
 

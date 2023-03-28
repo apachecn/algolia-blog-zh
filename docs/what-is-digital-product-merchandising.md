@@ -1,4 +1,4 @@
-# 数字营销:从古代历史到现代策略| Algolia
+# 数字营销:从古代历史到现代策略
 
 > 原文：<https://www.algolia.com/blog/ecommerce/what-is-digital-product-merchandising/>
 

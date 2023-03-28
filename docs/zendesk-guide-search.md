@@ -1,4 +1,4 @@
-# Zendesk + Algolia:愉悦客户的发现体验- Algolia 博客
+# Zendesk + Algolia:愉悦客户的发现体验
 
 > 原文：<https://www.algolia.com/blog/product/zendesk-guide-search/>
 

@@ -1,4 +1,4 @@
-# 开发者应该关注的 10 个影响者——Algolia 博客
+# 开发者应该关注的 10 个影响者—
 
 > 原文：<https://www.algolia.com/blog/algolia/10-influencers-that-developers-should-be-following/>
 

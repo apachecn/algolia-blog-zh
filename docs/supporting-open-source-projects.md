@@ -1,4 +1,4 @@
-# 支持支持我们成功的开源软件- Algolia 博客
+# 支持支持我们成功的开源软件
 
 > 原文：<https://www.algolia.com/blog/algolia/supporting-open-source-projects/>
 

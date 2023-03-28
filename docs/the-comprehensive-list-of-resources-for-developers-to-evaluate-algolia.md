@@ -1,4 +1,4 @@
-# 开发者评估 Algolia \n 的综合资源列表
+# 开发者评估 Algolia 的综合资源列表
 
 > 原文：<https://www.algolia.com/blog/product/the-comprehensive-list-of-resources-for-developers-to-evaluate-algolia/>
 

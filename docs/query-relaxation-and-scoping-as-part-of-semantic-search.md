@@ -1,4 +1,4 @@
-# 作为语义搜索一部分的查询放松和范围界定- Algolia 博客
+# 作为语义搜索一部分的查询放松和范围界定
 
 > 原文：<https://www.algolia.com/blog/ux/query-relaxation-and-scoping-as-part-of-semantic-search/>
 

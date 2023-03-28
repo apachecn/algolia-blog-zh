@@ -1,4 +1,4 @@
-# 新冠肺炎如何加快零售数字化转型| Algolia
+# 新冠肺炎如何加快零售数字化转型
 
 > 原文：<https://www.algolia.com/blog/ecommerce/the-covid-effect-how-the-pandemic-has-accelerated-retail-digital-transformation/>
 

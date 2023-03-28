@@ -1,4 +1,4 @@
-# 如何成功过渡到无头架构| Algolia
+# 如何成功过渡到无头架构
 
 > 原文：<https://www.algolia.com/blog/product/essential-building-blocks-retailers-consider-when-moving-from-monolith-to-headless-architecture/>
 

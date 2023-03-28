@@ -1,4 +1,4 @@
-# 电子商务个性化的最佳实践- Algolia 博客
+# 电子商务个性化的最佳实践
 
 > 原文：<https://www.algolia.com/blog/customers/best-practices-for-ecommerce-personalization/>
 

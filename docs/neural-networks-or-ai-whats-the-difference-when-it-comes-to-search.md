@@ -1,4 +1,4 @@
-# 神经网络与关键词搜索| Algolia
+# 神经网络与关键词搜索
 
 > 原文：<https://www.algolia.com/blog/ai/neural-networks-or-ai-whats-the-difference-when-it-comes-to-search/>
 

@@ -1,4 +1,4 @@
-# 建立一个查询建议 UX 喜欢谷歌的-阿尔戈利亚博客|阿尔戈利亚博客
+# 建立一个查询建议 UX 喜欢谷歌的
 
 > 原文：<https://www.algolia.com/blog/algolia/query-suggestion-ux-like-googles/>
 

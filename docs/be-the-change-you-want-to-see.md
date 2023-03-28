@@ -1,4 +1,4 @@
-# 成为你想看到的改变-阿尔戈利亚博客|阿尔戈利亚博客
+# 成为你想看到的改变
 
 > 原文：<https://www.algolia.com/blog/algolia/be-the-change-you-want-to-see/>
 

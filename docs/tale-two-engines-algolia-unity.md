@@ -1,4 +1,4 @@
-# 双引擎的故事-阿尔戈利亚和统一-阿尔戈利亚博客|阿尔戈利亚博客
+# 双引擎的故事-阿尔戈利亚和统一
 
 > 原文：<https://www.algolia.com/blog/engineering/tale-two-engines-algolia-unity/>
 

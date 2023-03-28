@@ -1,4 +1,4 @@
-# 提高你的 Shopify 转化率的秘诀是什么？伟大的搜索-阿尔戈利亚博客|阿尔戈利亚博客
+# 提高你的 Shopify 转化率的秘诀是什么？伟大的搜索
 
 > 原文：<https://www.algolia.com/blog/ecommerce/improve-shopify-conversions-with-search/>
 

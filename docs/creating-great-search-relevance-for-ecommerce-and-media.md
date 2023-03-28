@@ -1,4 +1,4 @@
-# 为内容丰富的电子商务和媒体创建搜索相关性- Algolia 博客
+# 为内容丰富的电子商务和媒体创建搜索相关性
 
 > 原文：<https://www.algolia.com/blog/product/creating-great-search-relevance-for-ecommerce-and-media/>
 

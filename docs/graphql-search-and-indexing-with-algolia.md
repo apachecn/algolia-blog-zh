@@ -1,4 +1,4 @@
-# GraphQL 搜索和索引与 Algolia - Algolia 博客
+# GraphQL 搜索和索引与 Algolia 
 
 > 原文：<https://www.algolia.com/blog/engineering/graphql-search-and-indexing-with-algolia/>
 

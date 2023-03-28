@@ -1,4 +1,4 @@
-# Algolia 洞察:Q1 2020 年搜索趋势-全球颠覆时代- Algolia 博客
+# Algolia 洞察:Q1 2020 年搜索趋势-全球颠覆时代
 
 > 原文：<https://www.algolia.com/blog/algolia/search-trends-a-time-of-global-disruption/>
 

@@ -1,4 +1,4 @@
-# 重新设计我们的文档——第 7 部分——接下来会发生什么——Algolia 博客
+# 重新设计我们的文档——第 7 部分——接下来会发生什么—
 
 > 原文：<https://www.algolia.com/blog/product/redesigning-docs-part-7-whats-next-come/>
 

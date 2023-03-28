@@ -1,4 +1,4 @@
-# 对话搜索| Algolia
+# 对话搜索
 
 > 原文：<https://www.algolia.com/blog/product/conversational-search/>
 

@@ -1,4 +1,4 @@
-# 在你的网站上添加一个角搜索框- Algolia 博客
+# 在你的网站上添加一个角搜索框
 
 > 原文：<https://www.algolia.com/blog/algolia/add-angular-search-to-your-website-your-website/>
 

@@ -1,4 +1,4 @@
-# 建立一个包含在线卖家的商店定位器- Algolia 博客
+# 建立一个包含在线卖家的商店定位器
 
 > 原文：<https://www.algolia.com/blog/engineering/build-a-store-locator-that-includes-online-sellers/>
 

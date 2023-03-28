@@ -1,4 +1,4 @@
-# 什么是智能职场？阿尔戈利亚|阿尔戈利亚博客
+# 什么是智能职场？
 
 > 原文：<https://www.algolia.com/blog/ux/what-is-an-intelligent-workplace-and-how-does-it-improve-productivity-and-the-employee-experience/>
 

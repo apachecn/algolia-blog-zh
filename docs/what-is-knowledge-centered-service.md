@@ -1,4 +1,4 @@
-# 什么是以知识为中心的服务？阿尔戈利亚|阿尔戈利亚博客
+# 什么是以知识为中心的服务？
 
 > 原文：<https://www.algolia.com/blog/ux/what-is-knowledge-centered-service/>
 

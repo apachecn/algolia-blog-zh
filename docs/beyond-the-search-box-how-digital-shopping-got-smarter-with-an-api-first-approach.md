@@ -1,4 +1,4 @@
-# 除了搜索框，数字购物如何通过 API 优先的方法变得更加智能- Algolia 博客
+# 除了搜索框，数字购物如何通过 API 优先的方法变得更加智能
 
 > 原文：<https://www.algolia.com/blog/algolia/beyond-the-search-box-how-digital-shopping-got-smarter-with-an-api-first-approach/>
 

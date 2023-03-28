@@ -1,4 +1,4 @@
-# scout Extended:Algolia 在 Laravel 的全部力量- Algolia 博客
+# scout Extended:Algolia 在 Laravel 的全部力量
 
 > 原文：<https://www.algolia.com/blog/engineering/scout-extended-the-full-power-of-algolia-in-laravel/>
 

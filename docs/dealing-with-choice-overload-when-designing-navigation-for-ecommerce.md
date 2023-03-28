@@ -1,4 +1,4 @@
-# 如何使用引导式搜索来管理选择超载- Algolia 博客
+# 如何使用引导式搜索来管理选择超载
 
 > 原文：<https://www.algolia.com/blog/ux/dealing-with-choice-overload-when-designing-navigation-for-ecommerce/>
 

@@ -1,4 +1,4 @@
-# 如何通过品类销售促进在线销售- Algolia 博客
+# 如何通过品类销售促进在线销售
 
 > 原文：<https://www.algolia.com/blog/customers/how-to-boost-online-sales-with-category-merchandising/>
 

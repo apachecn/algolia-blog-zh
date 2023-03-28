@@ -1,4 +1,4 @@
-# 作为语义搜索一部分的自然语言处理和 NLU-Algolia 博客
+# 作为语义搜索一部分的自然语言处理和 NLU
 
 > 原文：<https://www.algolia.com/blog/ux/nlp-nlu-as-part-of-semantic-search/>
 

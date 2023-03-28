@@ -1,4 +1,4 @@
-# 网站搜索如何推动内容发现| Algolia
+# 网站搜索如何推动内容发现
 
 > 原文：<https://www.algolia.com/blog/ux/site-search-content-discovery/>
 

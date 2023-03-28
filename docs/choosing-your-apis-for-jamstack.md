@@ -1,4 +1,4 @@
-# 为 Jamstack 选择 API-Algolia 博客
+# 为 Jamstack 选择 API
 
 > 原文：<https://www.algolia.com/blog/engineering/choosing-your-apis-for-jamstack/>
 

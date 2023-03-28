@@ -1,4 +1,4 @@
-# 搜索引擎查询处理 101 | Algolia
+# 搜索引擎查询处理 101 
 
 > 原文：<https://www.algolia.com/blog/ecommerce/how-ecommerce-search-engines-handle-different-types-of-queries/>
 

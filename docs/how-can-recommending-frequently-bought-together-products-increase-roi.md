@@ -1,4 +1,4 @@
-# 「经常一起买」如何提高 ROI？阿尔戈利亚|阿尔戈利亚博客
+# 「经常一起买」如何提高 ROI？
 
 > 原文：<https://www.algolia.com/blog/ux/how-can-recommending-frequently-bought-together-products-increase-roi/>
 

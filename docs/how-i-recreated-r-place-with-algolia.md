@@ -1,4 +1,4 @@
-# 我如何用 Algolia | Algolia \n 重新创建 r/place
+# 我如何用 Algolia  重新创建 r/place
 
 > 原文：<https://www.algolia.com/blog/engineering/how-i-recreated-r-place-with-algolia/>
 

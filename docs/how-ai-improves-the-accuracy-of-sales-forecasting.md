@@ -1,4 +1,4 @@
-# 驾驭基于人工智能的销售预测| Algolia
+# 驾驭基于人工智能的销售预测
 
 > 原文：<https://www.algolia.com/blog/ai/how-ai-improves-the-accuracy-of-sales-forecasting/>
 

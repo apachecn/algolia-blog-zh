@@ -1,4 +1,4 @@
-# 在浏览、发现和推荐的时代，搜索相关性是什么？-阿尔戈利亚博客|阿尔戈利亚博客
+# 在浏览、发现和推荐的时代，搜索相关性是什么？
 
 > 原文：<https://www.algolia.com/blog/product/what-is-search-relevance-in-the-era-of-browsing-discovery-and-recommendations/>
 

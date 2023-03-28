@@ -1,4 +1,4 @@
-# 开源搜索工具与 Algolia | Algolia
+# 开源搜索工具与 Algolia 
 
 > 原文：<https://www.algolia.com/blog/product/algolia-vs-open-source-search/>
 

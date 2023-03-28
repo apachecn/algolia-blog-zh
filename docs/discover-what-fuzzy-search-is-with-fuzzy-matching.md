@@ -1,4 +1,4 @@
-# 模糊搜索不仅仅是纠正打字错误| Algolia
+# 模糊搜索不仅仅是纠正打字错误
 
 > 原文：<https://www.algolia.com/blog/engineering/discover-what-fuzzy-search-is-with-fuzzy-matching/>
 

@@ -1,4 +1,4 @@
-# 后台人工智能推荐- Algolia 博客
+# 后台人工智能推荐
 
 > 原文：<https://www.algolia.com/blog/product/ai-powered-recommendations-in-the-back-office/>
 

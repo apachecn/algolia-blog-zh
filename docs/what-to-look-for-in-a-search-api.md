@@ -1,4 +1,4 @@
-# 在搜索 API | Algolia \n 中寻找什么
+# 在搜索 API  中寻找什么
 
 > 原文：<https://www.algolia.com/blog/product/what-to-look-for-in-a-search-api/>
 

@@ -1,4 +1,4 @@
-# 电子商务搜索和关键绩效指标的统计数据超过 40%——Algolia 博客
+# 电子商务搜索和关键绩效指标的统计数据超过 40%—
 
 > 原文：<https://www.algolia.com/blog/ecommerce/e-commerce-search-and-kpis-statistics/>
 

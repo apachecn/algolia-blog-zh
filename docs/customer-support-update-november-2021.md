@@ -1,4 +1,4 @@
-# 客户支持更新，2021 年 11 月- Algolia 博客
+# 客户支持更新，2021 年 11 月
 
 > 原文：<https://www.algolia.com/blog/product/customer-support-update-november-2021/>
 

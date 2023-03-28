@@ -1,4 +1,4 @@
-# 将人工智能引入媒体，以取悦观众，优化编辑工作流程，并最大限度地提高收入- Algolia 博客
+# 将人工智能引入媒体，以取悦观众，优化编辑工作流程，并最大限度地提高收入
 
 > 原文：<https://www.algolia.com/blog/ai/maximizing-revenue-for-publishers-and-media-companies-with-algolia-ai/>
 

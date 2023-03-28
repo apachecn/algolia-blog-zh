@@ -1,4 +1,4 @@
-# 关于安全性的 10 个问题- Algolia 博客
+# 关于安全性的 10 个问题
 
 > 原文：<https://www.algolia.com/blog/product/10-things-to-ask-your-search-provider-about-security/>
 

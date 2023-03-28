@@ -1,4 +1,4 @@
-# 什么是搜索相关性？阿尔戈利亚|阿尔戈利亚博客
+# 什么是搜索相关性？
 
 > 原文：<https://www.algolia.com/blog/product/what-is-search-relevance/>
 

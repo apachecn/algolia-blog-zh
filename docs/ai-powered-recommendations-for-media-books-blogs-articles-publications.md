@@ -1,4 +1,4 @@
-# 人工智能推荐媒体、书籍、博客| algolia
+# 人工智能推荐媒体、书籍、博客
 
 > 原文：<https://www.algolia.com/blog/ai/ai-powered-recommendations-for-media-books-blogs-articles-publications/>
 

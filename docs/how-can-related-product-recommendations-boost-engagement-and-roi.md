@@ -1,4 +1,4 @@
-# 相关产品推荐如何提高用户保持率| Algolia
+# 相关产品推荐如何提高用户保持率
 
 > 原文：<https://www.algolia.com/blog/ux/how-can-related-product-recommendations-boost-engagement-and-roi/>
 

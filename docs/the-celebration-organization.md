@@ -1,4 +1,4 @@
-# 庆祝组织——为什么庆祝成就很重要——Algolia 博客
+# 庆祝组织——为什么庆祝成就很重要—
 
 > 原文：<https://www.algolia.com/blog/algolia/the-celebration-organization/>
 

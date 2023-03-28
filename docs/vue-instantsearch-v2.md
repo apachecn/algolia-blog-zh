@@ -1,4 +1,4 @@
-# 让你的生活更加丰富多彩的小贴士😎-阿尔戈利亚博客|阿尔戈利亚博客
+# 让你的生活更加丰富多彩的小贴士😎
 
 > 原文：<https://www.algolia.com/blog/engineering/vue-instantsearch-v2/>
 

@@ -1,4 +1,4 @@
-# 介绍用于个性化和隐私感知体验的用户数据资料- Algolia 博客
+# 介绍用于个性化和隐私感知体验的用户数据资料
 
 > 原文：<https://www.algolia.com/blog/ux/introducing-user-data-profiles-for-personalized-and-privacy-aware-experiences/>
 

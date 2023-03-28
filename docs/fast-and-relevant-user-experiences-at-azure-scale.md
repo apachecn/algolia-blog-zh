@@ -1,4 +1,4 @@
-# Azure 级别的快速相关用户体验- Algolia 博客
+# Azure 级别的快速相关用户体验
 
 > 原文：<https://www.algolia.com/blog/algolia/fast-and-relevant-user-experiences-at-azure-scale/>
 

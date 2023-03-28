@@ -1,4 +1,4 @@
-# 最佳市场 UX 搜索实践，由行业领导者展示- Algolia 博客
+# 最佳市场 UX 搜索实践，由行业领导者展示
 
 > 原文：<https://www.algolia.com/blog/ecommerce/best-marketplace-ux-practices-for-search/>
 

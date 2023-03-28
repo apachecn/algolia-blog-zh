@@ -1,4 +1,4 @@
-# Algolia 编码挑战:找出解决方案🔎-阿尔戈利亚博客|阿尔戈利亚博客
+# Algolia 编码挑战:找出解决方案🔎
 
 > 原文：<https://www.algolia.com/blog/engineering/algolia-coding-challenge-find-out-the-solutions/>
 

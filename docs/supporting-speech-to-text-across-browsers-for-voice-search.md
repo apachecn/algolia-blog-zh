@@ -1,4 +1,4 @@
-# 支持跨浏览器的语音到文本的语音搜索- Algolia 博客
+# 支持跨浏览器的语音到文本的语音搜索
 
 > 原文：<https://www.algolia.com/blog/product/supporting-speech-to-text-across-browsers-for-voice-search/>
 

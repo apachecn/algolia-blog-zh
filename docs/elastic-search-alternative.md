@@ -1,4 +1,4 @@
-# Elasticsearch 替代方案可以叠加吗？阿尔戈利亚|阿尔戈利亚博客
+# Elasticsearch 替代方案可以叠加吗？
 
 > 原文：<https://www.algolia.com/blog/product/elastic-search-alternative/>
 

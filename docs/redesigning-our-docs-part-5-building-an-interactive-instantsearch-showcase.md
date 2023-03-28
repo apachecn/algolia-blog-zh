@@ -1,4 +1,4 @@
-# 重新设计我们的文档——第 5 部分——构建交互式即时搜索展示平台——Algolia 博客
+# 重新设计我们的文档——第 5 部分——构建交互式即时搜索展示平台—
 
 > 原文：<https://www.algolia.com/blog/engineering/redesigning-our-docs-part-5-building-an-interactive-instantsearch-showcase/>
 

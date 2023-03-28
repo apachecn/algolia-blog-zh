@@ -1,4 +1,4 @@
-# 第 2 部分:使用 Algolia 从 PostgreSQL 进行商业智能数据索引-实现和结论- Algolia 博客
+# 第 2 部分:使用 Algolia 从 PostgreSQL 进行商业智能数据索引-实现和结论
 
 > 原文：<https://www.algolia.com/blog/engineering/bi-data-indexing-from-postgresql-to-algolia-2/>
 

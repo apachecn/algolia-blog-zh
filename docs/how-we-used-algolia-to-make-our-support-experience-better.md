@@ -1,4 +1,4 @@
-# 我们如何使用 Algolia 改善我们的支持体验- Algolia 博客
+# 我们如何使用 Algolia 改善我们的支持体验
 
 > 原文：<https://www.algolia.com/blog/product/how-we-used-algolia-to-make-our-support-experience-better/>
 

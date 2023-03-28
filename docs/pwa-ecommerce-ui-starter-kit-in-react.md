@@ -1,4 +1,4 @@
-# 在 React | Algolia \n 上发布我们的 PWA 电子商务 UI 入门套件
+# 在 React  上发布我们的 PWA 电子商务 UI 入门套件
 
 > 原文：<https://www.algolia.com/blog/ecommerce/pwa-ecommerce-ui-starter-kit-in-react/>
 

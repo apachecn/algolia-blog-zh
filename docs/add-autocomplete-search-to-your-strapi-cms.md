@@ -1,4 +1,4 @@
-# 添加自动完成搜索到您的 Strapi CMS - Algolia 博客
+# 添加自动完成搜索到您的 Strapi CMS 
 
 > 原文：<https://www.algolia.com/blog/engineering/add-autocomplete-search-to-your-strapi-cms/>
 

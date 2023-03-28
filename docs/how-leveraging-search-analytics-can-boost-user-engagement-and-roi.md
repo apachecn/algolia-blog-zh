@@ -1,4 +1,4 @@
-# 为什么值得查看您的用户搜索分析| Algolia
+# 为什么值得查看您的用户搜索分析
 
 > 原文：<https://www.algolia.com/blog/ux/how-leveraging-search-analytics-can-boost-user-engagement-and-roi/>
 

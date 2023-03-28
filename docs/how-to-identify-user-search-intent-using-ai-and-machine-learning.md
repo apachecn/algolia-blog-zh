@@ -1,4 +1,4 @@
-# 如何使用人工智能和机器学习识别用户搜索意图- Algolia Blog | Algolia Blog
+# 如何使用人工智能和机器学习识别用户搜索意图
 
 > 原文：<https://www.algolia.com/blog/ai/how-to-identify-user-search-intent-using-ai-and-machine-learning/>
 

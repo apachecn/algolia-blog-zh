@@ -1,4 +1,4 @@
-# SRE 之旅-阿尔戈利亚博客|阿尔戈利亚博客
+# SRE 之旅
 
 > 原文：<https://www.algolia.com/blog/engineering/a-journey-into-sre/>
 

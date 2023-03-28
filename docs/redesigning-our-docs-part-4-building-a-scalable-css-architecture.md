@@ -1,4 +1,4 @@
-# 重新设计我们的文档——第 4 部分——构建可扩展的 CSS 架构——Algolia 博客
+# 重新设计我们的文档——第 4 部分——构建可扩展的 CSS 架构—
 
 > 原文：<https://www.algolia.com/blog/engineering/redesigning-our-docs-part-4-building-a-scalable-css-architecture/>
 

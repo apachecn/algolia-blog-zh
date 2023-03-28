@@ -1,4 +1,4 @@
-# 如何利用营销能力提高体育行业的客户忠诚度- Algolia 博客
+# 如何利用营销能力提高体育行业的客户忠诚度
 
 > 原文：<https://www.algolia.com/blog/ecommerce/how-to-use-merchandising-capabilities-to-drive-customer-loyalty-in-the-sports-industry/>
 

@@ -1,4 +1,4 @@
-# 重新设计我们的文档-第 1 部分-为什么- Algolia 博客
+# 重新设计我们的文档-第 1 部分-为什么
 
 > 原文：<https://www.algolia.com/blog/engineering/redesigning-our-docs-part-1-why/>
 

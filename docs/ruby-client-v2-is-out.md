@@ -1,4 +1,4 @@
-# Ruby 客户端 v2 发布了！-阿尔戈利亚博客|阿尔戈利亚博客
+# Ruby 客户端 v2 发布了！
 
 > 原文：<https://www.algolia.com/blog/engineering/ruby-client-v2-is-out/>
 

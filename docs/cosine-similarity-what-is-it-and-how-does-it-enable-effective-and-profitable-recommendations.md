@@ -1,4 +1,4 @@
-# 了解“你可能也会喜欢……”的秘密| Algolia
+# 了解“你可能也会喜欢……”的秘密
 
 > 原文：<https://www.algolia.com/blog/ai/cosine-similarity-what-is-it-and-how-does-it-enable-effective-and-profitable-recommendations/>
 

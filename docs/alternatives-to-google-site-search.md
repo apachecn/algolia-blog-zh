@@ -1,4 +1,4 @@
-# 谷歌网站搜索的替代品| Algolia
+# 谷歌网站搜索的替代品
 
 > 原文：<https://www.algolia.com/blog/product/alternatives-to-google-site-search/>
 

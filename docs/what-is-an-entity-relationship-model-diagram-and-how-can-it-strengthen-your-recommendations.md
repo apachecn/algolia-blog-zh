@@ -1,4 +1,4 @@
-# 什么是实体关系模型/图表，它如何加强你的建议？-阿尔戈利亚博客|阿尔戈利亚博客
+# 什么是实体关系模型/图表，它如何加强你的建议？
 
 > 原文：<https://www.algolia.com/blog/product/what-is-an-entity-relationship-model-diagram-and-how-can-it-strengthen-your-recommendations/>
 

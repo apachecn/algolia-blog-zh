@@ -1,4 +1,4 @@
-# 通过 Okta & Lambda@Edge \n 向 AWS S3 / Cloudfront 添加 OAuth2 身份验证
+# 通过 Okta & Lambda@Edge 向 AWS S3 / Cloudfront 添加 OAuth2 身份验证
 
 > 原文：<https://www.algolia.com/blog/engineering/adding-oauth2-authentication-to-an-aws-s3-static-bucket-with-okta/>
 

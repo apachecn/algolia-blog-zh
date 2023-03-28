@@ -1,4 +1,4 @@
-# 使用 Whisper-Algolia Blog | Algolia Blog 为您的 YouTube 内容生成转录索引
+# 使用 Whisper-Algolia Blog  Blog 为您的 YouTube 内容生成转录索引
 
 > 原文：<https://www.algolia.com/blog/engineering/generate-a-transcription-index-for-youtube-using-whisper/>
 

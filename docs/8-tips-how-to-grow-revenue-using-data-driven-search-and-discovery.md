@@ -1,4 +1,4 @@
-# [8 个技巧]如何使用数据驱动的搜索和发现增加收入- Algolia 博客
+# [8 个技巧]如何使用数据驱动的搜索和发现增加收入
 
 > 原文：<https://www.algolia.com/blog/ecommerce/8-tips-how-to-grow-revenue-using-data-driven-search-and-discovery/>
 

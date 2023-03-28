@@ -1,4 +1,4 @@
-# 选择网站搜索工具时需要考虑的 6 个特性| Algolia
+# 选择网站搜索工具时需要考虑的 6 个特性
 
 > 原文：<https://www.algolia.com/blog/product/6-features-to-consider-when-selecting-a-site-search-tool/>
 

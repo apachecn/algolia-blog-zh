@@ -1,4 +1,4 @@
-# 特色聚焦:推荐中的趋势模型- Algolia 博客
+# 特色聚焦:推荐中的趋势模型
 
 > 原文：<https://www.algolia.com/blog/engineering/feature-spotlight-trends-models-in-recommend/>
 

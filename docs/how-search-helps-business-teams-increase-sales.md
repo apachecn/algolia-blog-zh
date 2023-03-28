@@ -1,4 +1,4 @@
-# 搜索如何帮助商业团队增加销售额| Algolia
+# 搜索如何帮助商业团队增加销售额
 
 > 原文：<https://www.algolia.com/blog/product/how-search-helps-business-teams-increase-sales/>
 

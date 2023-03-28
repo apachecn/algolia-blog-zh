@@ -1,4 +1,4 @@
-# 产品发现和搜索的区别| Algolia
+# 产品发现和搜索的区别
 
 > 原文：<https://www.algolia.com/blog/ecommerce/product-discovery-vs-product-search-whats-the-difference/>
 

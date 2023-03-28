@@ -1,4 +1,4 @@
-# 推荐和用户操作| Algolia
+# 推荐和用户操作
 
 > 原文：<https://www.algolia.com/blog/ai/the-anatomy-of-high-performance-recommender-systems-part-v/>
 

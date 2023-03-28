@@ -1,4 +1,4 @@
-# 比较最佳电子商务搜索解决方案| Algolia
+# 比较最佳电子商务搜索解决方案
 
 > 原文：<https://www.algolia.com/blog/ecommerce/comparing-the-best-ecommerce-search-solutions/>
 

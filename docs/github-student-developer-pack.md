@@ -1,4 +1,4 @@
-# 为了更好的学校项目，与 GitHub - Algolia 博客\n 合作
+# 为了更好的学校项目，与 GitHub 合作
 
 > 原文：<https://www.algolia.com/blog/algolia/github-student-developer-pack/>
 

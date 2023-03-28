@@ -1,4 +1,4 @@
-# 如何优化您的流媒体服务的媒体发现，以帮助观众找到有吸引力的标题- Algolia 博客
+# 如何优化您的流媒体服务的媒体发现，以帮助观众找到有吸引力的标题
 
 > 原文：<https://www.algolia.com/blog/ecommerce/how-to-optimize-your-streaming-services-media-discovery-to-help-viewers-find-appealing-titles/>
 

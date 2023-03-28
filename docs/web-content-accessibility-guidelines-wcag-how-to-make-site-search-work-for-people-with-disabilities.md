@@ -1,4 +1,4 @@
-# 搜索的网页内容可访问性指南(| Algolia
+# 搜索的网页内容可访问性指南(
 
 > 原文：<https://www.algolia.com/blog/ux/web-content-accessibility-guidelines-wcag-how-to-make-site-search-work-for-people-with-disabilities/>
 
@@ -182,4 +182,4 @@ Aria-label 属性用于为对象提供标签，然后用户可以读取这些标
 
 这为每个人总结了优化你的网站用户体验的关键因素。在 WCAG 标准的帮助下，通过搜索功能确保网站的可访问性是你可以做出的最重要的改进之一，让各种能力水平的人都能在你的网站上找到自己的路，并以最丰富的方式体验你的网站。
 
-寻找其他方法来改善网站的用户搜索体验？阿尔戈利亚可以帮忙。 [请告诉我们](https://www.algolia.com/contactus/) 您有兴趣了解伟大搜索的好处，我们将很乐意查看您的网站并提供个性化建议。
+寻找其他方法来改善网站的用户搜索体验？可以帮忙。 [请告诉我们](https://www.algolia.com/contactus/) 您有兴趣了解伟大搜索的好处，我们将很乐意查看您的网站并提供个性化建议。

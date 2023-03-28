@@ -1,4 +1,4 @@
-# 什么是个性化推荐？阿尔戈利亚|阿尔戈利亚博客
+# 什么是个性化推荐？
 
 > 原文：<https://www.algolia.com/blog/ux/what-are-personalized-recommendations-and-how-can-they-boost-engagement-and-conversion/>
 

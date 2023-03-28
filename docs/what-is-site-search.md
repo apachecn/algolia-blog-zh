@@ -1,4 +1,4 @@
-# 什么是站点搜索？阿尔戈利亚|阿尔戈利亚博客
+# 什么是站点搜索？
 
 > 原文：<https://www.algolia.com/blog/product/what-is-site-search/>
 

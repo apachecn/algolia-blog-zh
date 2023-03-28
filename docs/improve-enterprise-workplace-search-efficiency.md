@@ -1,4 +1,4 @@
-# 提高企业工作场所搜索效率- Algolia 博客
+# 提高企业工作场所搜索效率
 
 > 原文：<https://www.algolia.com/blog/ux/improve-enterprise-workplace-search-efficiency/>
 

@@ -1,4 +1,4 @@
-# 阿尔戈利亚现在是 ISO 27001 和 ISO 27017 认证-阿尔戈利亚博客|阿尔戈利亚博客
+# 阿尔戈利亚现在是 ISO 27001 和 ISO 27017 认证
 
 > 原文：<https://www.algolia.com/blog/product/algolia-is-iso-27001-and-iso-27017-certified/>
 
